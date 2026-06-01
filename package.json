@@ -1,0 +1,41 @@
+{
+  "name": "projeto-final",
+  "version": "1.0.0",
+  "description": "Projeto Final Trainee FGV - Grupo 1",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/api & npm run dev --workspace=apps/web",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "dev:api": "npm run start:dev --workspace=apps/api",
+    "dev:web": "npm run start --workspace=apps/web",
+    "build:api": "npm run build --workspace=apps/api",
+    "build:web": "npm run build --workspace=apps/web",
+    "test:api": "npm run test --workspace=apps/api",
+    "generate": "npm run prisma:generate --workspace=apps/api",
+    "migrate": "npm run prisma:migrate --workspace=apps/api",
+    "seed": "npm run prisma:seed --workspace=apps/api"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LoboVctor/Projeto-Final.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/LoboVctor/Projeto-Final/issues"
+  },
+  "homepage": "https://github.com/LoboVctor/Projeto-Final#readme",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "dotenv": "^17.4.2",
+    "prisma": "^7.8.0"
+  }
+}
