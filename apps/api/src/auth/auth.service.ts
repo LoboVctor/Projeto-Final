@@ -1,12 +1,15 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
   // Injeção do UsersService
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService,
+  private readonly jwtService: JwtService 
+  ) {}
 
   async login(dadosLogin: LoginDto) {
     // Encontra o usuário pelo e-mail fornecido
@@ -25,8 +28,17 @@ export class AuthService {
       throw new UnauthorizedException('E-mail ou palavra-passe incorretos.');
     }
 
+    // O que vamos guardar dentro do Token (Payload)
+    // O 'sub' (subject) é o padrão da indústria para guardar o ID do utilizador
+    const payload = { sub: usuario.id, email: usuario.email };
+
     // Se tudo estiver correto, retiramos a senha por segurança e devolvemos os dados
     const { senha, ...usuarioSemSenha } = usuario;
-    return usuarioSemSenha;
+
+    // Devolvemos o token assinado e os dados do utilizador
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+      usuario: usuarioSemSenha 
+    };
   }
 }
