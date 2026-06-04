@@ -4,12 +4,26 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model Usuario {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  senha         String       // Aqui ficará o hash do bcrypt
+
+  educadorId    String?      @unique
+  responsavelId String?      @unique
+
+  educador      Educador?    @relation(fields: [educadorId], references: [id])
+  responsavel   Responsavel? @relation(fields: [responsavelId], references: [id])
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model Estudante {
@@ -46,6 +60,7 @@ model Responsavel {
   bairro       String
   endereco     String
   createdAt    DateTime @default(now())
+  usuario      Usuario?
 
   estudantes EstudanteResponsavel[]
 }
@@ -175,6 +190,7 @@ model Educador {
   telefone         String
   escolaId         String
 
+  usuario          Usuario?
   registrosDiarios RegistroDiario[]
   aulas            Aula[]
   estudosDeCaso    EstudoCaso[]
@@ -219,7 +235,7 @@ model Aula {
 
   registroAulas RegistroAula[]
   educador      Educador        @relation(fields: [educadorId], references: [id])
-  area          AreaAtendimento @relation(fields: [areaId], references: [id])
+  area          AreaAtendimento? @relation(fields: [areaId], references: [id])
   turma         Turma?          @relation(fields: [turmaId], references: [id])
   estudante     Estudante?      @relation(fields: [estudanteId], references: [id])
 }
@@ -282,4 +298,123 @@ model Pibi {
   createdAt           DateTime        @default(now())
 
   metaDesenvolvimento MetaDesenvolvimento @relation(fields: [metaId], references: [id])
+}
+
+// ==========================================
+// ENUMS (Domínios de Valores)
+// ==========================================
+
+enum Sexo {
+  MASCULINO
+  FEMININO
+  OUTRO
+}
+
+enum Fcom {
+  VERBAL
+  NAO_VERBAL
+  LIBRAS
+  COMUNICACAO_ALTERNATIVA
+}
+
+enum GrauParentesco {
+  PAI
+  MAE
+  AVO
+  TIO_TIA
+  TUTOR_LEGAL
+  OUTRO
+}
+
+enum TipoDiagnostico {
+  TEA
+  TDAH
+  SINDROME_DOWN
+  PARALISIA_CEREBRAL
+  DEFICIENCIA_INTELECTUAL
+  DEFICIENCIA_MULTIPLA
+  OUTRO
+}
+
+enum TipoDocumento {
+  LAUDO_MEDICO
+  RECEITA_MEDICA
+  EXAME
+  AVALIACAO_PSICOLOGICA
+  OUTRO
+}
+
+enum TipoEspecificidade {
+  ALIMENTAR
+  SENSORIAL
+  MOTORA
+  COMPORTAMENTAL
+}
+
+enum CategoriaEspecificidade {
+  RESTRICAO
+  PREFERENCIA
+  GATILHO_CRISE
+}
+
+enum UnidadeM {
+  MG
+  ML
+  COMPRIMIDO
+  GOTAS
+}
+
+enum Turno {
+  MATUTINO
+  VESPERTINO
+  INTEGRAL
+}
+
+enum Etapa {
+  EDUCACAO_INFANTIL
+  ENSINO_FUNDAMENTAL_1
+  ENSINO_FUNDAMENTAL_2
+  EJA
+}
+
+enum TipoEducador {
+  REGENTE
+  APOIO_ESPECIALIZADO
+  EDUCACAO_FISICA
+  ARTES
+  COORDENADOR
+}
+
+enum DiaSemana {
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+}
+
+enum Semestre {
+  PRIMEIRO
+  SEGUNDO
+}
+
+enum StatusRelatorio {
+  RASCUNHO
+  EM_REVISAO
+  CONCLUIDO
+}
+
+enum Eixos {
+  COGNITIVO
+  MOTOR
+  LINGUAGEM
+  SOCIOEMOCIONAL
+  AUTONOMIA
+}
+
+enum Bimestre {
+  PRIMEIRO
+  SEGUNDO
+  TERCEIRO
+  QUARTO
 }

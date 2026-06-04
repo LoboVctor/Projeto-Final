@@ -35,7 +35,15 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "prisma": "^7.8.0"
+  },
+  "dependencies": {
+    "@nestjs/config": "^4.0.4",
+    "bcrypt": "^6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "joi": "^18.2.1"
   }
 }
