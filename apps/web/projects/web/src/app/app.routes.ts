@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth-guard';
 
 export const routes: Routes = [
   {
@@ -26,4 +27,15 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/cadastro-educador/cadastro-educador.component').then(m => m.CadastroEducadorComponent)
   },
   { path: '', redirectTo: 'home', pathMatch: 'full' }
+];
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { 
+    path: 'login', 
+    loadComponent: () => import('./features/auth/login/login').then(m => m.Login) 
+  },
+  { 
+    path: 'dashboard-responsavel', 
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/dashboard/dashboard-responsavel/dashboard-responsavel').then(m => m.DashboardResponsavel) 
+  }
 ];

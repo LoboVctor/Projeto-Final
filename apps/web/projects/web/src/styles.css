@@ -1,13 +1,26 @@
-/* You can add global styles to this file, and also import other style files */
+/* Importação obrigatória do motor do Tailwind v4 */
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap');
-@import 'tailwindcss';
-
+/* Configuração do Tema ELO (Substitui o antigo tailwind.config.js) */
 @theme {
-  --color-roxo-profundo: #4A248A;
-  --color-roxo-principal: #6C3CC9;
-  --color-lavanda: #B79CED;
-  --color-girassol: #F4C542;
-  --color-amarelo-suave: #FFE58A;
-  --color-fundo-principal: #F7F5FA;
-  --color-bordas: #E8E3EF;
+  /* Cores Principais e Neutras */
+  --color-elo-roxo-profundo: #4A248A;
+  --color-elo-roxo-principal: #6C3CC9;
+  --color-elo-lavanda: #B79CED;
+  --color-elo-girassol: #F4C542;
+  --color-elo-amarelo-suave: #FFE58A;
+  
+  --color-elo-texto-principal: #2D1E40;
+  --color-elo-texto-secundario: #6B6177;
+  --color-elo-fundo: #F7F5FA;
+  --color-elo-borda: #E8E3EF;
+  
+  /* Cores de Status */
+  --color-elo-verde-progresso: #5FA777;
+  --color-elo-vermelho-alerta: #D95C5C;
+
+  /* Tipografia do Projeto */
+  --font-sora: "Sora", sans-serif;
+  --font-nunito: "Nunito", sans-serif;
+  --font-outfit: "Outfit", sans-serif;
 }
