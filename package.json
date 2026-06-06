@@ -35,7 +35,14 @@
     "packages/*"
   ],
   "devDependencies": {
+    "autoprefixer": "^10.5.0",
     "dotenv": "^17.4.2",
-    "prisma": "^7.8.0"
+    "postcss": "^8.5.15",
+    "prisma": "^7.8.0",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.3.0"
   }
 }
