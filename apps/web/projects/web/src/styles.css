@@ -1,3 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
-
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap');
 @import 'tailwindcss';
+
+@theme {
+  --color-roxo-profundo: #4A248A;
+  --color-roxo-principal: #6C3CC9;
+  --color-lavanda: #B79CED;
+  --color-girassol: #F4C542;
+  --color-amarelo-suave: #FFE58A;
+  --color-fundo-principal: #F7F5FA;
+  --color-bordas: #E8E3EF;
+}
