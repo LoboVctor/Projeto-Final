@@ -4,12 +4,28 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model Usuario {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  senha         String       // Aqui ficará o hash do bcrypt
+
+  educadorId    String?      @unique
+  responsavelId String?      @unique
+
+  educador      Educador?    @relation(fields: [educadorId], references: [id])
+  responsavel   Responsavel? @relation(fields: [responsavelId], references: [id])
+
+  role       Role
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model Estudante {
@@ -46,6 +62,7 @@ model Responsavel {
   bairro       String
   endereco     String
   createdAt    DateTime @default(now())
+  usuario      Usuario?
 
   estudantes EstudanteResponsavel[]
 }
@@ -150,7 +167,6 @@ model Escola {
 
   turmas     Turma[]
   educadores Educador[]
-  usuarios   Usuario[]
 }
 
 model Turma {
@@ -176,11 +192,11 @@ model Educador {
   telefone        String
   escolaId        String
 
+  usuario          Usuario?
   registrosDiarios RegistroDiario[]
   aulas            Aula[]
   estudosDeCaso    EstudoCaso[]
   escola           Escola           @relation(fields: [escolaId], references: [id])
-  usuario          Usuario?
 }
 
 model RegistroDiario {
@@ -286,18 +302,9 @@ model Pibi {
   metaDesenvolvimento MetaDesenvolvimento @relation(fields: [metaId], references: [id])
 }
 
-model Usuario {
-  id         String   @id @default(uuid())
-  email      String   @unique
-  senha      String
-  role       Role
-  escolaId   String
-  educadorId String?  @unique
-  createdAt  DateTime @default(now())
-
-  escola   Escola    @relation(fields: [escolaId], references: [id])
-  educador Educador? @relation(fields: [educadorId], references: [id])
-}
+// ==========================================
+// ENUMS (Domínios de Valores)
+// ==========================================
 
 enum Role {
   COORDENADOR

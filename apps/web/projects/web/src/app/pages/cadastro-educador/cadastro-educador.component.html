@@ -1,0 +1,71 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <app-cadastro-layout 
+    titulo="Cadastro de Educador" 
+    subtitulo="Insira as informações profissionais e pessoais do educador."
+    [textSubmit]="isLoading ? 'Carregando...' : 'Cadastrar Educador'"
+    [formInvalid]="form.invalid || isLoading"
+    (submitClicked)="onSubmit()">
+    
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- Nome -->
+      <div class="flex flex-col space-y-1">
+        <label for="nome" class="text-sm font-semibold text-roxo-profundo">Nome Completo</label>
+        <input id="nome" type="text" formControlName="nome" (keypress)="allowOnlyLetters($event)"
+          class="border border-bordas rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-girassol focus:border-transparent transition-all bg-fundo-principal"
+          placeholder="Digite o nome completo">
+        <span *ngIf="form.get('nome')?.invalid && form.get('nome')?.touched" class="text-red-500 text-xs font-medium mt-1">Nome é obrigatório e deve ter no mínimo 3 caracteres.</span>
+      </div>
+
+      <!-- CPF -->
+      <div class="flex flex-col space-y-1">
+        <label for="cpf" class="text-sm font-semibold text-roxo-profundo">CPF</label>
+        <input id="cpf" type="text" formControlName="cpf" maxlength="14" (keypress)="allowOnlyNumbers($event)" (input)="onCpfInput($event)"
+          class="border border-bordas rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-girassol focus:border-transparent transition-all bg-fundo-principal"
+          placeholder="000.000.000-00">
+        <span *ngIf="form.get('cpf')?.invalid && form.get('cpf')?.touched" class="text-red-500 text-xs font-medium mt-1">O CPF deve conter exatamente 11 números.</span>
+      </div>
+      
+      <!-- Especialidade -->
+      <div class="flex flex-col space-y-1">
+        <label for="especialidade" class="text-sm font-semibold text-roxo-profundo">Especialidade / Tipo</label>
+        <input id="especialidade" type="text" formControlName="especialidade" 
+          class="border border-bordas rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-girassol focus:border-transparent transition-all bg-fundo-principal"
+          placeholder="Ex: Matemática, Alfabetização, etc.">
+        <span *ngIf="form.get('especialidade')?.invalid && form.get('especialidade')?.touched" class="text-red-500 text-xs font-medium mt-1">A especialidade é obrigatória e deve conter letras.</span>
+      </div>
+
+      <!-- Telefone -->
+      <div class="flex flex-col space-y-1">
+        <label for="telefone" class="text-sm font-semibold text-roxo-profundo">Telefone</label>
+        <input id="telefone" type="text" formControlName="telefone" maxlength="15" (keypress)="allowOnlyNumbers($event)" (input)="onTelefoneInput($event)"
+          class="border border-bordas rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-girassol focus:border-transparent transition-all bg-fundo-principal"
+          placeholder="(00) 00000-0000">
+        <span *ngIf="form.get('telefone')?.invalid && form.get('telefone')?.touched" class="text-red-500 text-xs font-medium mt-1">O telefone deve conter apenas números e ter entre 10 e 11 dígitos.</span>
+      </div>
+
+      <!-- Data de Contratação -->
+      <div class="flex flex-col space-y-1">
+        <label for="dataContratacao" class="text-sm font-semibold text-roxo-profundo">Data de Contratação</label>
+        <input id="dataContratacao" type="date" formControlName="dataContratacao" 
+          class="border border-bordas rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-girassol focus:border-transparent transition-all bg-white">
+        <span *ngIf="form.get('dataContratacao')?.invalid && form.get('dataContratacao')?.touched" class="text-red-500 text-xs font-medium mt-1">Informe a data de contratação.</span>
+      </div>
+
+      <!-- Sexo -->
+      <div class="flex flex-col space-y-1">
+        <label for="sexo" class="text-sm font-semibold text-roxo-profundo">Sexo</label>
+        <select id="sexo" formControlName="sexo" 
+          class="border border-bordas rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-girassol focus:border-transparent transition-all bg-white appearance-none">
+          <option value="" disabled selected>Selecione uma opção</option>
+          <option value="feminino">Feminino</option>
+          <option value="masculino">Masculino</option>
+        </select>
+        <span *ngIf="form.get('sexo')?.invalid && form.get('sexo')?.touched" class="text-red-500 text-xs font-medium mt-1">Selecione uma opção.</span>
+      </div>
+
+    </div>
+
+  </app-cadastro-layout>
+</form>

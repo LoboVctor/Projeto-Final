@@ -1,0 +1,29 @@
+.alert-success {
+  color: var(--color-elo-verde-progresso, #10b981);
+  border-left: 4px solid var(--color-elo-verde-progresso, #10b981);
+}
+
+.alert-error {
+  color: var(--color-elo-vermelho-alerta, #ef4444);
+  border-left: 4px solid var(--color-elo-vermelho-alerta, #ef4444);
+}
+
+.alert-warning {
+  color: var(--color-elo-girassol, #f59e0b);
+  border-left: 4px solid var(--color-elo-girassol, #f59e0b);
+}
+
+.alert-enter {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
