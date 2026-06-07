@@ -24,15 +24,15 @@ model Estudante {
   statusMatricula  Boolean
   createdAt        DateTime @default(now())
 
-  responsaveis       EstudanteResponsavel[]
-  diagnosticos       EstudanteDiagnostico[]
-  especificidades    EstudanteEspecificidade[]
-  medicamentos       EstudanteMedicamento[]
-  turmas             Turma[]
-  registrosDiarios   RegistroDiario[]
-  aulas              Aula[]
-  registroAulas      RegistroAula[]
-  estudosDeCaso      EstudoCaso[]
+  responsaveis         EstudanteResponsavel[]
+  diagnosticos         EstudanteDiagnostico[]
+  especificidades      EstudanteEspecificidade[]
+  medicamentos         EstudanteMedicamento[]
+  turmas               Turma[]
+  registrosDiarios     RegistroDiario[]
+  aulas                Aula[]
+  registroAulas        RegistroAula[]
+  estudosDeCaso        EstudoCaso[]
   relatoriosSemestrais RelatorioSemestral[]
 }
 
@@ -63,7 +63,7 @@ model EstudanteResponsavel {
 }
 
 model Diagnostico {
-  id        String           @id @default(uuid())
+  id        String          @id @default(uuid())
   nome      String
   tipo      TipoDiagnostico
   descricao String
@@ -77,18 +77,18 @@ model EstudanteDiagnostico {
   createdAt     DateTime @default(now())
 
   documentos  DocumentoDiagnostico[]
-  estudante   Estudante   @relation(fields: [estudanteId], references: [id])
-  diagnostico Diagnostico @relation(fields: [diagnosticoId], references: [id])
+  estudante   Estudante              @relation(fields: [estudanteId], references: [id])
+  diagnostico Diagnostico            @relation(fields: [diagnosticoId], references: [id])
 
   @@id([estudanteId, diagnosticoId])
 }
 
 model DocumentoDiagnostico {
-  id           String        @id @default(uuid())
-  tipo         TipoDocumento
-  arquivo      String
-  dataEmissao  DateTime      @db.Date
-  createdAt    DateTime      @default(now())
+  id          String        @id @default(uuid())
+  tipo        TipoDocumento
+  arquivo     String
+  dataEmissao DateTime      @db.Date
+  createdAt   DateTime      @default(now())
 
   estudanteId   String
   diagnosticoId String
@@ -97,7 +97,7 @@ model DocumentoDiagnostico {
 }
 
 model Especificidade {
-  id        Int                    @id @default(autoincrement())
+  id        Int                     @id @default(autoincrement())
   tipo      TipoEspecificidade
   descricao String
   categoria CategoriaEspecificidade
@@ -148,8 +148,9 @@ model Escola {
   email    String
   codInep  String
 
-  turmas    Turma[]
+  turmas     Turma[]
   educadores Educador[]
+  usuarios   Usuario[]
 }
 
 model Turma {
@@ -166,19 +167,20 @@ model Turma {
 }
 
 model Educador {
-  id               String        @id @default(uuid())
-  matricula        String
-  nome             String
-  cpf              String
-  dataContratacao  DateTime      @db.Date
-  tipo             TipoEducador
-  telefone         String
-  escolaId         String
+  id              String       @id @default(uuid())
+  matricula       String
+  nome            String
+  cpf             String
+  dataContratacao DateTime     @db.Date
+  tipo            TipoEducador
+  telefone        String
+  escolaId        String
 
   registrosDiarios RegistroDiario[]
   aulas            Aula[]
   estudosDeCaso    EstudoCaso[]
-  escola           Escola @relation(fields: [escolaId], references: [id])
+  escola           Escola           @relation(fields: [escolaId], references: [id])
+  usuario          Usuario?
 }
 
 model RegistroDiario {
@@ -208,30 +210,30 @@ model AreaAtendimento {
 }
 
 model Aula {
-  id             String     @id @default(uuid())
-  educadorId     String
-  areaId         Int?
-  turmaId        String?
-  estudanteId    String?
-  diaSemana      DiaSemana?
-  horarioInicio  DateTime?  @db.Time
-  horarioFim     DateTime?  @db.Time
+  id            String     @id @default(uuid())
+  educadorId    String
+  areaId        Int?
+  turmaId       String?
+  estudanteId   String?
+  diaSemana     DiaSemana?
+  horarioInicio DateTime?  @db.Time
+  horarioFim    DateTime?  @db.Time
 
   registroAulas RegistroAula[]
-  educador      Educador        @relation(fields: [educadorId], references: [id])
-  area          AreaAtendimento @relation(fields: [areaId], references: [id])
-  turma         Turma?          @relation(fields: [turmaId], references: [id])
-  estudante     Estudante?      @relation(fields: [estudanteId], references: [id])
+  educador      Educador         @relation(fields: [educadorId], references: [id])
+  area          AreaAtendimento? @relation(fields: [areaId], references: [id])
+  turma         Turma?           @relation(fields: [turmaId], references: [id])
+  estudante     Estudante?       @relation(fields: [estudanteId], references: [id])
 }
 
 model RegistroAula {
-  id                 String   @id @default(uuid())
-  estudanteId        String
-  aulaId             String
-  data               DateTime @db.Date
-  presenca           Boolean
-  scoreParticipacao  Int
-  scoreSuporte       Int
+  id                String   @id @default(uuid())
+  estudanteId       String
+  aulaId            String
+  data              DateTime @db.Date
+  presenca          Boolean
+  scoreParticipacao Int
+  scoreSuporte      Int
 
   estudante Estudante @relation(fields: [estudanteId], references: [id])
   aula      Aula      @relation(fields: [aulaId], references: [id])
@@ -248,16 +250,16 @@ model EstudoCaso {
 }
 
 model RelatorioSemestral {
-  id                        String           @id @default(uuid())
-  estudanteId               String
-  semestre                  Semestre
-  ano                       Int
+  id                           String          @id @default(uuid())
+  estudanteId                  String
+  semestre                     Semestre
+  ano                          Int
   parecerGlobalDesenvolvimento String
-  status                    StatusRelatorio
-  dataFechamento            DateTime        @db.Date
+  status                       StatusRelatorio
+  dataFechamento               DateTime        @db.Date
 
   metas     MetaDesenvolvimento[]
-  estudante Estudante @relation(fields: [estudanteId], references: [id])
+  estudante Estudante             @relation(fields: [estudanteId], references: [id])
 }
 
 model MetaDesenvolvimento {
@@ -282,4 +284,137 @@ model Pibi {
   createdAt           DateTime        @default(now())
 
   metaDesenvolvimento MetaDesenvolvimento @relation(fields: [metaId], references: [id])
+}
+
+model Usuario {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  senha      String
+  role       Role
+  escolaId   String
+  educadorId String?  @unique
+  createdAt  DateTime @default(now())
+
+  escola   Escola    @relation(fields: [escolaId], references: [id])
+  educador Educador? @relation(fields: [educadorId], references: [id])
+}
+
+enum Role {
+  COORDENADOR
+  PROFESSOR
+}
+
+enum Sexo {
+  MASCULINO
+  FEMININO
+  OUTRO
+}
+
+enum Fcom {
+  VERBAL
+  NAO_VERBAL
+  LIBRAS
+  COMUNICACAO_ALTERNATIVA
+}
+
+enum GrauParentesco {
+  PAI
+  MAE
+  AVO
+  TIO_TIA
+  TUTOR_LEGAL
+  OUTRO
+}
+
+enum TipoDiagnostico {
+  TEA
+  TDAH
+  SINDROME_DOWN
+  PARALISIA_CEREBRAL
+  DEFICIENCIA_INTELECTUAL
+  DEFICIENCIA_MULTIPLA
+  OUTRO
+}
+
+enum TipoDocumento {
+  LAUDO_MEDICO
+  RECEITA_MEDICA
+  EXAME
+  AVALIACAO_PSICOLOGICA
+  OUTRO
+}
+
+enum TipoEspecificidade {
+  ALIMENTAR
+  SENSORIAL
+  MOTORA
+  COMPORTAMENTAL
+}
+
+enum CategoriaEspecificidade {
+  RESTRICAO
+  PREFERENCIA
+  GATILHO_CRISE
+}
+
+enum UnidadeM {
+  MG
+  ML
+  COMPRIMIDO
+  GOTAS
+}
+
+enum Turno {
+  MATUTINO
+  VESPERTINO
+  INTEGRAL
+}
+
+enum Etapa {
+  EDUCACAO_INFANTIL
+  ENSINO_FUNDAMENTAL_1
+  ENSINO_FUNDAMENTAL_2
+  EJA
+}
+
+enum TipoEducador {
+  REGENTE
+  APOIO_ESPECIALIZADO
+  EDUCACAO_FISICA
+  ARTES
+  COORDENADOR
+}
+
+enum DiaSemana {
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+}
+
+enum Semestre {
+  PRIMEIRO
+  SEGUNDO
+}
+
+enum StatusRelatorio {
+  RASCUNHO
+  EM_REVISAO
+  CONCLUIDO
+}
+
+enum Eixos {
+  COGNITIVO
+  MOTOR
+  LINGUAGEM
+  SOCIOEMOCIONAL
+  AUTONOMIA
+}
+
+enum Bimestre {
+  PRIMEIRO
+  SEGUNDO
+  TERCEIRO
+  QUARTO
 }
