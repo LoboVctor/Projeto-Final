@@ -51,12 +51,6 @@ coverage/
 *.temp
 ~$*
 
-# Documentação interna do projeto (memória técnica — não versionar)
-docs/contexto-projeto-elo.md
-
 # Environments locais do Angular (contêm URLs de API local)
 **/environments/environment.ts
 **/environments/environment.development.ts
-
-# Gemini / AI
-.gemini/
