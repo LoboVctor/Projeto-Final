@@ -7,6 +7,7 @@ import { CadastroService } from '../../shared/services/cadastro.service';
 import { EducadorRegisterPayload } from '../../shared/models/register-payloads';
 import { FeedbackService } from '../../shared/services/feedback.service';
 
+
 @Component({
   selector: 'app-cadastro-educador',
   standalone: true,
@@ -47,7 +48,7 @@ export class CadastroEducadorComponent {
     const input = event.target as HTMLInputElement;
     let value = input.value.replace(/\D/g, '');
     if (value.length > 11) value = value.slice(0, 11);
-    
+
     let formatted = value;
     if (value.length > 9) {
       formatted = value.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
@@ -56,7 +57,7 @@ export class CadastroEducadorComponent {
     } else if (value.length > 3) {
       formatted = value.replace(/(\d{3})(\d{1,3})/, '$1.$2');
     }
-    
+
     this.form.get('cpf')?.setValue(formatted, { emitEvent: false });
     input.value = formatted;
   }
@@ -65,7 +66,7 @@ export class CadastroEducadorComponent {
     const input = event.target as HTMLInputElement;
     let value = input.value.replace(/\D/g, '');
     if (value.length > 11) value = value.slice(0, 11);
-    
+
     let formatted = value;
     if (value.length === 11) {
       formatted = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
@@ -76,7 +77,7 @@ export class CadastroEducadorComponent {
     } else if (value.length > 0) {
       formatted = value.replace(/(\d{1,2})/, '($1');
     }
-    
+
     this.form.get('telefone')?.setValue(formatted, { emitEvent: false });
     input.value = formatted;
   }
@@ -84,11 +85,11 @@ export class CadastroEducadorComponent {
   onSubmit() {
     if (this.form.valid) {
       this.isLoading = true;
-      
+
       const payload: EducadorRegisterPayload = this.form.getRawValue();
       payload.cpf = payload.cpf.replace(/\D/g, '');
       payload.telefone = payload.telefone.replace(/\D/g, '');
-      
+
       this.cadastroService.submeterCadastro(payload).subscribe({
         next: () => {
           this.isLoading = false;

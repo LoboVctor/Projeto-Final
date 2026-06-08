@@ -16,14 +16,14 @@ import * as Joi from 'joi'; // joi é uma biblioteca de validação de esquemas,
   imports: [
     ConfigModule.forRoot({
       // Torna as variáveis do .env disponíveis em qualquer módulo sem precisar importar o ConfigModule novamente
-      isGlobal: true, 
+      isGlobal: true,
 
       envFilePath: ['.env', '../../.env'], // Ensina o NestJS a procurar o .env na raiz do processo
       // Define as regras estritas do que devem existir no .env
       validationSchema: Joi.object({
         DATABASE_URL: Joi.string().required(), // A URL de conexão com o banco de dados é obrigatória
         PORT: Joi.number().default(3000),
-        
+
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRATION: Joi.string().default('1d'),
       }),

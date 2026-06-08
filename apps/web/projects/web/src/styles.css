@@ -1,6 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap');
 /* Importação obrigatória do motor do Tailwind v4 */
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap');
 /* Configuração do Tema ELO (Substitui o antigo tailwind.config.js) */
 @theme {
   /* Cores Principais e Neutras */

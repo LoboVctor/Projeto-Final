@@ -30,5 +30,4 @@ export class PrismaService
     return this.prisma;
   }
 }
-      this.logger.error('Erro ao conectar ao banco 
-}
+

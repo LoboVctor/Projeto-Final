@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; 
+import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 
@@ -7,9 +7,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateUserDto) { 
-    const saltRounds = 10; 
-    
+  async create(data: CreateUserDto) {
+    const saltRounds = 10;
+
     // Gera o hash a partir da senha em texto plano
     const hashedPassword = await bcrypt.hash(data.senha, saltRounds);
 
@@ -18,14 +18,15 @@ export class UsersService {
       data: {
         email: data.email,
         senha: hashedPassword,
-        educadorId: data.educadorId,
-        responsavelId: data.responsavelId
+        role: 'PROFESSOR',
+        educadorId: data.educadorId || null,
+        responsavelId: data.responsavelId || null,
       },
     });
 
     // Remoção da senha do objeto de retorno por segurança
     const { senha, ...userWithoutPassword } = newUser;
-    
+
     return userWithoutPassword;
   }
 

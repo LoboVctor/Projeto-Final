@@ -1,11 +1,12 @@
 import { Component, signal } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { AppShellComponent } from './layout/app-shell/app-shell.component';
 import { FeedbackAlertComponent } from './shared/components/feedback-alert/feedback-alert.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [AppShellComponent, FeedbackAlertComponent],
+  imports: [RouterModule, AppShellComponent, FeedbackAlertComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

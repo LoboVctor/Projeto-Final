@@ -26,9 +26,6 @@ export const routes: Routes = [
     path: 'cadastro-educador',
     loadComponent: () => import('./pages/cadastro-educador/cadastro-educador.component').then(m => m.CadastroEducadorComponent)
   },
-  { path: '', redirectTo: 'home', pathMatch: 'full' }
-];
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
   { 
     path: 'login', 
     loadComponent: () => import('./features/auth/login/login').then(m => m.Login) 

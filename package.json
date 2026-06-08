@@ -15,7 +15,8 @@
     "test:api": "npm run test --workspace=apps/api",
     "generate": "npm run prisma:generate --workspace=apps/api",
     "migrate": "npm run prisma:migrate --workspace=apps/api",
-    "seed": "npm run prisma:seed --workspace=apps/api"
+    "seed": "npm run prisma:seed --workspace=apps/api",
+    "prettier": "npx prettier --write"
   },
   "repository": {
     "type": "git",
