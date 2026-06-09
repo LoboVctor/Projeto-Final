@@ -1,17 +1,17 @@
-<div class="bg-white p-8 rounded-2xl shadow-xl shadow-roxo-profundo/5 max-w-2xl w-full mx-auto mt-6 border border-bordas">
+<div class="bg-white p-8 rounded-2xl shadow-xl shadow-elo-roxo-profundo/5 max-w-2xl w-full mx-auto mt-6 border border-elo-borda">
   <div class="mb-8">
-    <h2 class="text-3xl font-bold text-roxo-profundo tracking-tight font-sora">{{ titulo }}</h2>
-    <p class="text-roxo-profundo/60 mt-2 font-medium">{{ subtitulo }}</p>
+    <h2 class="text-3xl font-bold text-elo-roxo-profundo tracking-tight font-sora">{{ titulo }}</h2>
+    <p class="text-elo-roxo-profundo/60 mt-2 font-medium">{{ subtitulo }}</p>
   </div>
   
   <div class="space-y-6">
     <ng-content></ng-content>
   </div>
   
-  <div class="mt-8 pt-6 border-t border-bordas flex justify-end">
+  <div class="mt-8 pt-6 border-t border-elo-borda flex justify-end">
     <button type="submit" (click)="submitClicked.emit()" [disabled]="formInvalid"
-      class="bg-roxo-principal text-white px-8 py-3 rounded-xl font-bold transition-all shadow-md 
-             enabled:hover:bg-roxo-profundo enabled:hover:shadow-lg enabled:hover:-translate-y-0.5
+      class="bg-elo-roxo-principal text-white px-8 py-3 rounded-xl font-bold transition-all shadow-md 
+             enabled:hover:bg-elo-roxo-profundo enabled:hover:shadow-lg enabled:hover:-translate-y-0.5
              disabled:opacity-50 disabled:cursor-not-allowed">
       {{ textSubmit }}
     </button>
