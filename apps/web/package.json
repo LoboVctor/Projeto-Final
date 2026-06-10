@@ -24,7 +24,9 @@
     "@monorepo/shared-types": "*",
     "@tailwindcss/cli": "^4.3.0",
     "chart.js": "^4.5.1",
+    "apexcharts": "^5.14.0",
     "express": "^5.1.0",
+    "ng-apexcharts": "^2.4.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

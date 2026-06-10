@@ -34,11 +34,11 @@ export class Login {
 
     this.authService.login({
       email: this.loginForm.value.email!,
-      token_acesso: this.loginForm.value.password!
+      senha: this.loginForm.value.password!
     }).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(['/dashboard-responsavel']);
+        this.router.navigate(['/home']);
       },
       error: () => {
         this.isLoading.set(false);
