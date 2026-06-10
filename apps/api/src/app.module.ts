@@ -9,8 +9,10 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { RolesGuard } from './common/guards/roles.guard.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
-import { UsersModule } from './users/users.module.js';
-import { TurmasModule } from './turmas/turmas.module.js';
+import { UsersModule } from './users/users.module';
+import { TurmasModule } from './turmas/turmas.module';
+import { RegistrosDiariosModule } from './registros-diarios/registros-diarios.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import * as Joi from 'joi'; // joi é uma biblioteca de validação de esquemas, usada aqui para validar as variáveis de ambiente do .env
 
 @Module({
@@ -29,10 +31,12 @@ import * as Joi from 'joi'; // joi é uma biblioteca de validação de esquemas,
         JWT_EXPIRATION: Joi.string().default('1d'),
       }),
     }),
+    ScheduleModule.forRoot(), // Importa o módulo de agendamento para usar o @Cron nos serviços, possibilitando agendamento de tarefas
     PrismaModule,
     UsersModule,
     AuthModule,
     TurmasModule,
+    RegistrosDiariosModule,
   ],
   controllers: [AppController],
 

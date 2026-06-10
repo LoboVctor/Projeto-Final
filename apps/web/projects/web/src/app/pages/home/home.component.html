@@ -1,0 +1,81 @@
+<div class="h-full flex flex-col gap-6 p-8 bg-[#F7F5FA] min-h-screen">
+  
+  <div class="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-[#E8E3EF]">
+    <div>
+      <h1 class="text-2xl font-bold text-[#2D1E40]">Visão Geral</h1>
+      <p class="text-[#686177] mt-1">Acompanhe as rotinas e pendências da sua turma.</p>
+    </div>
+    
+    <div class="flex items-center gap-4 border-l-4 border-[#6C3CC9] pl-4">
+      <div>
+        <p class="text-sm font-medium text-[#686177] uppercase tracking-wider">Registros Pendentes</p>
+        <div class="flex items-baseline gap-2">
+          <span class="text-4xl font-extrabold text-[#6C3CC9]">{{ totalPendentes() }}</span>
+          <span class="text-sm text-[#686177]"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+    
+    <div class="xl:col-span-2 flex flex-col gap-4">
+      <h2 class="text-xl font-semibold text-[#2D1E40]">Alunos</h2>
+      
+      <div class="bg-white rounded-2xl shadow-sm border-2 border-[#E8E3EF] border-dashed h-96 flex items-center justify-center">
+        <p class="text-[#686177] font-medium">[ Área dinâmica dos cartões de rotina dos alunos ]</p>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-6">
+      
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-[#E8E3EF] flex flex-col">
+        <h3 class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-2">Progresso do mês</h3>
+        
+        <div class="flex flex-col items-center justify-center min-h-[140px]">
+          <apx-chart class="block -mb-15"
+            [series]="chartOptions.series"
+            [chart]="chartOptions.chart"
+            [plotOptions]="chartOptions.plotOptions"
+            [fill]="chartOptions.fill">
+          </apx-chart>
+          
+                  @if (totalEsperado() > 0) {
+            <span class="text-sm text-gray-700">
+              {{ totalPreenchidos() }} de {{ totalEsperado() }} registros concluídos
+            </span>
+          } @else {
+            <span class="text-sm text-gray-400 animate-pulse">
+              Carregando métricas...
+            </span>
+          }
+        </div>
+        
+        <button class="mt-4 w-full py-2 bg-white border border-[#6C3CC9] text-[#6C3CC9] hover:bg-[#F7F5FA] rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+          <span>Ver todas os registros</span>
+          <span>→</span>
+        </button>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-[#E8E3EF] flex-1">
+        <h3 class="text-lg font-semibold text-[#2D1E40] mb-4">Próximos Eventos</h3>
+        
+        <div class="space-y-4">
+          <div class="flex gap-4 items-start border-l-4 border-[#6C3CC9] pl-3">
+            <div>
+              <p class="text-sm font-bold text-[#2D1E40]">Reunião de Coordenação</p>
+              <p class="text-xs text-[#686177]">Hoje, 14:00 - 15:30</p>
+            </div>
+          </div>
+          <div class="flex gap-4 items-start border-l-4 border-[#5BBDEF] pl-3">
+            <div>
+              <p class="text-sm font-bold text-[#2D1E40]">Entrega de Notas</p>
+              <p class="text-xs text-[#686177]">Sexta-feira, 08:00</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

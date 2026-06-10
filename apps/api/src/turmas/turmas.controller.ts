@@ -29,3 +29,8 @@ export class TurmasController {
     return this.turmasService.findEstudantesByTurma(id);
   }
 }
+  @Get(':id/graficos')
+  async getGraficos(@Param('id') id: string) {
+    return this.turmasService.obterDadosGraficos(id);
+  }
+}

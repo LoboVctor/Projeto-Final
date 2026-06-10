@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { TurmasController } from './turmas.controller.js';
-import { TurmasService } from './turmas.service.js';
+import { TurmasService } from './turmas.service';
+import { TurmasController } from './turmas.controller';
 
 @Module({
-  controllers: [TurmasController],
   providers: [TurmasService],
+  controllers: [TurmasController]
 })
 export class TurmasModule {}

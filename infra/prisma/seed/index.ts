@@ -1,5 +1,14 @@
 import 'dotenv/config';
-import { PrismaClient, Role } from '../../generated/prisma/index.js';
+import { 
+  PrismaClient, 
+  Role, 
+  TipoEducador, 
+  Sexo, 
+  Fcom, 
+  Turno, 
+  Etapa, 
+  TipoTurma 
+} from '../../generated/prisma/index.js';
 import * as bcrypt from 'bcrypt';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
@@ -35,7 +44,6 @@ async function main() {
   console.log('Limpeza concluída.');
 
   // Escola padrão
-
   const escola = await prisma.escola.upsert({
     where: { id: 'escola-elo-seed-00000000-0000' },
     update: {},
@@ -49,23 +57,94 @@ async function main() {
       codInep: '33000000',
     },
   });
+  console.log(` Escolaridade criada: "${escola.nome}" (id: ${escola.id})`);
 
-  console.log(`Escola criada: "${escola.nome}" (id: ${escola.id})`);
-
-
-  // Usuário Admin (COORDENADOR)
-
-  const senhaHash = await bcrypt.hash('Admin@1234', SALT_ROUNDS);
-
+  // 2. Usuário Admin (COORDENADOR)
+  const senhaAdminHash = await bcrypt.hash('Admin@1234', SALT_ROUNDS);
   const admin = await prisma.usuario.upsert({
     where: { email: 'admin@escola.elo' },
     update: {},
     create: {
       email: 'admin@escola.elo',
-      senha: senhaHash,
+      senha: senhaAdminHash,
       role: Role.COORDENADOR,
     },
   });
+  console.log(` Admin criado: "${admin.email}" (role: ${admin.role})`);
+
+  // 3. Criar Educador (Professor Regente)
+  const educador = await prisma.educador.upsert({
+    where: { id: 'educador-regente-seed-0000-0000' },
+    update: {},
+    create: {
+      id: 'educador-regente-seed-0000-0000',
+      matricula: 'REG-2026',
+      nome: 'Professor Cláudio Xavier',
+      cpf: '111.111.111-11',
+      dataContratacao: new Date('2024-02-10'),
+      tipo: TipoEducador.REGENTE,
+      telefone: '(21) 98888-5555',
+      escolaId: escola.id,
+    },
+  });
+  console.log(` Educador criado: "${educador.nome}" (id: ${educador.id})`);
+
+  // 4. Criar Usuário do tipo PROFESSOR vinculado ao Educador
+  const senhaProfHash = await bcrypt.hash('Prof@1234', SALT_ROUNDS);
+  const usuarioProfessor = await prisma.usuario.upsert({
+    where: { email: 'professor@escola.elo' },
+    update: {},
+    create: {
+      email: 'professor@escola.elo',
+      senha: senhaProfHash,
+      role: Role.PROFESSOR,
+      educadorId: educador.id,
+    },
+  });
+  console.log(` Usuário do Educador criado: "${usuarioProfessor.email}"`);
+
+  // 5. Criar Estudante vinculado à Escola
+  const estudante = await prisma.estudante.upsert({
+    where: { matricula: 20260001 },
+    update: {},
+    create: {
+      id: 'estudante-seed-0000-0000-0001',
+      matricula: 20260001,
+      nomeCompleto: 'Lucas Almeida Santos',
+      dataNascimento: new Date('2016-04-15'),
+      cpf: '222.222.222-22',
+      sexo: Sexo.MASCULINO,
+      foto: 'default_avatar.png',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+    },
+  });
+  console.log(` Estudante criado: "${estudante.nomeCompleto}" (Matrícula: ${estudante.matricula})`);
+
+  // 6. Criar Turma (tipo REGENCIA) ligando Escola, Educador e Estudante (relação implícita)
+  const turma = await prisma.turma.upsert({
+    where: { id: 'turma-regencia-seed-0000-0001' },
+    update: {
+      estudantes: {
+        connect: { id: estudante.id },
+      },
+    },
+    create: {
+      id: 'turma-regencia-seed-0000-0001',
+      escolaId: escola.id,
+      educadorId: educador.id,
+      nome: '1º Ano - Turma Alpha',
+      turno: Turno.MATUTINO,
+      anoLetivo: 2026,
+      etapa: Etapa.ENSINO_FUNDAMENTAL_1,
+      tipo: TipoTurma.REGENCIA,
+      estudantes: {
+        connect: { id: estudante.id },
+      },
+    },
+  });
+  console.log(` Turma criada: "${turma.nome}" (Tipo: ${turma.tipo}) com estudante vinculado.`);
 
   console.log(`Admin criado: "${admin.email}" (role: ${admin.role})`);
 
@@ -235,8 +314,13 @@ async function main() {
 
   console.log('\n Seed concluído com sucesso!');
   console.log('─────────────────────────────────────────');
+  console.log(' COORDENAÇÃO:');
   console.log('  Email : admin@escola.elo');
   console.log('  Senha : Admin@1234');
+  console.log(' ───────────────────────────────────────');
+  console.log(' PROFESSOR REGENTE:');
+  console.log('  Email : professor@escola.elo');
+  console.log('  Senha : Prof@1234');
   console.log('─────────────────────────────────────────\n');
 }
 
