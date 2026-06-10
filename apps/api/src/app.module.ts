@@ -10,6 +10,7 @@ import { RolesGuard } from './common/guards/roles.guard.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
 import { UsersModule } from './users/users.module';
+import { TurmasModule } from './turmas/turmas.module';
 import * as Joi from 'joi'; // joi é uma biblioteca de validação de esquemas, usada aqui para validar as variáveis de ambiente do .env
 
 @Module({
@@ -31,6 +32,7 @@ import * as Joi from 'joi'; // joi é uma biblioteca de validação de esquemas,
     PrismaModule,
     UsersModule,
     AuthModule,
+    TurmasModule,
   ],
   controllers: [AppController],
 
