@@ -1,60 +1,47 @@
-<div class="min-h-screen bg-elo-fundo flex flex-col items-center justify-center p-4 font-nunito text-elo-texto-principal">
+<div class="min-h-screen bg-gradient-to-br from-elo-roxo-profundo to-elo-roxo-principal flex flex-col items-center justify-center p-4 font-nunito">
   
-  <div class="w-full max-w-[380px] bg-white rounded-3xl shadow-sm p-8 border border-elo-borda flex flex-col gap-8">
+  <div class="w-full max-w-[420px] bg-white rounded-[2rem] shadow-2xl p-8 md:p-10 flex flex-col gap-8 transform transition-all">
     
-    <!-- Branding ELO -->
     <div class="flex flex-col items-center text-center gap-3">
-      <div class="w-16 h-16 rounded-full bg-elo-amarelo-suave flex items-center justify-center text-elo-girassol">
+      <div class="w-16 h-16 rounded-full bg-elo-amarelo-suave flex items-center justify-center text-elo-girassol shadow-inner">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
         </svg>
       </div>
       <div>
-        <h2 class="text-3xl font-bold font-sora text-elo-roxo-profundo">Projeto ELO</h2>
-        <p class="text-sm font-semibold text-elo-texto-secundario mt-1">Autonomia, inclusão e evolução.</p>
+        <h2 class="text-3xl font-bold font-sora text-elo-roxo-profundo tracking-tight">Projeto ELO</h2>
+        <p class="text-sm font-semibold text-elo-texto-secundario mt-1.5">Autonomia, inclusão e evolução.</p>
       </div>
     </div>
 
-    <!-- Formulário -->
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
       
       <div class="flex flex-col gap-1.5">
-        <label class="text-sm font-bold text-elo-texto-principal">E-mail de acesso</label>
+        <label class="text-sm font-bold text-elo-texto-principal ml-1">E-mail de acesso</label>
         <input 
           type="email" 
-          formControlName="email" 
+          formControlName="email"
           placeholder="Digite seu e-mail..." 
-          class="w-full px-4 py-3 bg-white border border-elo-borda rounded-xl text-sm focus:outline-none focus:border-elo-roxo-principal focus:ring-1 focus:ring-elo-roxo-principal transition-colors text-elo-texto-principal placeholder-elo-texto-secundario/60"
+          class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-elo-roxo-principal focus:ring-4 focus:ring-elo-roxo-principal/10 transition-all text-elo-texto-principal placeholder-elo-texto-secundario/50"
         />
-        @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
-          <span class="text-xs font-semibold text-elo-vermelho-alerta font-outfit mt-1">Insira um e-mail válido.</span>
-        }
       </div>
 
       <div class="flex flex-col gap-1.5">
-        <label class="text-sm font-bold text-elo-texto-principal">Senha</label>
+        <label class="text-sm font-bold text-elo-texto-principal ml-1">Senha</label>
         <input 
           type="password" 
-          formControlName="password" 
+          formControlName="password"
           placeholder="••••••••" 
-          class="w-full px-4 py-3 bg-white border border-elo-borda rounded-xl text-sm focus:outline-none focus:border-elo-roxo-principal focus:ring-1 focus:ring-elo-roxo-principal transition-colors text-elo-texto-principal placeholder-elo-texto-secundario/60"
+          class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-elo-roxo-principal focus:ring-4 focus:ring-elo-roxo-principal/10 transition-all text-elo-texto-principal placeholder-elo-texto-secundario/50"
         />
-        @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
-          <span class="text-xs font-semibold text-elo-vermelho-alerta font-outfit mt-1">A senha precisa ter no mínimo 6 caracteres.</span>
-        }
       </div>
-
-      @if (errorMessage()) {
-        <div class="p-3 bg-red-50 border border-elo-vermelho-alerta/30 rounded-xl text-sm font-bold text-elo-vermelho-alerta flex items-center gap-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          {{ errorMessage() }}
-        </div>
-      }
 
       <button 
         type="submit" 
         [disabled]="loginForm.invalid || isLoading()"
-        class="w-full mt-2 py-3.5 bg-elo-roxo-principal hover:bg-elo-roxo-profundo text-white font-sora font-semibold text-sm rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        class="w-full mt-4 py-4 font-sora font-bold text-sm rounded-xl transition-all duration-300 shadow-md hover:shadow-lg disabled:shadow-none flex items-center justify-center gap-2
+               disabled:bg-elo-lavanda disabled:text-white/80 disabled:cursor-not-allowed
+               bg-elo-roxo-principal hover:bg-elo-roxo-profundo text-white"
       >
         @if (isLoading()) {
           <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
@@ -66,6 +53,7 @@
           Entrar na plataforma
         }
       </button>
+
     </form>
   </div>
 </div>
