@@ -18,6 +18,7 @@ export type ChartOptions = {
 @Component({
   selector: 'app-home',
   standalone: true,
+  template: `<div class="p-8"><h1 class="text-2xl font-bold">Home</h1></div>`
   imports: [CommonModule, NgApexchartsModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'

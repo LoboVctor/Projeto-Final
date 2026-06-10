@@ -9,6 +9,7 @@ import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
+    UsersModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -22,8 +23,8 @@ import { UsersModule } from 'src/users/users.module';
     }),
     UsersModule,
   ],
-  providers: [JwtStrategy, AuthService],
   controllers: [AuthController],
-  exports: [JwtModule, PassportModule],
+  providers: [JwtStrategy, AuthService],
+  exports: [JwtModule, PassportModule, AuthService],
 })
 export class AuthModule {}

@@ -1,7 +1,7 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map } from 'rxjs';
 import { Router } from '@angular/router';
 
 export interface AuthResponse {
@@ -17,6 +17,26 @@ export class AuthService {
   
   private readonly API_URL = 'http://localhost:3000/api/v1/auth'; 
   
+  // URL base para o NestJS
+  private readonly API_URL = 'http://localhost:3000/api/v1/auth';
+  private tokenSubject = new BehaviorSubject<string | null>(
+    typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+  );
+
+  login(credentials: { email: string; token_acesso: string }): Observable<{ token: string; usuario: any }> {
+    const payload = {
+      email: credentials.email,
+      senha: credentials.token_acesso
+    };
+
+    return this.http.post<{ access_token: string; usuario: any }>(`${this.API_URL}/login`, payload).pipe(
+      map(response => {
+        const token = response.access_token;
+        if (token && typeof window !== 'undefined') {
+          localStorage.setItem('access_token', token);
+        }
+        this.tokenSubject.next(token || null);
+        return { token, usuario: response.usuario };
   private tokenSubject = new BehaviorSubject<string | null>(this.getInitialToken());
   // Guarda o objeto inteiro do usuário logado
   private usuarioSubject = new BehaviorSubject<any | null>(this.getInitialUser());
@@ -103,6 +123,8 @@ export class AuthService {
   
   logout(): void {
     this.tokenSubject.next(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('access_token');
     this.usuarioSubject.next(null);
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('access_token');
