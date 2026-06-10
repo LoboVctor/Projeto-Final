@@ -1,0 +1,442 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Usuario {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  senha         String       // Aqui ficará o hash do bcrypt
+
+  educadorId    String?      @unique
+  responsavelId String?      @unique
+
+  educador      Educador?    @relation(fields: [educadorId], references: [id])
+  responsavel   Responsavel? @relation(fields: [responsavelId], references: [id])
+
+  role       Role
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Estudante {
+  id               String   @id @default(uuid())
+  matricula        Int      @unique
+  nomeCompleto     String
+  dataNascimento   DateTime @db.Date
+  cpf              String   @unique
+  sexo             Sexo
+  foto             String
+  formaComunicacao Fcom
+  statusMatricula  Boolean
+  createdAt        DateTime @default(now())
+  escolaId String
+
+  escola            Escola   @relation(fields: [escolaId], references: [id])
+
+  responsaveis         EstudanteResponsavel[]
+  diagnosticos         EstudanteDiagnostico[]
+  especificidades      EstudanteEspecificidade[]
+  medicamentos         EstudanteMedicamento[]
+  turmas               Turma[]
+  registrosDiarios     RegistroDiario[]
+  aulas                Aula[]
+  registroAulas        RegistroAula[]
+  estudosDeCaso        EstudoCaso[]
+  relatoriosSemestrais RelatorioSemestral[]
+}
+
+model Responsavel {
+  id           String   @id @default(uuid())
+  cpf          String   @unique
+  nomeCompleto String
+  sexo         Sexo
+  email        String   @unique
+  telefone     String
+  bairro       String
+  endereco     String
+  createdAt    DateTime @default(now())
+  usuario      Usuario?
+
+  estudantes EstudanteResponsavel[]
+}
+
+model EstudanteResponsavel {
+  estudanteId          String
+  responsavelId        String
+  grauParentesco       GrauParentesco
+  responsavelPrincipal Boolean
+
+  estudante   Estudante   @relation(fields: [estudanteId], references: [id])
+  responsavel Responsavel @relation(fields: [responsavelId], references: [id])
+
+  @@id([estudanteId, responsavelId])
+}
+
+model Diagnostico {
+  id        String          @id @default(uuid())
+  nome      String
+  tipo      TipoDiagnostico
+  descricao String
+
+  estudantes EstudanteDiagnostico[]
+}
+
+model EstudanteDiagnostico {
+  estudanteId   String
+  diagnosticoId String
+  createdAt     DateTime @default(now())
+
+  documentos  DocumentoDiagnostico[]
+  estudante   Estudante              @relation(fields: [estudanteId], references: [id])
+  diagnostico Diagnostico            @relation(fields: [diagnosticoId], references: [id])
+
+  @@id([estudanteId, diagnosticoId])
+}
+
+model DocumentoDiagnostico {
+  id          String        @id @default(uuid())
+  tipo        TipoDocumento
+  arquivo     String
+  dataEmissao DateTime      @db.Date
+  createdAt   DateTime      @default(now())
+
+  estudanteId   String
+  diagnosticoId String
+
+  estudanteDiagnostico EstudanteDiagnostico @relation(fields: [estudanteId, diagnosticoId], references: [estudanteId, diagnosticoId])
+}
+
+model Especificidade {
+  id        Int                     @id @default(autoincrement())
+  tipo      TipoEspecificidade
+  descricao String
+  categoria CategoriaEspecificidade
+
+  estudantes EstudanteEspecificidade[]
+}
+
+model EstudanteEspecificidade {
+  estudanteId      String
+  especificidadeId Int
+  obsReacao        String
+
+  estudante      Estudante      @relation(fields: [estudanteId], references: [id])
+  especificidade Especificidade @relation(fields: [especificidadeId], references: [id])
+
+  @@id([estudanteId, especificidadeId])
+}
+
+model Medicamento {
+  id   Int    @id @default(autoincrement())
+  nome String
+
+  estudantes EstudanteMedicamento[]
+}
+
+model EstudanteMedicamento {
+  estudanteId   String
+  medicamentoId Int
+
+  dosagem                Float
+  unidadeMedida          UnidadeM
+  intervaloAdministracao Int
+  horarioAdministrado    DateTime @db.Time
+  administradoEscola     Boolean
+
+  estudante   Estudante   @relation(fields: [estudanteId], references: [id])
+  medicamento Medicamento @relation(fields: [medicamentoId], references: [id])
+
+  @@id([estudanteId, medicamentoId])
+}
+
+model Escola {
+  id       String @id @default(uuid())
+  nome     String
+  bairro   String
+  endereco String
+  telefone String
+  email    String
+  codInep  String
+
+  turmas     Turma[]
+  estudantes Estudante[]
+  educadores Educador[]
+}
+
+model Turma {
+  id         String @id @default(uuid())
+  escolaId   String
+  educadorId String?
+  nome       String
+  turno      Turno
+  anoLetivo  Int
+  etapa      Etapa?
+  tipo       TipoTurma
+
+
+  educador   Educador?   @relation(fields: [educadorId], references: [id])
+  escola     Escola      @relation(fields: [escolaId], references: [id])
+  estudantes Estudante[]
+  aulas      Aula[]
+}
+
+model Educador {
+  id              String       @id @default(uuid())
+  matricula       String
+  nome            String
+  cpf             String
+  dataContratacao DateTime     @db.Date
+  tipo            TipoEducador
+  telefone        String
+  escolaId        String
+
+  usuario          Usuario?
+  registrosDiarios RegistroDiario[]
+  aulas            Aula[]
+  turmas           Turma[]
+  estudosDeCaso    EstudoCaso[]
+  escola           Escola           @relation(fields: [escolaId], references: [id])
+}
+
+model RegistroDiario {
+  id          String   @id @default(uuid())
+  estudanteId String
+  educadorId  String
+  data        DateTime @db.Date
+  preenchido  Boolean  @default(false)
+  scoreComportamento Int
+  scoreInteracao     Int
+  scoreFoco          Int
+  scoreAutonomia     Int
+  statusAlimentacao  Int
+  usoBanheiro        Int
+  anotacoes          String?
+
+  estudante Estudante @relation(fields: [estudanteId], references: [id])
+  educador  Educador  @relation(fields: [educadorId], references: [id])
+}
+
+model AreaAtendimento {
+  id        Int    @id @default(autoincrement())
+  nome      String
+  descricao String
+
+  aulas Aula[]
+}
+
+model Aula {
+  id            String     @id @default(uuid())
+  educadorId    String
+  areaId        Int?
+  turmaId       String?
+  estudanteId   String?
+  diaSemana     DiaSemana?
+  horarioInicio DateTime?  @db.Time
+  horarioFim    DateTime?  @db.Time
+
+  registroAulas RegistroAula[]
+  educador      Educador         @relation(fields: [educadorId], references: [id])
+  area          AreaAtendimento? @relation(fields: [areaId], references: [id])
+  turma         Turma?           @relation(fields: [turmaId], references: [id])
+  estudante     Estudante?       @relation(fields: [estudanteId], references: [id])
+}
+
+model RegistroAula {
+  id                String   @id @default(uuid())
+  estudanteId       String
+  aulaId            String
+  data              DateTime @db.Date
+  presenca          Boolean
+  scoreParticipacao Int
+  scoreSuporte      Int
+
+  estudante Estudante @relation(fields: [estudanteId], references: [id])
+  aula      Aula      @relation(fields: [aulaId], references: [id])
+}
+
+model EstudoCaso {
+  id             String   @id @default(uuid())
+  estudanteId    String
+  dataReuniao    DateTime @db.Date
+  parecerDecisao String
+
+  educadores Educador[]
+  estudante  Estudante  @relation(fields: [estudanteId], references: [id])
+}
+
+model RelatorioSemestral {
+  id                           String          @id @default(uuid())
+  estudanteId                  String
+  semestre                     Semestre
+  ano                          Int
+  parecerGlobalDesenvolvimento String
+  status                       StatusRelatorio
+  dataFechamento               DateTime        @db.Date
+
+  metas     MetaDesenvolvimento[]
+  estudante Estudante             @relation(fields: [estudanteId], references: [id])
+}
+
+model MetaDesenvolvimento {
+  id                   String @id @default(uuid())
+  relatorioSemestralId String
+  descricao            String
+  eixoDesenvolvimento  Eixos
+  scoreFinal           Int
+  parecer              String
+
+  pibis              Pibi[]
+  relatorioSemestral RelatorioSemestral @relation(fields: [relatorioSemestralId], references: [id])
+}
+
+model Pibi {
+  id                  String          @id @default(uuid())
+  metaId              String
+  bimestre            Bimestre
+  status              StatusRelatorio
+  scoreAtingibilidade Int
+  parecerEvolutivo    String
+  createdAt           DateTime        @default(now())
+
+  metaDesenvolvimento MetaDesenvolvimento @relation(fields: [metaId], references: [id])
+}
+
+// ==========================================
+// ENUMS (Domínios de Valores)
+// ==========================================
+
+enum Role {
+  COORDENADOR
+  PROFESSOR
+}
+
+enum Sexo {
+  MASCULINO
+  FEMININO
+  OUTRO
+}
+
+enum Fcom {
+  VERBAL
+  NAO_VERBAL
+  LIBRAS
+  COMUNICACAO_ALTERNATIVA
+}
+
+enum GrauParentesco {
+  PAI
+  MAE
+  AVO
+  TIO_TIA
+  TUTOR_LEGAL
+  OUTRO
+}
+
+enum TipoDiagnostico {
+  TEA
+  TDAH
+  SINDROME_DOWN
+  PARALISIA_CEREBRAL
+  DEFICIENCIA_INTELECTUAL
+  DEFICIENCIA_MULTIPLA
+  OUTRO
+}
+
+enum TipoDocumento {
+  LAUDO_MEDICO
+  RECEITA_MEDICA
+  EXAME
+  AVALIACAO_PSICOLOGICA
+  OUTRO
+}
+
+enum TipoEspecificidade {
+  ALIMENTAR
+  SENSORIAL
+  MOTORA
+  COMPORTAMENTAL
+}
+
+enum CategoriaEspecificidade {
+  RESTRICAO
+  PREFERENCIA
+  GATILHO_CRISE
+}
+
+enum UnidadeM {
+  MG
+  ML
+  COMPRIMIDO
+  GOTAS
+}
+
+enum Turno {
+  MATUTINO
+  VESPERTINO
+  INTEGRAL
+}
+
+enum Etapa {
+  EDUCACAO_INFANTIL
+  ENSINO_FUNDAMENTAL_1
+  ENSINO_FUNDAMENTAL_2
+  EJA
+}
+
+enum TipoEducador {
+  REGENTE
+  APOIO_ESPECIALIZADO
+  EDUCACAO_FISICA
+  ARTES
+  COORDENADOR
+}
+
+enum DiaSemana {
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+}
+
+enum Semestre {
+  PRIMEIRO
+  SEGUNDO
+}
+
+enum StatusRelatorio {
+  RASCUNHO
+  EM_REVISAO
+  CONCLUIDO
+}
+
+enum Eixos {
+  COGNITIVO
+  MOTOR
+  LINGUAGEM
+  SOCIOEMOCIONAL
+  AUTONOMIA
+}
+
+enum Bimestre {
+  PRIMEIRO
+  SEGUNDO
+  TERCEIRO
+  QUARTO
+}
+
+enum TipoTurma {
+  REGENCIA
+  ATENDIMENTO
+}

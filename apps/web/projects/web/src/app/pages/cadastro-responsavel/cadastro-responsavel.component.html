@@ -1,0 +1,72 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <app-cadastro-layout 
+    titulo="Cadastro de Responsável" 
+    subtitulo="Preencha os dados abaixo para cadastrar um novo responsável."
+    [textSubmit]="isLoading ? 'Carregando...' : 'Concluir Cadastro'"
+    [formInvalid]="form.invalid || isLoading"
+    (submitClicked)="onSubmit()">
+    
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- Nome -->
+      <div class="flex flex-col space-y-1">
+        <label for="nome" class="text-sm font-semibold text-elo-roxo-profundo">Nome Completo</label>
+        <input id="nome" type="text" formControlName="nome" (keypress)="allowOnlyLetters($event)"
+          class="border border-elo-borda rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-elo-girassol focus:border-transparent transition-all bg-elo-fundo"
+          placeholder="Digite o nome completo">
+        <span *ngIf="form.get('nome')?.invalid && form.get('nome')?.touched" class="text-red-500 text-xs font-medium mt-1">Nome é obrigatório e deve ter no mínimo 3 caracteres.</span>
+      </div>
+
+      <!-- E-mail -->
+      <div class="flex flex-col space-y-1">
+        <label for="email" class="text-sm font-semibold text-elo-roxo-profundo">E-mail</label>
+        <input id="email" type="email" formControlName="email" 
+          class="border border-elo-borda rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-elo-girassol focus:border-transparent transition-all bg-elo-fundo"
+          placeholder="exemplo@email.com">
+        <span *ngIf="form.get('email')?.invalid && form.get('email')?.touched" class="text-red-500 text-xs font-medium mt-1">Insira um e-mail válido.</span>
+      </div>
+
+      <!-- CPF -->
+      <div class="flex flex-col space-y-1">
+        <label for="cpf" class="text-sm font-semibold text-elo-roxo-profundo">CPF</label>
+        <input id="cpf" type="text" formControlName="cpf" maxlength="14" (keypress)="allowOnlyNumbers($event)" (input)="onCpfInput($event)"
+          class="border border-elo-borda rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-elo-girassol focus:border-transparent transition-all bg-elo-fundo"
+          placeholder="000.000.000-00">
+        <span *ngIf="form.get('cpf')?.invalid && form.get('cpf')?.touched" class="text-red-500 text-xs font-medium mt-1">O CPF deve conter exatamente 11 números.</span>
+      </div>
+
+      <!-- Telefone -->
+      <div class="flex flex-col space-y-1">
+        <label for="telefone" class="text-sm font-semibold text-elo-roxo-profundo">Telefone</label>
+        <input id="telefone" type="text" formControlName="telefone" maxlength="15" (keypress)="allowOnlyNumbers($event)" (input)="onTelefoneInput($event)"
+          class="border border-elo-borda rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-elo-girassol focus:border-transparent transition-all bg-elo-fundo"
+          placeholder="(00) 00000-0000">
+        <span *ngIf="form.get('telefone')?.invalid && form.get('telefone')?.touched" class="text-red-500 text-xs font-medium mt-1">O telefone deve conter apenas números e ter entre 10 e 11 dígitos.</span>
+      </div>
+
+      <!-- Endereço -->
+      <div class="flex flex-col space-y-1 md:col-span-2">
+        <label for="endereco" class="text-sm font-semibold text-elo-roxo-profundo">Endereço Completo</label>
+        <input id="endereco" type="text" formControlName="endereco" 
+          class="border border-elo-borda rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-elo-girassol focus:border-transparent transition-all bg-elo-fundo"
+          placeholder="Rua, Número, Bairro, Cidade">
+        <span *ngIf="form.get('endereco')?.invalid && form.get('endereco')?.touched" class="text-red-500 text-xs font-medium mt-1">O endereço é obrigatório.</span>
+      </div>
+
+      <!-- Sexo -->
+      <div class="flex flex-col space-y-1 md:col-span-2">
+        <label for="sexo" class="text-sm font-semibold text-elo-roxo-profundo">Sexo</label>
+        <select id="sexo" formControlName="sexo" 
+          class="border border-elo-borda rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-elo-girassol focus:border-transparent transition-all bg-white appearance-none">
+          <option value="" disabled selected>Selecione uma opção</option>
+          <option value="feminino">Feminino</option>
+          <option value="masculino">Masculino</option>
+        </select>
+        <span *ngIf="form.get('sexo')?.invalid && form.get('sexo')?.touched" class="text-red-500 text-xs font-medium mt-1">Selecione uma opção.</span>
+      </div>
+
+    </div>
+
+  </app-cadastro-layout>
+</form>
