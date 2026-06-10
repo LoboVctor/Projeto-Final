@@ -17,6 +17,11 @@ export class RegistrosDiariosController {
     return this.registrosDiariosService.findAlertasDiasAnteriores(educadorId);
   }
 
+  @Get('resumo-mensal')
+  getResumoMensal(@Query('educadorId') educadorId: string) {
+    return this.registrosDiariosService.getResumoMensal(educadorId);
+  }
+  
   @Get()
   findAll() {
     return this.registrosDiariosService.findAll();

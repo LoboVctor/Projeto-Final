@@ -5,6 +5,8 @@ import {
   ApexPlotOptions, ApexChart, ApexFill 
 } from 'ng-apexcharts';
 import { RegistrosDiariosService } from '../../shared/services/registros-diarios.service';
+import { AuthService } from '../../core/services/auth';
+import { RegistroDiarioPendente } from '../../shared/models/registros-diarios.models';
 
 export type ChartOptions = {
   series: ApexNonAxisChartSeries;
@@ -25,21 +27,24 @@ export class HomeComponent implements OnInit {
   public chartOptions: ChartOptions;
 
   private registrosService = inject(RegistrosDiariosService);
+  private authService = inject(AuthService);
   private platformId = inject(PLATFORM_ID);
-  private educadorIdAtual = 'educador-regente-seed-0000-0000';
 
-  registrosPendentes = signal<any[]>([]);
+  // Signals para as três métricas do Dashboard
+  registrosPendentes = signal<RegistroDiarioPendente[]>([]);
+  totalEsperado = signal<number>(0); 
+  totalPreenchidos = signal<number>(0); 
+
   totalPendentes = computed(() => this.registrosPendentes().length);
 
   constructor() {
-    // 1. Configuração visual base (Inicia a 0% enquanto carrega)
     this.chartOptions = {
       series: [0], 
-      chart: { type: 'radialBar', height: 180, sparkline: { enabled: true } },
+      chart: { type: 'radialBar', height: 220, sparkline: { enabled: true } },
       plotOptions: {
         radialBar: {
           startAngle: -90, endAngle: 90,
-          track: { background: '#E8E3EF', strokeWidth: '75%' },
+          track: { background: '#E8E3EF', strokeWidth: '85%' },
           dataLabels: {
             name: { show: false },
             value: { offsetY: 0, fontSize: '28px', fontWeight: '700', color: '#2D1E40' }
@@ -49,25 +54,19 @@ export class HomeComponent implements OnInit {
       fill: { colors: ['#4CAF50'], type: 'solid', opacity: 1 }
     };
 
-    // 2. A Magia do Angular: O effect() liga os Signals ao ApexCharts
+    // O effect agora calcula o progresso real com base nos dados consolidados do mês
     effect(() => {
-      const pendentes = this.totalPendentes();
+      const preenchidos = this.totalPreenchidos();
+      const esperado = this.totalEsperado(); 
 
-      // Transformação do valor absoluto numa métrica percentual
-      // Assumindo um cenário hipotético de 30 alunos/atividades no total
-      const totalEsperado = 30; 
-      let taxaPreenchimento = 100;
+      // Se o banco possui registros gerados para o mês, calcula a porcentagem real concluída
+      const taxaPreenchimento = esperado > 0 
+        ? Math.min(100, Math.round((preenchidos / esperado) * 100)) 
+        : 100; // Caso não existam registros gerados ainda, exibe 100% livre
 
-      if (pendentes > 0) {
-        // Calcula a percentagem e garante que nunca desce abaixo de 0
-        taxaPreenchimento = Math.max(0, Math.round(((totalEsperado - pendentes) / totalEsperado) * 100));
-      }
-
-      // Atualiza a referência do objeto chartOptions para forçar a re-renderização do gráfico
       this.chartOptions = {
         ...this.chartOptions,
         series: [taxaPreenchimento],
-        // Bónus analítico: Muda a cor para vermelho/laranja se a taxa cair muito!
         fill: { 
           colors: [taxaPreenchimento < 80 ? '#F44336' : '#4CAF50'], 
           type: 'solid', 
@@ -79,12 +78,26 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.registrosService.getAlertasPendentes(this.educadorIdAtual).subscribe({
-        next: (dados) => {
-          // Quando esta linha rodar, o effect() lá em cima dispara instantaneamente!
-          this.registrosPendentes.set(dados); 
+      const educadorIdAtual = this.authService.getLoggedUserId();
+
+      if (!educadorIdAtual) {
+        console.warn('Dashboard Home: ID do educador não identificado.');
+        return;
+      }
+
+      // 1. Busca a lista de cartões esquecidos em branco (alertas pendentes)
+      this.registrosService.getAlertasPendentes(educadorIdAtual).subscribe({
+        next: (dados) => this.registrosPendentes.set(dados),
+        error: (err) => console.error('Erro ao buscar alertas pendentes:', err)
+      });
+
+      // 2. Busca o resumo mensal real com a contagem física efetuada pelo Prisma
+      this.registrosService.getResumoMensal(educadorIdAtual).subscribe({
+        next: (resumo) => {
+          this.totalEsperado.set(resumo?.totalEsperado || 0);
+          this.totalPreenchidos.set(resumo?.totalPreenchidos || 0);
         },
-        error: (err) => console.error('Erro ao buscar dados do gráfico:', err)
+        error: (err) => console.error('Erro ao buscar resumo mensal:', err)
       });
     }
   }

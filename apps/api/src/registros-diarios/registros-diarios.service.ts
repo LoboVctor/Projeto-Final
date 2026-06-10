@@ -53,23 +53,28 @@ export class RegistrosDiariosService {
   }
 
   async getResumoMensal(educadorId: string) {
-  const hoje = new Date();
-  const primeiroDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const hoje = new Date();
+    const primeiroDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
-  // 1. Total de registros feitos pelo professor neste mês
-  const totalPreenchidos = await this.prisma.client.registroDiario.count({
-    where: { 
-      educadorId: educadorId,
-      data: { gte: primeiroDiaDoMes, lte: hoje },
-      preenchido: true,
-    }
-  });
+    // 1. Total de registros que o professor JÁ PREENCHEU este mês
+    const totalPreenchidos = await this.prisma.client.registroDiario.count({
+      where: { 
+        educadorId: educadorId,
+        data: { gte: primeiroDiaDoMes, lte: hoje },
+        preenchido: true,
+      }
+    });
 
-  // 2. Total de dias corridos desde o início do mês até hoje (ex: se for dia 9, são 9 dias)
-  const totalEsperado = hoje.getDate(); 
+    // CORREÇÃO: Total real de registros gerados no banco para este professor no mês (preenchidos ou não)
+    const totalEsperado = await this.prisma.client.registroDiario.count({
+      where: {
+        educadorId: educadorId,
+        data: { gte: primeiroDiaDoMes, lte: hoje }
+      }
+    });
 
-  return { totalEsperado, totalPreenchidos };
-}
+    return { totalEsperado, totalPreenchidos };
+  }
 
   async findOne(id: string) {
     const registro = await this.prisma.client.registroDiario.findUnique({
