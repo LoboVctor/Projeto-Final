@@ -14,8 +14,9 @@
     "types": ["node"],
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "src",
     "baseUrl": "./",
-    "incremental": true,
+    "incremental": false,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
@@ -26,5 +27,6 @@
       "@prisma-client": ["../../infra/generated/prisma/index.js"],
       "@prisma-client/*": ["../../infra/generated/prisma/*"]
     }
-  }
+  },
+  "exclude": ["node_modules", "dist", "prisma.config.ts", "test", "**/*.spec.ts"]
 }
