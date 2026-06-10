@@ -40,6 +40,9 @@ model Estudante {
   formaComunicacao Fcom
   statusMatricula  Boolean
   createdAt        DateTime @default(now())
+  escolaId String
+
+  escola            Escola   @relation(fields: [escolaId], references: [id])
 
   responsaveis         EstudanteResponsavel[]
   diagnosticos         EstudanteDiagnostico[]
@@ -167,17 +170,22 @@ model Escola {
   codInep  String
 
   turmas     Turma[]
+  estudantes Estudante[]
   educadores Educador[]
 }
 
 model Turma {
-  id        String @id @default(uuid())
-  escolaId  String
-  nome      String
-  turno     Turno
-  anoLetivo Int
-  etapa     Etapa
+  id         String @id @default(uuid())
+  escolaId   String
+  educadorId String?
+  nome       String
+  turno      Turno
+  anoLetivo  Int
+  etapa      Etapa?
+  tipo       TipoTurma
 
+
+  educador   Educador?   @relation(fields: [educadorId], references: [id])
   escola     Escola      @relation(fields: [escolaId], references: [id])
   estudantes Estudante[]
   aulas      Aula[]
@@ -196,6 +204,7 @@ model Educador {
   usuario          Usuario?
   registrosDiarios RegistroDiario[]
   aulas            Aula[]
+  turmas           Turma[]
   estudosDeCaso    EstudoCaso[]
   escola           Escola           @relation(fields: [escolaId], references: [id])
 }
@@ -205,14 +214,14 @@ model RegistroDiario {
   estudanteId String
   educadorId  String
   data        DateTime @db.Date
-
+  preenchido  Boolean  @default(false)
   scoreComportamento Int
   scoreInteracao     Int
   scoreFoco          Int
   scoreAutonomia     Int
   statusAlimentacao  Int
   usoBanheiro        Int
-  anotacoes          String
+  anotacoes          String?
 
   estudante Estudante @relation(fields: [estudanteId], references: [id])
   educador  Educador  @relation(fields: [educadorId], references: [id])
@@ -425,4 +434,9 @@ enum Bimestre {
   SEGUNDO
   TERCEIRO
   QUARTO
+}
+
+enum TipoTurma {
+  REGENCIA
+  ATENDIMENTO
 }
