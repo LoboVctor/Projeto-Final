@@ -28,9 +28,14 @@ export class TurmasController {
   findEstudantes(@Param('id', ParseUUIDPipe) id: string) {
     return this.turmasService.findEstudantesByTurma(id);
   }
-}
+
+  /**
+   * GET /turmas/:id/graficos
+   * Retorna os dados para renderização de gráficos.
+   */
   @Get(':id/graficos')
-  async getGraficos(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Retorna os dados para os gráficos de diagnósticos e assiduidade' })
+  getGraficos(@Param('id', ParseUUIDPipe) id: string) {
     return this.turmasService.obterDadosGraficos(id);
   }
 }

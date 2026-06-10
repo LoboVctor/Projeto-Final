@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { RegistroDiarioPendente } from '../models/registros-diarios.models';
+import { API_BASE_URL } from '../../core/config/api.config';
 
 export interface ResumoMensalResponse {
   totalEsperado: number;
@@ -12,16 +13,22 @@ export interface ResumoMensalResponse {
   providedIn: 'root'
 })
 export class RegistrosDiariosService {
-  private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/v1/registros-diarios'; 
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = inject(API_BASE_URL);
 
-  // Busca os alertas pendentes (dias anteriores não preenchidos)
-  getAlertasPendentes(educadorId: string): Observable<RegistroDiarioPendente[]> {
-    return this.http.get<RegistroDiarioPendente[]>(`${this.apiUrl}/alertas?educadorId=${educadorId}`);
+  private get API(): string {
+    return `${this.baseUrl}/registros-diarios`;
   }
 
-  // Consome o método getResumoMensal(educadorId) do NestJS
+  /** Busca os alertas pendentes (dias anteriores não preenchidos) */
+  getAlertasPendentes(educadorId: string): Observable<RegistroDiarioPendente[]> {
+    const params = new HttpParams().set('educadorId', educadorId);
+    return this.http.get<RegistroDiarioPendente[]>(`${this.API}/alertas`, { params });
+  }
+
+  /** Retorna o resumo mensal de registros do educador */
   getResumoMensal(educadorId: string): Observable<ResumoMensalResponse> {
-    return this.http.get<ResumoMensalResponse>(`${this.apiUrl}/resumo-mensal?educadorId=${educadorId}`);
+    const params = new HttpParams().set('educadorId', educadorId);
+    return this.http.get<ResumoMensalResponse>(`${this.API}/resumo-mensal`, { params });
   }
 }

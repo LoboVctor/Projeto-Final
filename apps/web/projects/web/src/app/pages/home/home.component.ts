@@ -1,8 +1,9 @@
-import { Component, ViewChild, inject, computed, PLATFORM_ID, OnInit, signal, effect } from '@angular/core';
+import { Component, ViewChild, inject, computed, PLATFORM_ID, OnInit, signal, effect, DestroyRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { 
-  NgApexchartsModule, ChartComponent, ApexNonAxisChartSeries, 
-  ApexPlotOptions, ApexChart, ApexFill 
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  NgApexchartsModule, ChartComponent, ApexNonAxisChartSeries,
+  ApexPlotOptions, ApexChart, ApexFill
 } from 'ng-apexcharts';
 import { RegistrosDiariosService } from '../../shared/services/registros-diarios.service';
 import { AuthService } from '../../core/services/auth';
@@ -18,7 +19,6 @@ export type ChartOptions = {
 @Component({
   selector: 'app-home',
   standalone: true,
-  template: `<div class="p-8"><h1 class="text-2xl font-bold">Home</h1></div>`
   imports: [CommonModule, NgApexchartsModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
@@ -27,20 +27,21 @@ export class HomeComponent implements OnInit {
   @ViewChild('chart') chart!: ChartComponent;
   public chartOptions: ChartOptions;
 
-  private registrosService = inject(RegistrosDiariosService);
-  private authService = inject(AuthService);
-  private platformId = inject(PLATFORM_ID);
+  private readonly registrosService = inject(RegistrosDiariosService);
+  private readonly authService = inject(AuthService);
+  private readonly platformId = inject(PLATFORM_ID);
+  // CR-05: DestroyRef para cancelar os subscribes ao destruir o componente
+  private readonly destroyRef = inject(DestroyRef);
 
-  // Signals para as três métricas do Dashboard
   registrosPendentes = signal<RegistroDiarioPendente[]>([]);
-  totalEsperado = signal<number>(0); 
-  totalPreenchidos = signal<number>(0); 
+  totalEsperado = signal<number>(0);
+  totalPreenchidos = signal<number>(0);
 
   totalPendentes = computed(() => this.registrosPendentes().length);
 
   constructor() {
     this.chartOptions = {
-      series: [0], 
+      series: [0],
       chart: { type: 'radialBar', height: 220, sparkline: { enabled: true } },
       plotOptions: {
         radialBar: {
@@ -55,51 +56,56 @@ export class HomeComponent implements OnInit {
       fill: { colors: ['#4CAF50'], type: 'solid', opacity: 1 }
     };
 
-    // O effect agora calcula o progresso real com base nos dados consolidados do mês
+    // Calcula o progresso real com base nos dados consolidados do mês
     effect(() => {
       const preenchidos = this.totalPreenchidos();
-      const esperado = this.totalEsperado(); 
+      const esperado = this.totalEsperado();
 
-      // Se o banco possui registros gerados para o mês, calcula a porcentagem real concluída
-      const taxaPreenchimento = esperado > 0 
-        ? Math.min(100, Math.round((preenchidos / esperado) * 100)) 
-        : 100; // Caso não existam registros gerados ainda, exibe 100% livre
+      // Se não existem registros gerados para o mês, exibe 100% livre
+      const taxaPreenchimento = esperado > 0
+        ? Math.min(100, Math.round((preenchidos / esperado) * 100))
+        : 100;
 
       this.chartOptions = {
         ...this.chartOptions,
         series: [taxaPreenchimento],
-        fill: { 
-          colors: [taxaPreenchimento < 80 ? '#F44336' : '#4CAF50'], 
-          type: 'solid', 
-          opacity: 1 
+        fill: {
+          colors: [taxaPreenchimento < 80 ? '#F44336' : '#4CAF50'],
+          type: 'solid',
+          opacity: 1
         }
       };
     });
   }
 
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const educadorIdAtual = this.authService.getLoggedUserId();
+    if (!isPlatformBrowser(this.platformId)) return;
 
-      if (!educadorIdAtual) {
-        console.warn('Dashboard Home: ID do educador não identificado.');
-        return;
-      }
-
-      // 1. Busca a lista de cartões esquecidos em branco (alertas pendentes)
-      this.registrosService.getAlertasPendentes(educadorIdAtual).subscribe({
-        next: (dados) => this.registrosPendentes.set(dados),
-        error: (err) => console.error('Erro ao buscar alertas pendentes:', err)
-      });
-
-      // 2. Busca o resumo mensal real com a contagem física efetuada pelo Prisma
-      this.registrosService.getResumoMensal(educadorIdAtual).subscribe({
-        next: (resumo) => {
-          this.totalEsperado.set(resumo?.totalEsperado || 0);
-          this.totalPreenchidos.set(resumo?.totalPreenchidos || 0);
-        },
-        error: (err) => console.error('Erro ao buscar resumo mensal:', err)
-      });
+    const educadorIdAtual = this.authService.getLoggedUserId();
+    if (!educadorIdAtual) {
+      console.warn('Dashboard Home: ID do educador não identificado.');
+      return;
     }
+
+    // 1. Busca cartões pendentes (alertas de dias não preenchidos)
+    this.registrosService
+      .getAlertasPendentes(educadorIdAtual)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (dados) => this.registrosPendentes.set(dados),
+        error: (err) => console.error('Erro ao buscar alertas pendentes:', err),
+      });
+
+    // 2. Busca o resumo mensal com contagem física do Prisma
+    this.registrosService
+      .getResumoMensal(educadorIdAtual)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (resumo) => {
+          this.totalEsperado.set(resumo?.totalEsperado ?? 0);
+          this.totalPreenchidos.set(resumo?.totalPreenchidos ?? 0);
+        },
+        error: (err) => console.error('Erro ao buscar resumo mensal:', err),
+      });
   }
 }

@@ -15,6 +15,7 @@ export class AuthService {
   async login(dadosLogin: LoginDto) {
     // Encontra o usuário pelo e-mail fornecido
     const usuario = await this.usersService.findByEmail(dadosLogin.email);
+    console.log('Login attempt for:', dadosLogin.email, 'User found:', !!usuario);
 
     // Se o e-mail não existir na base de dados, ocorre o bloqueio
     if (!usuario) {
@@ -23,6 +24,7 @@ export class AuthService {
 
     // Verifica se a senha fornecida corresponde ao hash armazenado usando bcrypt
     const senhasIguais = await bcrypt.compare(dadosLogin.senha, usuario.senha);
+    console.log('Password match:', senhasIguais, 'Input password:', dadosLogin.senha);
 
     // Se a matemática do hash falhar, bloqueamos o acesso
     if (!senhasIguais) {

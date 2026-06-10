@@ -1,13 +1,13 @@
 import 'dotenv/config';
-import { 
-  PrismaClient, 
-  Role, 
-  TipoEducador, 
-  Sexo, 
-  Fcom, 
-  Turno, 
-  Etapa, 
-  TipoTurma 
+import {
+  PrismaClient,
+  Role,
+  TipoEducador,
+  Sexo,
+  Fcom,
+  Turno,
+  Etapa,
+  TipoTurma
 } from '../../generated/prisma/index.js';
 import * as bcrypt from 'bcrypt';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -45,10 +45,10 @@ async function main() {
 
   // Escola padrão
   const escola = await prisma.escola.upsert({
-    where: { id: 'escola-elo-seed-00000000-0000' },
+    where: { id: '11111111-1111-1111-1111-111111111111' },
     update: {},
     create: {
-      id: 'escola-elo-seed-00000000-0000',
+      id: '11111111-1111-1111-1111-111111111111',
       nome: 'Escola Municipal ELO',
       bairro: 'Centro',
       endereco: 'Rua das Aces, 100',
@@ -63,7 +63,7 @@ async function main() {
   const senhaAdminHash = await bcrypt.hash('Admin@1234', SALT_ROUNDS);
   const admin = await prisma.usuario.upsert({
     where: { email: 'admin@escola.elo' },
-    update: {},
+    update: { senha: senhaAdminHash },
     create: {
       email: 'admin@escola.elo',
       senha: senhaAdminHash,
@@ -74,10 +74,10 @@ async function main() {
 
   // 3. Criar Educador (Professor Regente)
   const educador = await prisma.educador.upsert({
-    where: { id: 'educador-regente-seed-0000-0000' },
+    where: { id: '22222222-2222-2222-2222-222222222222' },
     update: {},
     create: {
-      id: 'educador-regente-seed-0000-0000',
+      id: '22222222-2222-2222-2222-222222222222',
       matricula: 'REG-2026',
       nome: 'Professor Cláudio Xavier',
       cpf: '111.111.111-11',
@@ -93,7 +93,10 @@ async function main() {
   const senhaProfHash = await bcrypt.hash('Prof@1234', SALT_ROUNDS);
   const usuarioProfessor = await prisma.usuario.upsert({
     where: { email: 'professor@escola.elo' },
-    update: {},
+    update: {
+      senha: senhaProfHash,
+      educadorId: educador.id
+    },
     create: {
       email: 'professor@escola.elo',
       senha: senhaProfHash,
@@ -103,35 +106,12 @@ async function main() {
   });
   console.log(` Usuário do Educador criado: "${usuarioProfessor.email}"`);
 
-  // 5. Criar Estudante vinculado à Escola
-  const estudante = await prisma.estudante.upsert({
-    where: { matricula: 20260001 },
-    update: {},
+  // 5. Criar Turma (tipo REGENCIA) ligando Escola, Educador
+  const turmaAlpha = await prisma.turma.upsert({
+    where: { id: '44444444-4444-4444-4444-444444444444' },
+    update: { educadorId: educador.id },
     create: {
-      id: 'estudante-seed-0000-0000-0001',
-      matricula: 20260001,
-      nomeCompleto: 'Lucas Almeida Santos',
-      dataNascimento: new Date('2016-04-15'),
-      cpf: '222.222.222-22',
-      sexo: Sexo.MASCULINO,
-      foto: 'default_avatar.png',
-      formaComunicacao: Fcom.VERBAL,
-      statusMatricula: true,
-      escolaId: escola.id,
-    },
-  });
-  console.log(` Estudante criado: "${estudante.nomeCompleto}" (Matrícula: ${estudante.matricula})`);
-
-  // 6. Criar Turma (tipo REGENCIA) ligando Escola, Educador e Estudante (relação implícita)
-  const turma = await prisma.turma.upsert({
-    where: { id: 'turma-regencia-seed-0000-0001' },
-    update: {
-      estudantes: {
-        connect: { id: estudante.id },
-      },
-    },
-    create: {
-      id: 'turma-regencia-seed-0000-0001',
+      id: '44444444-4444-4444-4444-444444444444',
       escolaId: escola.id,
       educadorId: educador.id,
       nome: '1º Ano - Turma Alpha',
@@ -139,12 +119,9 @@ async function main() {
       anoLetivo: 2026,
       etapa: Etapa.ENSINO_FUNDAMENTAL_1,
       tipo: TipoTurma.REGENCIA,
-      estudantes: {
-        connect: { id: estudante.id },
-      },
     },
   });
-  console.log(` Turma criada: "${turma.nome}" (Tipo: ${turma.tipo}) com estudante vinculado.`);
+  console.log(` Turma criada: "${turmaAlpha.nome}" (Tipo: ${turmaAlpha.tipo})`);
 
   console.log(`Admin criado: "${admin.email}" (role: ${admin.role})`);
 
@@ -185,40 +162,46 @@ async function main() {
   // Turmas
   const turma1 = await prisma.turma.upsert({
     where: { id: 'b0000000-0000-0000-0000-000000000001' },
-    update: {},
+    update: { educadorId: educador.id },
     create: {
       id: 'b0000000-0000-0000-0000-000000000001',
       escolaId: escola.id,
+      educadorId: educador.id,
       nome: '1º Ano A',
-      turno: 'VESPERTINO',
+      turno: Turno.VESPERTINO,
       anoLetivo: 2026,
-      etapa: 'ENSINO_FUNDAMENTAL_1',
+      etapa: Etapa.ENSINO_FUNDAMENTAL_1,
+      tipo: TipoTurma.REGENCIA,
     },
   });
 
   const turma2 = await prisma.turma.upsert({
     where: { id: 'b0000000-0000-0000-0000-000000000002' },
-    update: {},
+    update: { educadorId: educador.id },
     create: {
       id: 'b0000000-0000-0000-0000-000000000002',
       escolaId: escola.id,
+      educadorId: educador.id,
       nome: '2º Ano B',
-      turno: 'MATUTINO',
+      turno: Turno.MATUTINO,
       anoLetivo: 2026,
-      etapa: 'ENSINO_FUNDAMENTAL_1',
+      etapa: Etapa.ENSINO_FUNDAMENTAL_1,
+      tipo: TipoTurma.REGENCIA,
     },
   });
 
   const turma3 = await prisma.turma.upsert({
     where: { id: 'b0000000-0000-0000-0000-000000000003' },
-    update: {},
+    update: { educadorId: educador.id },
     create: {
       id: 'b0000000-0000-0000-0000-000000000003',
       escolaId: escola.id,
+      educadorId: educador.id,
       nome: 'Infantil IV',
-      turno: 'MATUTINO',
+      turno: Turno.MATUTINO,
       anoLetivo: 2026,
-      etapa: 'EDUCACAO_INFANTIL',
+      etapa: Etapa.EDUCACAO_INFANTIL,
+      tipo: TipoTurma.REGENCIA,
     },
   });
 
@@ -227,15 +210,36 @@ async function main() {
   // Estudantes
   const estudantesData = [
     {
+      id: '33333333-3333-3333-3333-333333333333',
+      matricula: 20260001,
+      nomeCompleto: 'Lucas Almeida Santos',
+      dataNascimento: new Date('2016-04-15'),
+      cpf: '222.222.222-22',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Lucas',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: turmaAlpha.id }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: tea.id } },
+          },
+        ],
+      },
+    },
+    {
       id: 'c0000000-0000-0000-0000-000000000001',
       matricula: 202601,
       nomeCompleto: 'Ana Silva',
       dataNascimento: new Date('2019-05-15'),
       cpf: '123.456.789-01',
-      sexo: 'FEMININO' as const,
+      sexo: Sexo.FEMININO,
       foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Ana',
-      formaComunicacao: 'VERBAL' as const,
+      formaComunicacao: Fcom.VERBAL,
       statusMatricula: true,
+      escolaId: escola.id,
       turmas: { connect: [{ id: turma1.id }] },
       diagnosticos: {
         create: [
@@ -251,10 +255,11 @@ async function main() {
       nomeCompleto: 'Bruno Santos',
       dataNascimento: new Date('2018-08-22'),
       cpf: '234.567.890-12',
-      sexo: 'MASCULINO' as const,
+      sexo: Sexo.MASCULINO,
       foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Bruno',
-      formaComunicacao: 'NAO_VERBAL' as const,
+      formaComunicacao: Fcom.NAO_VERBAL,
       statusMatricula: true,
+      escolaId: escola.id,
       turmas: { connect: [{ id: turma1.id }] },
       diagnosticos: {
         create: [
@@ -270,10 +275,11 @@ async function main() {
       nomeCompleto: 'Carlos Souza',
       dataNascimento: new Date('2018-03-10'),
       cpf: '345.678.901-23',
-      sexo: 'MASCULINO' as const,
+      sexo: Sexo.MASCULINO,
       foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Carlos',
-      formaComunicacao: 'VERBAL' as const,
+      formaComunicacao: Fcom.VERBAL,
       statusMatricula: true,
+      escolaId: escola.id,
       turmas: { connect: [{ id: turma2.id }] },
       diagnosticos: {
         create: [
@@ -289,10 +295,11 @@ async function main() {
       nomeCompleto: 'Daniela Lima',
       dataNascimento: new Date('2020-11-05'),
       cpf: '456.789.012-34',
-      sexo: 'FEMININO' as const,
+      sexo: Sexo.FEMININO,
       foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Daniela',
-      formaComunicacao: 'COMUNICACAO_ALTERNATIVA' as const,
+      formaComunicacao: Fcom.COMUNICACAO_ALTERNATIVA,
       statusMatricula: true,
+      escolaId: escola.id,
       turmas: { connect: [{ id: turma3.id }] },
       diagnosticos: {
         create: [
@@ -305,8 +312,10 @@ async function main() {
   ];
 
   for (const est of estudantesData) {
-    await prisma.estudante.create({
-      data: est,
+    await prisma.estudante.upsert({
+      where: { matricula: est.matricula },
+      update: {},
+      create: est,
     });
   }
 

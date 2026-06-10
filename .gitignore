@@ -50,11 +50,3 @@ coverage/
 *.tmp
 *.temp
 ~$*
-
-# Environments locais do Angular (contêm URLs de API local)
-**/environments/environment.ts
-**/environments/environment.development.ts
-
-# Arquivos pessoais
-docs/
-docs/contexto-projeto-elo.md

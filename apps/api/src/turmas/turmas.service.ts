@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
 export class TurmasService {
+  private readonly logger = new Logger(TurmasService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   /**
@@ -12,7 +14,12 @@ export class TurmasService {
   async findAll(educadorId?: string) {
     return this.prisma.client.turma.findMany({
       where: educadorId
-        ? { aulas: { some: { educadorId } } }
+        ? {
+            OR: [
+              { educadorId: educadorId },
+              { aulas: { some: { educadorId } } }
+            ]
+          }
         : undefined,
       select: {
         id: true,
@@ -29,64 +36,66 @@ export class TurmasService {
 
   /**
    * Lista os estudantes de uma turma com dados básicos e seus diagnósticos.
-   * Usa include único para evitar o problema N+1.
+   * Usa include único para buscar a turma e seus estudantes em uma única chamada ao BD, evitando N+1.
    */
   async findEstudantesByTurma(turmaId: string) {
-    // Verifica se a turma existe antes de buscar estudantes
     const turma = await this.prisma.client.turma.findUnique({
       where: { id: turmaId },
-      select: { id: true, nome: true },
+      include: {
+        estudantes: {
+          select: {
+            id: true,
+            nomeCompleto: true,
+            foto: true,
+            matricula: true,
+            diagnosticos: {
+              select: {
+                diagnostico: {
+                  select: { id: true, nome: true, tipo: true },
+                },
+              },
+            },
+          },
+          orderBy: { nomeCompleto: 'asc' },
+        },
+      },
     });
 
     if (!turma) {
       throw new NotFoundException(`Turma com id "${turmaId}" não encontrada.`);
     }
 
-    const estudantes = await this.prisma.client.estudante.findMany({
-      where: { turmas: { some: { id: turmaId } } },
-      select: {
-        id: true,
-        nomeCompleto: true,
-        foto: true,
-        matricula: true,
-        // Join com ESTUDANTE_DIAGNOSTICO → DIAGNOSTICO em uma única query
-        diagnosticos: {
-          select: {
-            diagnostico: {
-              select: { id: true, nome: true, tipo: true },
-            },
-          },
-        },
-      },
-      orderBy: { nomeCompleto: 'asc' },
-    });
-
-    return { turma, estudantes };
+    return {
+      turma: { id: turma.id, nome: turma.nome },
+      estudantes: turma.estudantes
+    };
   }
-}
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 
-@Injectable()
-export class TurmasService {
-  private readonly logger = new Logger(TurmasService.name);
-
-  constructor(private readonly prisma: PrismaService) {}
-
+  /**
+   * Retorna os dados para os gráficos de diagnósticos e assiduidade de uma turma.
+   * As consultas ao banco são executadas concorrentemente com Promise.all para melhorar o desempenho.
+   */
   async obterDadosGraficos(turmaId: string) {
     try {
-      const turma = await this.prisma.client.turma.findUnique({
-        where: { id: turmaId },
-        include: {
-          estudantes: {
-            include: {
-              diagnosticos: {
-                include: { diagnostico: true }
+      const [turma, assiduidade] = await Promise.all([
+        this.prisma.client.turma.findUnique({
+          where: { id: turmaId },
+          include: {
+            estudantes: {
+              include: {
+                diagnosticos: {
+                  include: { diagnostico: true }
+                }
               }
             }
           }
-        }
-      });
+        }),
+        this.prisma.client.registroAula.groupBy({
+          by: ['presenca'],
+          where: { aula: { turmaId: turmaId } },
+          _count: { presenca: true },
+        })
+      ]);
 
       if (!turma) {
         throw new NotFoundException('Turma não encontrada');
@@ -104,12 +113,6 @@ export class TurmasService {
       const formatacaoDiagnosticos = Object.entries(contagemDiagnosticos)
         .map(([tipo, quantidade]) => ({ tipo, quantidade }))
         .sort((a, b) => b.quantidade - a.quantidade);
-
-      const assiduidade = await this.prisma.client.registroAula.groupBy({
-        by: ['presenca'],
-        where: { aula: { turmaId: turmaId } },
-        _count: { presenca: true },
-      });
 
       const presentes = assiduidade.find(a => a.presenca === true)?._count.presenca || 0;
       const ausentes = assiduidade.find(a => a.presenca === false)?._count.presenca || 0;

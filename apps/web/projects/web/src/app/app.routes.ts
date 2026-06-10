@@ -10,9 +10,11 @@ export const routes: Routes = [
   },
 
   // ── Rotas internas (com AppShell + Sidebar) ───────────────────────────
+  // CR-03: authGuard aplicado no pai para proteger TODAS as rotas filhas
   {
     path: '',
     component: AppShellComponent,
+    canActivate: [authGuard],
     children: [
       {
         path: 'home',
@@ -40,10 +42,8 @@ export const routes: Routes = [
       },
       {
         path: 'dashboard-responsavel',
-        canActivate: [authGuard],
         loadComponent: () => import('./features/dashboard/dashboard-responsavel/dashboard-responsavel').then(m => m.DashboardResponsavel)
       }
     ]
   }
 ];
-

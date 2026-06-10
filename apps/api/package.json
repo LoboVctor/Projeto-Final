@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma:migrate": "prisma migrate dev --schema=../../infra/prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema=../../infra/prisma/schema.prisma",
-    "prisma:seed": "ts-node ../../infra/prisma/seed/index.ts",
+    "prisma:seed": "tsx ../../infra/prisma/seed/index.ts",
     "prisma:studio": "prisma studio --schema=../../infra/prisma/schema.prisma"
   },
   "dependencies": {
@@ -90,6 +90,9 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    }
   }
 }

@@ -94,6 +94,11 @@
       <div *ngFor="let s of [1,2,3,4,5,6]" class="skeleton-card"></div>
     </div>
 
+    <!-- Gráfico de Diagnósticos da Turma -->
+    <div *ngIf="!loading() && !error() && turmaSelecionada()" class="mb-6">
+      <app-grafico-diagnosticos [turmaId]="turmaSelecionada()!.id"></app-grafico-diagnosticos>
+    </div>
+
     <!-- VIEW: CARDS -->
     <div *ngIf="!loading() && !error() && viewMode() === 'grid'" class="students-grid">
       <app-student-card *ngFor="let estudante of estudantes()" [estudante]="estudante" />
