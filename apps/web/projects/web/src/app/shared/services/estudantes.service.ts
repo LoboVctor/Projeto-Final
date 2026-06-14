@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// Podes colocar esta interface num ficheiro separado (ex: estudante-saude.model.ts)
 export interface EstudanteSaude {
   estudanteId: string;
   nomeCompleto: string;
@@ -31,12 +30,23 @@ export interface EstudanteSaude {
   providedIn: 'root'
 })
 export class EstudantesService {
-  // Substitui pela tua URL base da API
   private apiUrl = 'http://localhost:3000/api/v1/estudantes'; 
 
   constructor(private http: HttpClient) {}
 
-  getSaude(estudanteId: string): Observable<EstudanteSaude> {
+getSaude(estudanteId: string): Observable<EstudanteSaude> {
     return this.http.get<EstudanteSaude>(`${this.apiUrl}/${estudanteId}/saude`);
-  }
+}
+
+saveRestricao(estudanteId: string, dados: any) {
+  return this.http.post(`${this.apiUrl}/estudantes/${estudanteId}/restricoes`, dados);
+}
+
+updateRestricao(restricaoId: string, dados: any) {
+  return this.http.patch(`${this.apiUrl}/restricoes/${restricaoId}`, dados);
+}
+
+deleteRestricao(restricaoId: string) {
+  return this.http.delete(`${this.apiUrl}/restricoes/${restricaoId}`);
+}
 }

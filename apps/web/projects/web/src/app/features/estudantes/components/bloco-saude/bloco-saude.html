@@ -1,73 +1,184 @@
-<div class="bloco-saude-card">
+<div class="bg-white border border-gray-200 rounded-xl shadow-sm mb-6 overflow-hidden">
   
-  <button class="bloco-header" (click)="toggleDropdown()" [attr.aria-expanded]="isDropdownOpen">
-    <div class="header-title">
-      <span class="icon">🏥</span>
-      <h3>Bloco 2: Saúde e Especificidades</h3>
+  <button 
+    class="w-full flex items-center justify-between p-4 bg-slate-50 border-b border-gray-200 hover:bg-slate-100/80 transition-all duration-200" 
+    (click)="toggleDropdown()" 
+    [attr.aria-expanded]="isDropdownOpen">
+    <div class="flex items-center gap-3">
+      <h3 class="text-lg font-bold font-['Sora'] text-blue-600 tracking-wide m-0">Saúde</h3>
     </div>
-    <span class="seta" [class.aberta]="isDropdownOpen">▼</span>
+    <svg class="w-5 h-5 text-blue-600 transition-transform duration-300" [class.rotate-180]="isDropdownOpen" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
   </button>
 
-  <div class="bloco-content" *ngIf="isDropdownOpen">
+  <div class="p-6" *ngIf="isDropdownOpen">
     
-    <div *ngIf="isLoading" class="loading-state">
-      <p>⏳ A buscar informações médicas no sistema...</p>
+    <div *ngIf="isLoading" class="text-center py-6 text-blue-600 font-medium opacity-70">
+      <p>⏳ Buscando informações médicas...</p>
     </div>
 
-    <div *ngIf="!isLoading && dadosSaude">
+    <div *ngIf="!isLoading && dadosSaude" class="space-y-8">
       
-      <section class="saude-section">
-        <h4>⚠️ Alertas Médicos</h4>
-        <div class="alertas-grid" *ngIf="dadosSaude.restricoes.length > 0; else semRestricoes">
-          <div class="alerta-card danger" *ngFor="let restri of dadosSaude.restricoes">
-            <strong>{{ restri.tipo }} - {{ restri.descricao }}</strong>
-            <p>{{ restri.observacao }}</p>
-          </div>
+      <section>
+        <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+          <h4 class="text-base font-bold font-['Sora'] text-blue-600 m-0">
+            Restrições (alergias e alimentares)
+          </h4>
+          <button (click)="editarRestricoes()" class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+            Editar Restrições
+          </button>
         </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" *ngIf="dadosSaude.restricoes.length > 0; else semRestricoes">
+          
+          <div class="bg-yellow-50/40 border border-yellow-200 rounded-xl p-4 flex flex-col h-full">
+            <h5 class="text-yellow-800 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-yellow-200 m-0">
+              Restrições Alimentares
+            </h5>
+            
+            <div class="space-y-3 flex-1" *ngIf="restricoesAlimentares.length > 0; else semAlimentar">
+              <div *ngFor="let restri of restricoesAlimentares" class="bg-white border-l-4 border-yellow-500 p-3 rounded shadow-sm">
+                <strong class="text-yellow-700 block mb-1 text-xs uppercase">{{ restri.descricao }}</strong>
+                <p class="text-yellow-900 text-sm m-0 leading-relaxed">{{ restri.observacao }}</p>
+              </div>
+            </div>
+            <ng-template #semAlimentar>
+              <p class="text-yellow-600/70 italic text-sm m-0 flex-1 flex items-center justify-center">Nenhuma restrição alimentar cadastrada.</p>
+            </ng-template>
+          </div>
+
+          <div class="bg-red-50/40 border border-red-200 rounded-xl p-4 flex flex-col h-full">
+            <h5 class="text-red-800 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-red-200 m-0">
+              Alergias
+            </h5>
+            
+            <div class="space-y-3 flex-1" *ngIf="restricoesOutras.length > 0; else semOutras">
+              <div *ngFor="let restri of restricoesOutras" class="bg-white border-l-4 border-red-500 p-3 rounded shadow-sm">
+                <strong class="text-red-700 block mb-1 text-xs uppercase">{{ restri.tipo }} - {{ restri.descricao }}</strong>
+                <p class="text-red-900 text-sm m-0 leading-relaxed">{{ restri.observacao }}</p>
+              </div>
+            </div>
+            <ng-template #semOutras>
+              <p class="text-red-600/70 italic text-sm m-0 flex-1 flex items-center justify-center">Nenhuma alergia ou condição cadastrada.</p>
+            </ng-template>
+          </div>
+
+        </div>
+
         <ng-template #semRestricoes>
-          <p class="text-muted">Nenhuma restrição cadastrada para este estudante.</p>
+          <p class="text-gray-400 italic text-sm m-0">Nenhuma restrição ou alerta cadastrado para este estudante.</p>
         </ng-template>
       </section>
 
-      <hr />
+      <section>
+        <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+          <h4 class="text-base font-bold font-['Sora'] text-blue-600 m-0">
+            Laudos e Diagnósticos
+          </h4>
+          <button (click)="adicionarLaudo()" class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+            Anexar Laudo
+          </button>
+        </div>
 
-      <section class="saude-section">
-        <h4>💊 Medicamentos (Administrados na Escola)</h4>
-        <ul class="medicamentos-list" *ngIf="dadosSaude.medicamentos.length > 0; else semMedicamentos">
-          <li *ngFor="let med of dadosSaude.medicamentos">
-            <span class="med-nome">{{ med.nome }}</span> 
-            <span class="med-dose">({{ med.dosagem }})</span>
-            <span class="badge-escola" *ngIf="med.administradoEscola">Administrar na Escola</span>
+        <div class="space-y-3" *ngIf="dadosSaude.laudos.length > 0; else semLaudos">
+          
+          <div *ngFor="let laudo of dadosSaude.laudos" class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition-all group gap-4">
+            
+            <div class="flex items-center gap-4">
+              <div class="bg-blue-50 p-3 rounded-md group-hover:bg-blue-600 transition-colors duration-200 shrink-0">
+                <svg class="w-6 h-6 text-blue-600 group-hover:text-white transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-slate-700 m-0 group-hover:text-blue-600 transition-colors duration-150">{{ laudo.diagnostico }}</p>
+                <p class="text-xs text-slate-500 m-0 mt-1">Emitido em: {{ laudo.dataEmissao | date:'dd/MM/yyyy':'UTC' }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              
+              <button (click)="abrirPreview(laudo.urlArquivo)"
+                 class="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-transparent rounded-md hover:bg-blue-100 hover:border-blue-200 transition-colors cursor-pointer flex items-center gap-1.5">
+                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                 Visualizar
+              </button>
+
+              <a [href]="getDownloadUrl(laudo.urlArquivo)" target="_blank" rel="noopener noreferrer" download
+                 class="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-transparent rounded-md hover:bg-blue-100 transition-colors no-underline flex items-center gap-1.5">
+                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                 Baixar
+              </a>
+
+            </div>
+
+          </div>
+
+        </div>
+        <ng-template #semLaudos>
+          <p class="text-gray-400 italic text-sm m-0">Nenhum laudo anexado ao perfil do estudante.</p>
+        </ng-template>
+      </section>
+
+      <section>
+        <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+          <h4 class="text-base font-bold font-['Sora'] text-blue-600 m-0">
+            Medicamentos
+          </h4>
+          <button (click)="adicionarMedicamento()" class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            Novo Medicamento
+          </button>
+        </div>
+
+        <ul class="space-y-2 p-0 m-0 list-none" *ngIf="dadosSaude.medicamentos.length > 0; else semMedicamentos">
+          <li class="bg-slate-50/60 p-3 rounded-lg border border-gray-100 flex items-center justify-between" *ngFor="let med of dadosSaude.medicamentos">
+            <div class="text-sm">
+              <span class="font-semibold text-slate-700">{{ med.nome }}</span> 
+              <span class="text-slate-400 font-normal ml-2">({{ med.dosagem }})</span>
+            </div>
+            <span class="bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded border border-blue-100 font-['Sora']" *ngIf="med.administradoEscola">
+              Administrar na Escola
+            </span>
           </li>
         </ul>
         <ng-template #semMedicamentos>
-          <p class="text-muted">Nenhum medicamento recorrente registado.</p>
-        </ng-template>
-      </section>
-
-      <hr />
-
-      <section class="saude-section">
-        <h4>📄 Laudos e Diagnósticos</h4>
-        <div class="documentos-grid" *ngIf="dadosSaude.laudos.length > 0; else semLaudos">
-          <a *ngFor="let laudo of dadosSaude.laudos" 
-             [href]="laudo.urlArquivo" 
-             target="_blank" 
-             rel="noopener noreferrer" 
-             class="btn-download">
-            <span class="icon">📥</span> Visualizar Laudo: {{ laudo.diagnostico }}
-          </a>
-        </div>
-        <ng-template #semLaudos>
-          <p class="text-muted">Nenhum laudo anexado ao perfil.</p>
+          <p class="text-gray-400 italic text-sm m-0">Nenhum medicamento recorrente registrado.</p>
         </ng-template>
       </section>
 
     </div>
 
-    <div *ngIf="!isLoading && !dadosSaude" class="error-state text-red-500">
-      <p>❌ Não foi possível carregar os dados de saúde. Tente novamente.</p>
+    <div *ngIf="!isLoading && !dadosSaude" class="text-red-500 p-4 bg-red-50/50 rounded-lg border border-red-100 text-center text-sm font-medium">
+      <p class="m-0">Não foi possível carregar os dados de saúde. Tente novamente.</p>
     </div>
 
   </div>
+
+  <div *ngIf="isPreviewOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden border border-gray-100">
+    
+    <div class="flex items-center justify-between p-4 border-b border-gray-100 bg-slate-50">
+      <h3 class="text-sm font-bold font-['Sora'] text-slate-700 m-0">Visualizador de Documentos Oficial</h3>
+      <button (click)="fecharPreview()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-200/60 transition-colors cursor-pointer">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="flex-1 bg-slate-100 p-3">
+      <iframe 
+        *ngIf="safePreviewUrl" 
+        [src]="safePreviewUrl" 
+        class="w-full h-full rounded-lg border-0 shadow-inner bg-white" 
+        allow="autoplay">
+      </iframe>
+    </div>
+
+  </div>
+</div>
 </div>

@@ -122,3 +122,15 @@ hr {
   border-radius: 4px;
   margin-left: 8px;
 }
+
+/* A maioria do layout agora é controlada pelas classes utilitárias do Tailwind no HTML. */
+/* Mantenha este arquivo limpo, adicionando apenas regras globais se necessário para o componente. */
+
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Garante que o texto de observação não transborde */
+p {
+  word-break: break-word;
+}
