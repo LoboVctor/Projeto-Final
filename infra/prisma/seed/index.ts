@@ -7,7 +7,11 @@ import {
   Fcom,
   Turno,
   Etapa,
-  TipoTurma
+  TipoTurma,
+  TipoEspecificidade,      
+  CategoriaEspecificidade,  
+  UnidadeM,                 
+  TipoDocumento             
 } from '../../generated/prisma/index.js';
 import * as bcrypt from 'bcrypt';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -318,6 +322,65 @@ async function main() {
       create: est,
     });
   }
+
+  // ==========================================
+  // POPULANDO DADOS DE SAÚDE
+  // ==========================================
+  console.log('Populando dados de saúde para testes...');
+
+  // 1. Criar uma Especificidade (Ex: Restrição Alimentar)
+  const alergiaAmendoim = await prisma.especificidade.create({
+    data: {
+      tipo: TipoEspecificidade.ALIMENTAR,
+      descricao: 'Alergia severa a amendoim',
+      categoria: CategoriaEspecificidade.RESTRICAO,
+    },
+  });
+
+  // 2. Criar um Medicamento
+  const risperidona = await prisma.medicamento.create({
+    data: {
+      nome: 'Risperidona',
+    },
+  });
+
+  // ID fixo do Lucas que você definiu acima
+  const lucasId = '33333333-3333-3333-3333-333333333333';
+
+  // 3. Vincular Especificidade ao Lucas
+  await prisma.estudanteEspecificidade.create({
+    data: {
+      estudanteId: lucasId,
+      especificidadeId: alergiaAmendoim.id,
+      obsReacao: 'Em caso de contato, apresenta manchas vermelhas e falta de ar. Ligar para emergência imediatamente.',
+    },
+  });
+
+  // 4. Vincular Medicamento ao Lucas
+  await prisma.estudanteMedicamento.create({
+    data: {
+      estudanteId: lucasId,
+      medicamentoId: risperidona.id,
+      dosagem: 1.5,
+      unidadeMedida: UnidadeM.ML,
+      intervaloAdministracao: 12,
+      horarioAdministrado: new Date('2026-01-01T13:00:00.000Z'), // Exemplo de horário
+      administradoEscola: true,
+    },
+  });
+
+  // 5. Adicionar um Documento de Diagnóstico (Laudo) ao diagnóstico de TEA do Lucas
+  await prisma.documentoDiagnostico.create({
+    data: {
+      tipo: TipoDocumento.LAUDO_MEDICO,
+      arquivo: 'https://exemplo.com/laudos/lucas-tea.pdf', // Simulando a URL do arquivo
+      dataEmissao: new Date('2025-02-10'),
+      estudanteId: lucasId,
+      diagnosticoId: tea.id, // Variável 'tea' já criada no seu script
+    },
+  });
+
+  console.log('Dados de saúde de teste populados com sucesso.');
 
   console.log('Estudantes criados e vinculados às turmas.');
 

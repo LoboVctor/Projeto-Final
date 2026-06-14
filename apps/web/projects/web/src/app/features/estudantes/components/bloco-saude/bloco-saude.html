@@ -1,0 +1,73 @@
+<div class="bloco-saude-card">
+  
+  <button class="bloco-header" (click)="toggleDropdown()" [attr.aria-expanded]="isDropdownOpen">
+    <div class="header-title">
+      <span class="icon">🏥</span>
+      <h3>Bloco 2: Saúde e Especificidades</h3>
+    </div>
+    <span class="seta" [class.aberta]="isDropdownOpen">▼</span>
+  </button>
+
+  <div class="bloco-content" *ngIf="isDropdownOpen">
+    
+    <div *ngIf="isLoading" class="loading-state">
+      <p>⏳ A buscar informações médicas no sistema...</p>
+    </div>
+
+    <div *ngIf="!isLoading && dadosSaude">
+      
+      <section class="saude-section">
+        <h4>⚠️ Alertas Médicos</h4>
+        <div class="alertas-grid" *ngIf="dadosSaude.restricoes.length > 0; else semRestricoes">
+          <div class="alerta-card danger" *ngFor="let restri of dadosSaude.restricoes">
+            <strong>{{ restri.tipo }} - {{ restri.descricao }}</strong>
+            <p>{{ restri.observacao }}</p>
+          </div>
+        </div>
+        <ng-template #semRestricoes>
+          <p class="text-muted">Nenhuma restrição cadastrada para este estudante.</p>
+        </ng-template>
+      </section>
+
+      <hr />
+
+      <section class="saude-section">
+        <h4>💊 Medicamentos (Administrados na Escola)</h4>
+        <ul class="medicamentos-list" *ngIf="dadosSaude.medicamentos.length > 0; else semMedicamentos">
+          <li *ngFor="let med of dadosSaude.medicamentos">
+            <span class="med-nome">{{ med.nome }}</span> 
+            <span class="med-dose">({{ med.dosagem }})</span>
+            <span class="badge-escola" *ngIf="med.administradoEscola">Administrar na Escola</span>
+          </li>
+        </ul>
+        <ng-template #semMedicamentos>
+          <p class="text-muted">Nenhum medicamento recorrente registado.</p>
+        </ng-template>
+      </section>
+
+      <hr />
+
+      <section class="saude-section">
+        <h4>📄 Laudos e Diagnósticos</h4>
+        <div class="documentos-grid" *ngIf="dadosSaude.laudos.length > 0; else semLaudos">
+          <a *ngFor="let laudo of dadosSaude.laudos" 
+             [href]="laudo.urlArquivo" 
+             target="_blank" 
+             rel="noopener noreferrer" 
+             class="btn-download">
+            <span class="icon">📥</span> Visualizar Laudo: {{ laudo.diagnostico }}
+          </a>
+        </div>
+        <ng-template #semLaudos>
+          <p class="text-muted">Nenhum laudo anexado ao perfil.</p>
+        </ng-template>
+      </section>
+
+    </div>
+
+    <div *ngIf="!isLoading && !dadosSaude" class="error-state text-red-500">
+      <p>❌ Não foi possível carregar os dados de saúde. Tente novamente.</p>
+    </div>
+
+  </div>
+</div>
