@@ -1,0 +1,76 @@
+import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { EstudantesService } from '../../../../../shared/services/estudantes.service';
+
+@Component({
+  selector: 'app-modal-especificidades',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './restricoes.html'
+})
+export class ModalEspecificidadesComponent implements OnInit {
+  @Input() estudanteId!: string;
+  @Input() especificidades: any[] = [];
+  
+  @Output() fechar = new EventEmitter<void>();
+  @Output() salvo = new EventEmitter<void>();
+
+  especificidadeForm: FormGroup;
+  editingEspecificidadeId: number | null = null; // Agora é um number!
+
+  private fb = inject(FormBuilder);
+  private estudantesService = inject(EstudantesService);
+
+  constructor() {
+    this.especificidadeForm = this.fb.group({
+      tipo: ['RESTRICAO', Validators.required],
+      categoria: ['ALIMENTAR', Validators.required],
+      descricao: ['', [Validators.required, Validators.minLength(3)]],
+      observacao: ['', Validators.required]
+    });
+  }
+
+  ngOnInit(): void {}
+
+  selecionarParaEdicao(especificidade: any): void {
+    // Puxa o ID correto que veio do backend
+    this.editingEspecificidadeId = especificidade.especificidadeId;
+    this.especificidadeForm.patchValue(especificidade);
+  }
+
+  cancelarEdicao(): void {
+    this.editingEspecificidadeId = null;
+    this.especificidadeForm.reset({ tipo: 'RESTRICAO', categoria: 'ALIMENTAR' });
+  }
+
+  salvar(): void {
+    if (this.especificidadeForm.invalid) return;
+
+    const dados = this.especificidadeForm.value;
+    const acao = this.editingEspecificidadeId 
+      ? this.estudantesService.updateEspecificidade(this.estudanteId, this.editingEspecificidadeId, dados)
+      : this.estudantesService.saveEspecificidade(this.estudanteId, dados);
+
+    acao.subscribe({
+      next: () => {
+        this.salvo.emit();
+        this.cancelarEdicao();
+      },
+      error: (err) => console.error('Erro ao salvar:', err)
+    });
+  }
+
+  excluir(especificidadeId: number): void {
+    if (confirm('Tem certeza que deseja remover esta especificidade?')) {
+      this.estudantesService.deleteEspecificidade(this.estudanteId, especificidadeId).subscribe({
+        next: () => this.salvo.emit(),
+        error: (err) => console.error('Erro ao excluir:', err)
+      });
+    }
+  }
+
+  emitirFechar(): void {
+    this.fechar.emit();
+  }
+}

@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 export interface EstudanteSaude {
   estudanteId: string;
   nomeCompleto: string;
-  restricoes: Array<{
+  especificidades: Array<{
     descricao: string;
     categoria: string;
     tipo: string;
@@ -30,23 +30,24 @@ export interface EstudanteSaude {
   providedIn: 'root'
 })
 export class EstudantesService {
-  private apiUrl = 'http://localhost:3000/api/v1/estudantes'; 
+  private apiUrl = 'http://localhost:3000/api/v1'; 
 
   constructor(private http: HttpClient) {}
 
 getSaude(estudanteId: string): Observable<EstudanteSaude> {
-    return this.http.get<EstudanteSaude>(`${this.apiUrl}/${estudanteId}/saude`);
-}
+    return this.http.get<EstudanteSaude>(`${this.apiUrl}/estudantes/${estudanteId}/saude`);
+  }
 
-saveRestricao(estudanteId: string, dados: any) {
-  return this.http.post(`${this.apiUrl}/estudantes/${estudanteId}/restricoes`, dados);
-}
+  // --- CRUD DE ESPECIFICIDADES ---
+  saveEspecificidade(estudanteId: string, dados: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/estudantes/${estudanteId}/especificidades`, dados);
+  }
 
-updateRestricao(restricaoId: string, dados: any) {
-  return this.http.patch(`${this.apiUrl}/restricoes/${restricaoId}`, dados);
-}
+  updateEspecificidade(estudanteId: string, especificidadeId: number, dados: any): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/estudantes/${estudanteId}/especificidades/${especificidadeId}`, dados);
+  }
 
-deleteRestricao(restricaoId: string) {
-  return this.http.delete(`${this.apiUrl}/restricoes/${restricaoId}`);
-}
+  deleteEspecificidade(estudanteId: string, especificidadeId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/estudantes/${estudanteId}/especificidades/${especificidadeId}`);
+  }
 }

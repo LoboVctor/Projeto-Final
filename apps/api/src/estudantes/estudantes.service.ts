@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; 
+import { PrismaService } from '../prisma/prisma.service';
+import { EspecificidadeDto } from './dto/create.especifidades.dto'; // Importe o seu DTO
 
 @Injectable()
 export class EstudantesService {
@@ -11,9 +12,10 @@ export class EstudantesService {
       select: {
         id: true,
         nomeCompleto: true,
-        // 1. Coletando Restrições (Especificidades)
+        // 1. Coletando Especificidades (com o ID necessário para o CRUD)
         especificidades: {
           select: {
+            especificidadeId: true, // <-- Adicionado para o Frontend
             obsReacao: true,
             especificidade: {
               select: {
@@ -36,7 +38,7 @@ export class EstudantesService {
               select: {
                 id: true,
                 tipo: true,
-                arquivo: true, // Aqui presumimos que guarda a URL ou caminho do S3/Storage
+                arquivo: true,
                 dataEmissao: true,
               },
             },
@@ -63,7 +65,6 @@ export class EstudantesService {
       throw new NotFoundException('Estudante não encontrado.');
     }
 
-    // Opcional: Mapear o retorno para facilitar a vida do Frontend (DTO de saída)
     return this.mapearRetornoSaude(dadosSaude);
   }
 
@@ -73,7 +74,9 @@ export class EstudantesService {
       estudanteId: dados.id,
       nomeCompleto: dados.nomeCompleto,
       
-      restricoes: dados.especificidades.map((e: any) => ({
+      // Ajustado de "restricoes" para "especificidades" para manter a linguagem do banco
+      especificidades: dados.especificidades.map((e: any) => ({
+        especificidadeId: e.especificidadeId, // <-- Adicionado
         descricao: e.especificidade.descricao,
         categoria: e.especificidade.categoria,
         tipo: e.especificidade.tipo,
@@ -98,5 +101,97 @@ export class EstudantesService {
         administradoEscola: m.administradoEscola,
       })),
     };
+  }
+
+  // ==========================================
+  // CRUD DE ESPECIFICIDADES
+  // ==========================================
+
+  async createEspecificidade(estudanteId: string, dto: EspecificidadeDto) {
+    let especificidade = await this.prisma.client.especificidade.findFirst({
+      where: { 
+        tipo: dto.tipo, 
+        categoria: dto.categoria,
+        descricao: { equals: dto.descricao, mode: 'insensitive' } 
+      }
+    });
+
+    if (!especificidade) {
+      especificidade = await this.prisma.client.especificidade.create({
+        data: { tipo: dto.tipo, categoria: dto.categoria, descricao: dto.descricao }
+      });
+    }
+
+    const vinculoExistente = await this.prisma.client.estudanteEspecificidade.findUnique({
+      where: { estudanteId_especificidadeId: { estudanteId, especificidadeId: especificidade.id } }
+    });
+
+    if (vinculoExistente) {
+       return this.prisma.client.estudanteEspecificidade.update({
+         where: { estudanteId_especificidadeId: { estudanteId, especificidadeId: especificidade.id } },
+         data: { obsReacao: dto.observacao }
+       });
+    }
+
+    return this.prisma.client.estudanteEspecificidade.create({
+      data: {
+        estudanteId,
+        especificidadeId: especificidade.id,
+        obsReacao: dto.observacao,
+      }
+    });
+  }
+
+  async updateEspecificidade(estudanteId: string, especificidadeIdAntiga: number, dto: EspecificidadeDto) {
+    let novaEspecificidade = await this.prisma.client.especificidade.findFirst({
+      where: { 
+        tipo: dto.tipo, 
+        categoria: dto.categoria,
+        descricao: { equals: dto.descricao, mode: 'insensitive' } 
+      }
+    });
+
+    if (!novaEspecificidade) {
+      novaEspecificidade = await this.prisma.client.especificidade.create({
+        data: { tipo: dto.tipo, categoria: dto.categoria, descricao: dto.descricao }
+      });
+    }
+
+    if (novaEspecificidade.id !== especificidadeIdAntiga) {
+       const jaTemNova = await this.prisma.client.estudanteEspecificidade.findUnique({
+          where: { estudanteId_especificidadeId: { estudanteId, especificidadeId: novaEspecificidade.id } }
+       });
+
+       if (jaTemNova) {
+          await this.prisma.client.estudanteEspecificidade.delete({
+             where: { estudanteId_especificidadeId: { estudanteId, especificidadeId: especificidadeIdAntiga } }
+          });
+          return this.prisma.client.estudanteEspecificidade.update({
+             where: { estudanteId_especificidadeId: { estudanteId, especificidadeId: novaEspecificidade.id } },
+             data: { obsReacao: dto.observacao }
+          });
+       } else {
+          return this.prisma.client.estudanteEspecificidade.update({
+            where: { estudanteId_especificidadeId: { estudanteId, especificidadeId: especificidadeIdAntiga } },
+            data: {
+              especificidadeId: novaEspecificidade.id,
+              obsReacao: dto.observacao,
+            }
+          });
+       }
+    } else {
+       return this.prisma.client.estudanteEspecificidade.update({
+          where: { estudanteId_especificidadeId: { estudanteId, especificidadeId: especificidadeIdAntiga } },
+          data: { obsReacao: dto.observacao }
+       });
+    }
+  }
+
+  async deleteEspecificidade(estudanteId: string, especificidadeId: number) {
+    return this.prisma.client.estudanteEspecificidade.delete({
+      where: {
+        estudanteId_especificidadeId: { estudanteId, especificidadeId }
+      }
+    });
   }
 }
