@@ -125,7 +125,9 @@
 .turmas-main {
   flex: 1;
   min-height: 0;
+  max-height: 100vh;
   padding: 24px 28px;
+  padding-bottom: 2rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

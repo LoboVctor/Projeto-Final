@@ -15,6 +15,7 @@ export interface EstudanteResumo {
   foto: string;
   matricula: number;
   diagnosticos: { diagnostico: DiagnosticoResumo }[];
+  dataNascimento?: string;
 }
 
 export interface TurmaResumo {
