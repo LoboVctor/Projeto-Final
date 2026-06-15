@@ -8,7 +8,7 @@ import {
   Turno,
   Etapa,
   TipoTurma
-} from '../../generated/prisma/index.js';
+} from '../../generated/prisma';
 import * as bcrypt from 'bcrypt';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
