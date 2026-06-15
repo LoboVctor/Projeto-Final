@@ -100,11 +100,24 @@
     </div>
 
     <!-- VIEW: CARDS -->
-    <div *ngIf="!loading() && !error() && viewMode() === 'grid'" class="students-grid">
-      <app-student-card *ngFor="let estudante of estudantes()" [estudante]="estudante" />
-      <div *ngIf="estudantes().length === 0 && turmaSelecionada()" class="state-empty">
+    <div *ngIf="!loading() && !error() && viewMode() === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-4">
+      
+      <!-- O Novo Card sendo repetido para cada aluno da turma -->
+      <app-card-aluno 
+        *ngFor="let estudante of estudantes()" 
+        [nome]="estudante.nomeCompleto"
+        [matricula]="estudante.matricula"
+        [idade]="calcularIdade(estudante.dataNascimento)"
+        [foto]="estudante.foto" 
+        [diagnostico]="estudante.diagnosticos.length > 0 ? estudante.diagnosticos[0].diagnostico.tipo : 'Sem Laudo'"
+        (abrirPerfil)="abrirDetalhesAluno(estudante)">
+      </app-card-aluno>
+
+      <!-- Mensagem de turma vazia -->
+      <div *ngIf="estudantes().length === 0 && turmaSelecionada()" class="state-empty col-span-full text-center py-8 text-gray-500">
         Nenhum estudante nesta turma.
       </div>
+
     </div>
 
     <!-- VIEW: LISTA -->
@@ -146,5 +159,12 @@
       Selecione uma turma para visualizar os alunos.
     </div>
 
+    <!-- Modal do Aluno (Renderizado apenas quando um aluno for clicado) -->
+@if (alunoEmDestaque()) {
+  <app-aluno-modal 
+    [aluno]="alunoEmDestaque()" 
+    (fecharModal)="alunoEmDestaque.set(null)">
+  </app-aluno-modal>
+}
   </main>
 </div>
