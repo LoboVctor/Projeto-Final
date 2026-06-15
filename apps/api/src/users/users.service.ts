@@ -18,7 +18,7 @@ export class UsersService {
       data: {
         email: data.email,
         senha: hashedPassword,
-        role: 'PROFESSOR',
+        role: 'PROFESSOR_REGENTE',
         educadorId: data.educadorId || null,
         responsavelId: data.responsavelId || null,
       },
