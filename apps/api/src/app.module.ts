@@ -13,6 +13,7 @@ import { UsersModule } from './users/users.module';
 import { TurmasModule } from './turmas/turmas.module';
 import { RegistrosDiariosModule } from './registros-diarios/registros-diarios.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { EstudantesModule } from './estudantes/estudantes.module';
 import * as Joi from 'joi'; // joi é uma biblioteca de validação de esquemas, usada aqui para validar as variáveis de ambiente do .env
 
 @Module({
@@ -37,6 +38,7 @@ import * as Joi from 'joi'; // joi é uma biblioteca de validação de esquemas,
     AuthModule,
     TurmasModule,
     RegistrosDiariosModule,
+    EstudantesModule,
   ],
   controllers: [AppController],
 
