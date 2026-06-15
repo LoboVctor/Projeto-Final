@@ -34,6 +34,7 @@ export class EstudantesService {
 
   constructor(private http: HttpClient) {}
 
+  // --- CRUD DE SAÚDE   ---
 getSaude(estudanteId: string): Observable<EstudanteSaude> {
     return this.http.get<EstudanteSaude>(`${this.apiUrl}/estudantes/${estudanteId}/saude`);
   }

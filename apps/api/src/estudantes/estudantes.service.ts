@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { EspecificidadeDto } from './dto/create.especifidades.dto'; // Importe o seu DTO
+import { EspecificidadeDto } from './dto/create.especifidades.dto'; 
 
 @Injectable()
 export class EstudantesService {
@@ -12,10 +12,9 @@ export class EstudantesService {
       select: {
         id: true,
         nomeCompleto: true,
-        // 1. Coletando Especificidades (com o ID necessário para o CRUD)
         especificidades: {
           select: {
-            especificidadeId: true, // <-- Adicionado para o Frontend
+            especificidadeId: true, 
             obsReacao: true,
             especificidade: {
               select: {
@@ -26,7 +25,6 @@ export class EstudantesService {
             },
           },
         },
-        // 2. Coletando Laudos/Documentos via Diagnósticos
         diagnosticos: {
           select: {
             diagnostico: {
@@ -44,7 +42,6 @@ export class EstudantesService {
             },
           },
         },
-        // 3. Coletando Receitas e Medicamentos
         medicamentos: {
           select: {
             dosagem: true,
@@ -68,13 +65,11 @@ export class EstudantesService {
     return this.mapearRetornoSaude(dadosSaude);
   }
 
-  // Função auxiliar para deixar o JSON de resposta mais limpo para o Angular
   private mapearRetornoSaude(dados: any) {
     return {
       estudanteId: dados.id,
       nomeCompleto: dados.nomeCompleto,
       
-      // Ajustado de "restricoes" para "especificidades" para manter a linguagem do banco
       especificidades: dados.especificidades.map((e: any) => ({
         especificidadeId: e.especificidadeId, // <-- Adicionado
         descricao: e.especificidade.descricao,
@@ -83,7 +78,6 @@ export class EstudantesService {
         observacao: e.obsReacao,
       })),
 
-      // Achata os documentos de todos os diagnósticos num único array
       laudos: dados.diagnosticos.flatMap((d: any) => 
         d.documentos.map((doc: any) => ({
           id: doc.id,

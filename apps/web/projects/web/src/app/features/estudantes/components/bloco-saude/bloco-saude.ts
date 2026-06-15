@@ -2,7 +2,6 @@ import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { EstudantesService, EstudanteSaude } from '../../../../shared/services/estudantes.service';
-// Mantendo o caminho do arquivo exatamente como você solicitou:
 import { ModalEspecificidadesComponent } from './modais/restricoes'; 
 
 @Component({
@@ -42,9 +41,6 @@ export class BlocoSaudeComponent implements OnInit {
       next: (dados) => {
         this.dadosSaude = dados;
         
-        // 👇 A MÁGICA ACONTECE AQUI:
-        // 1. Agora lemos de 'dados.especificidades' (conforme o backend)
-        // 2. Filtramos pela 'categoria' (Alimentar vs Resto)
         this.especificidadesAlimentares = dados.especificidades.filter(e => e.categoria === 'ALIMENTAR');
         this.outrasEspecificidades = dados.especificidades.filter(e => e.categoria !== 'ALIMENTAR');
         
@@ -61,7 +57,6 @@ export class BlocoSaudeComponent implements OnInit {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
-  // --- CONTROLES DO MODAL FILHO ---
   abrirModalEspecificidades(): void {
     this.isModalEspecificidadesOpen = true;
   }
@@ -93,7 +88,6 @@ export class BlocoSaudeComponent implements OnInit {
     this.isPreviewOpen = false;
   }
 
-  // Placeholders para as próximas sprints
   adicionarMedicamento(): void {}
   adicionarLaudo(): void {}
 }

@@ -17,7 +17,7 @@ export class ModalEspecificidadesComponent implements OnInit {
   @Output() salvo = new EventEmitter<void>();
 
   especificidadeForm: FormGroup;
-  editingEspecificidadeId: number | null = null; // Agora é um number!
+  editingEspecificidadeId: number | null = null; 
 
   private fb = inject(FormBuilder);
   private estudantesService = inject(EstudantesService);
@@ -34,7 +34,6 @@ export class ModalEspecificidadesComponent implements OnInit {
   ngOnInit(): void {}
 
   selecionarParaEdicao(especificidade: any): void {
-    // Puxa o ID correto que veio do backend
     this.editingEspecificidadeId = especificidade.especificidadeId;
     this.especificidadeForm.patchValue(especificidade);
   }

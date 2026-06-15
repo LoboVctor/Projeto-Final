@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { EspecificidadeDto } from './dto/create.especifidades.dto';
 
 @Controller('estudantes')
-@UseGuards(JwtAuthGuard) // Protege TODAS as rotas para apenas usuários logados
+@UseGuards(JwtAuthGuard) 
 export class EstudantesController {
   constructor(private readonly estudantesService: EstudantesService) {}
 
