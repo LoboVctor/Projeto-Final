@@ -1,11 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../../core/config/api.config';
+import { EstudantePedagogico } from '../models/estudante-pedagogico.model';
 
 export interface EstudanteSaude {
   estudanteId: string;
   nomeCompleto: string;
   especificidades: Array<{
+    especificidadeId: number;
     descricao: string;
     categoria: string;
     tipo: string;
@@ -30,25 +33,30 @@ export interface EstudanteSaude {
   providedIn: 'root'
 })
 export class EstudantesService {
-  private apiUrl = 'http://localhost:3000/api/v1'; 
+  private readonly baseUrl = inject(API_BASE_URL);
 
   constructor(private http: HttpClient) {}
 
-  // --- CRUD DE SAÚDE   ---
-getSaude(estudanteId: string): Observable<EstudanteSaude> {
-    return this.http.get<EstudanteSaude>(`${this.apiUrl}/estudantes/${estudanteId}/saude`);
+  // --- SAÚDE ---
+  getSaude(estudanteId: string): Observable<EstudanteSaude> {
+    return this.http.get<EstudanteSaude>(`${this.baseUrl}/estudantes/${estudanteId}/saude`);
+  }
+
+  // --- PEDAGÓGICO ---
+  getPedagogico(estudanteId: string): Observable<EstudantePedagogico> {
+    return this.http.get<EstudantePedagogico>(`${this.baseUrl}/estudantes/${estudanteId}/pedagogico`);
   }
 
   // --- CRUD DE ESPECIFICIDADES ---
   saveEspecificidade(estudanteId: string, dados: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/estudantes/${estudanteId}/especificidades`, dados);
+    return this.http.post(`${this.baseUrl}/estudantes/${estudanteId}/especificidades`, dados);
   }
 
   updateEspecificidade(estudanteId: string, especificidadeId: number, dados: any): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/estudantes/${estudanteId}/especificidades/${especificidadeId}`, dados);
+    return this.http.patch(`${this.baseUrl}/estudantes/${estudanteId}/especificidades/${especificidadeId}`, dados);
   }
 
   deleteEspecificidade(estudanteId: string, especificidadeId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/estudantes/${estudanteId}/especificidades/${especificidadeId}`);
+    return this.http.delete(`${this.baseUrl}/estudantes/${estudanteId}/especificidades/${especificidadeId}`);
   }
-}
+}

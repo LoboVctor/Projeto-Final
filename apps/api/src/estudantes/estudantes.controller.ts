@@ -17,6 +17,14 @@ export class EstudantesController {
   }
 
   // ==========================================
+  // DADOS PEDAGÓGICOS (Relatórios + Metas + PIBI)
+  // ==========================================
+  @Get(':id/pedagogico')
+  async buscarDadosPedagogicos(@Param('id') id: string) {
+    return this.estudantesService.getPedagogico(id);
+  }
+
+  // ==========================================
   // ESPECIFICIDADES / RESTRIÇÕES
   // ==========================================
   @Post(':estudanteId/especificidades')
