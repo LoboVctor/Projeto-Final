@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../core/config/api.config';
 import { EstudantePedagogico } from '../models/estudante-pedagogico.model';
+import { EstudanteVisaoGeral } from '../models/estudante-visao-geral.model';
 
 export interface EstudanteSaude {
   estudanteId: string;
@@ -40,6 +41,11 @@ export class EstudantesService {
   // --- SAÚDE ---
   getSaude(estudanteId: string): Observable<EstudanteSaude> {
     return this.http.get<EstudanteSaude>(`${this.baseUrl}/estudantes/${estudanteId}/saude`);
+  }
+
+  // --- VISÃO GERAL ---
+  getVisaoGeral(estudanteId: string): Observable<EstudanteVisaoGeral> {
+    return this.http.get<EstudanteVisaoGeral>(`${this.baseUrl}/estudantes/${estudanteId}/visao-geral`);
   }
 
   // --- PEDAGÓGICO ---
