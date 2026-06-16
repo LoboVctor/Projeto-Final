@@ -98,6 +98,88 @@ export class EstudantesService {
   }
 
   // ==========================================
+  // DADOS PEDAGÓGICOS (Relatórios + Metas + PIBI)
+  // ==========================================
+
+  async getPedagogico(estudanteId: string) {
+    const estudante = await this.prisma.client.estudante.findUnique({
+      where: { id: estudanteId },
+      select: {
+        id: true,
+        nomeCompleto: true,
+        relatoriosSemestrais: {
+          orderBy: [{ ano: 'desc' }, { semestre: 'desc' }],
+          select: {
+            id: true,
+            semestre: true,
+            ano: true,
+            parecerGlobalDesenvolvimento: true,
+            status: true,
+            dataFechamento: true,
+            metas: {
+              orderBy: { eixoDesenvolvimento: 'asc' },
+              select: {
+                id: true,
+                descricao: true,
+                eixoDesenvolvimento: true,
+                scoreFinal: true,
+                parecer: true,
+                pibis: {
+                  orderBy: { bimestre: 'asc' },
+                  select: {
+                    id: true,
+                    bimestre: true,
+                    status: true,
+                    scoreAtingibilidade: true,
+                    parecerEvolutivo: true,
+                    createdAt: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!estudante) {
+      throw new NotFoundException('Estudante não encontrado.');
+    }
+
+    return this.mapearRetornoPedagogico(estudante);
+  }
+
+  private mapearRetornoPedagogico(dados: any) {
+    return {
+      estudanteId: dados.id,
+      nomeCompleto: dados.nomeCompleto,
+      relatorios: dados.relatoriosSemestrais.map((rel: any) => ({
+        id: rel.id,
+        semestre: rel.semestre,
+        ano: rel.ano,
+        parecerGlobalDesenvolvimento: rel.parecerGlobalDesenvolvimento,
+        status: rel.status,
+        dataFechamento: rel.dataFechamento,
+        metas: rel.metas.map((meta: any) => ({
+          id: meta.id,
+          descricao: meta.descricao,
+          eixoDesenvolvimento: meta.eixoDesenvolvimento,
+          scoreFinal: meta.scoreFinal,
+          parecer: meta.parecer,
+          pibis: meta.pibis.map((pibi: any) => ({
+            id: pibi.id,
+            bimestre: pibi.bimestre,
+            status: pibi.status,
+            scoreAtingibilidade: pibi.scoreAtingibilidade,
+            parecerEvolutivo: pibi.parecerEvolutivo,
+            criadoEm: pibi.createdAt,
+          })),
+        })),
+      })),
+    };
+  }
+
+  // ==========================================
   // CRUD DE ESPECIFICIDADES
   // ==========================================
 
