@@ -5,6 +5,83 @@ import { EspecificidadeDto } from './dto/create.especifidades.dto';
 @Injectable()
 export class EstudantesService {
   constructor(private prisma: PrismaService) {}
+  
+  async getVisaoGeral(estudanteId: string) {
+    const estudante = await this.prisma.client.estudante.findUnique({
+      where: { id: estudanteId },
+      include: {
+        turmas: {
+          include: {
+            educador: true,
+          },
+        },
+        responsaveis: {
+          where: { responsavelPrincipal: true },
+          include: {
+            responsavel: true,
+          },
+        },
+        especificidades: {
+          include: {
+            especificidade: true,
+          },
+        },
+      },
+    });
+
+    if (!estudante) {
+      throw new NotFoundException('Estudante não encontrado.');
+    }
+
+    return this.mapearRetornoVisaoGeral(estudante);
+  }
+
+  private mapearRetornoVisaoGeral(dados: any) {
+    const turma = dados.turmas?.[0];
+    const responsavelPrincipal = dados.responsaveis?.[0]?.responsavel;
+
+    return {
+      id: dados.id,
+      nomeCompleto: dados.nomeCompleto,
+      dataNascimento: dados.dataNascimento,
+      cpf: dados.cpf,
+      sexo: dados.sexo,
+      formaComunicacao: dados.formaComunicacao,
+      foto: dados.foto,
+
+      turma: turma
+        ? {
+            nome: turma.nome,
+            turno: turma.turno,
+            anoLetivo: turma.anoLetivo,
+            etapa: turma.etapa,
+          }
+        : null,
+
+      professorRegente: turma?.educador
+        ? {
+            nomeCompleto: turma.educador.nome,
+          }
+        : null,
+
+      responsavel: responsavelPrincipal
+        ? {
+            nomeCompleto: responsavelPrincipal.nomeCompleto,
+            telefone: responsavelPrincipal.telefone,
+            email: responsavelPrincipal.email,
+            endereco: responsavelPrincipal.endereco,
+          }
+        : null,
+
+      especificidades: dados.especificidades?.map((e: any) => ({
+        especificidadeId: e.especificidadeId,
+        categoria: e.especificidade.categoria,
+        tipo: e.especificidade.tipo,
+        descricao: e.especificidade.descricao,
+        observacao: e.obsReacao,
+      })) || [],
+    };
+  }
 
   async getSaude(estudanteId: string) {
     const dadosSaude = await this.prisma.client.estudante.findUnique({
@@ -264,10 +341,25 @@ export class EstudantesService {
   }
 
   async deleteEspecificidade(estudanteId: string, especificidadeId: number) {
-    return this.prisma.client.estudanteEspecificidade.delete({
+    // Primeiro removemos o vínculo do estudante
+    const deletedVinculo = await this.prisma.client.estudanteEspecificidade.delete({
       where: {
         estudanteId_especificidadeId: { estudanteId, especificidadeId }
       }
     });
+
+    // Verificamos se ainda existe algum estudante vinculado a esta especificidade
+    const count = await this.prisma.client.estudanteEspecificidade.count({
+      where: { especificidadeId }
+    });
+
+    // Se for órfã (0 vínculos), removemos o registro da tabela Especificidade
+    if (count === 0) {
+      await this.prisma.client.especificidade.delete({
+        where: { id: especificidadeId }
+      });
+    }
+
+    return deletedVinculo;
   }
 }

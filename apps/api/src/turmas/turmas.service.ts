@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 export class TurmasService {
   private readonly logger = new Logger(TurmasService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /**
    * Lista as turmas cujo educador possui pelo menos uma Aula associada.
@@ -15,11 +15,11 @@ export class TurmasService {
     return this.prisma.client.turma.findMany({
       where: educadorId
         ? {
-            OR: [
-              { educadorId: educadorId },
-              { aulas: { some: { educadorId } } }
-            ]
-          }
+          OR: [
+            { educadorId: educadorId },
+            { aulas: { some: { educadorId } } }
+          ]
+        }
         : undefined,
       select: {
         id: true,
@@ -102,10 +102,10 @@ export class TurmasService {
       }
 
       const contagemDiagnosticos: Record<string, number> = {};
-      
+
       turma.estudantes.forEach(estudante => {
         estudante.diagnosticos.forEach(ed => {
-          const tipo = ed.diagnostico.tipo; 
+          const tipo = ed.diagnostico.tipo;
           contagemDiagnosticos[tipo] = (contagemDiagnosticos[tipo] || 0) + 1;
         });
       });

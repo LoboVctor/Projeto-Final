@@ -162,6 +162,7 @@
     <!-- Modal do Aluno (Renderizado apenas quando um aluno for clicado) -->
 @if (alunoEmDestaque()) {
   <app-aluno-modal 
+    [isVisible]="true"
     [aluno]="alunoEmDestaque()" 
     (fecharModal)="alunoEmDestaque.set(null)">
   </app-aluno-modal>

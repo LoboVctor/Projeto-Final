@@ -1,12 +1,26 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { EstudantesService } from './estudantes.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { EspecificidadeDto } from './dto/create.especifidades.dto';
+import { VisaoGeralResponseDto } from './dto/visao-geral-response.dto';
 
+@ApiTags('Estudantes')
+@ApiBearerAuth()
 @Controller('estudantes')
 @UseGuards(JwtAuthGuard) 
 export class EstudantesController {
   constructor(private readonly estudantesService: EstudantesService) {}
+
+  // ==========================================
+  // VISÃO GERAL DO ESTUDANTE
+  // ==========================================
+  @Get(':id/visao-geral')
+  @ApiOperation({ summary: 'Retorna a visão geral do estudante (dados pessoais, turma, responsável e especificidades)' })
+  @ApiOkResponse({ type: VisaoGeralResponseDto })
+  async buscarVisaoGeral(@Param('id') id: string) {
+    return this.estudantesService.getVisaoGeral(id);
+  }
 
   // ==========================================
   // DADOS GERAIS DE SAÚDE
