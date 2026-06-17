@@ -1,12 +1,12 @@
 import { Routes } from '@angular/router';
 import { AppShellComponent } from './layout/app-shell/app-shell.component';
-import { authGuard } from './core/guards/auth-guard';
+import { authGuard } from './nucleo/guards/auth-guard';
 
 export const routes: Routes = [
   // ── Rotas públicas (sem Sidebar) ──────────────────────────────────────
   {
     path: 'login',
-    loadComponent: () => import('./features/auth/login/login').then(m => m.Login)
+    loadComponent: () => import('./funcionalidades/autenticacao/login/login').then(m => m.Login)
   },
 
   // ── Rotas internas (com AppShell + Sidebar) ───────────────────────────
@@ -18,31 +18,31 @@ export const routes: Routes = [
     children: [
       {
         path: 'home',
-        loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent)
+        loadComponent: () => import('./funcionalidades/home/home/home.component').then(m => m.HomeComponent)
       },
       {
         path: 'turmas',
-        loadComponent: () => import('./pages/turmas/turmas.component').then(m => m.TurmasComponent)
+        loadComponent: () => import('./funcionalidades/turma/turmas/turmas.component').then(m => m.TurmasComponent)
       },
       {
         path: 'alunos',
-        loadComponent: () => import('./pages/alunos/alunos.component').then(m => m.AlunosComponent)
+        loadComponent: () => import('./funcionalidades/estudante/alunos/alunos.component').then(m => m.AlunosComponent)
       },
       {
         path: 'calendario',
-        loadComponent: () => import('./pages/calendario/calendario.component').then(m => m.CalendarioComponent)
+        loadComponent: () => import('./funcionalidades/calendario/calendario/calendario.component').then(m => m.CalendarioComponent)
       },
       {
         path: 'cadastro-responsavel',
-        loadComponent: () => import('./pages/cadastro-responsavel/cadastro-responsavel.component').then(m => m.CadastroResponsavelComponent)
+        loadComponent: () => import('./funcionalidades/estudante/cadastro-responsavel/cadastro-responsavel.component').then(m => m.CadastroResponsavelComponent)
       },
       {
         path: 'cadastro-educador',
-        loadComponent: () => import('./pages/cadastro-educador/cadastro-educador.component').then(m => m.CadastroEducadorComponent)
+        loadComponent: () => import('./funcionalidades/educador/cadastro-educador/cadastro-educador.component').then(m => m.CadastroEducadorComponent)
       },
       {
         path: 'dashboard-responsavel',
-        loadComponent: () => import('./features/dashboard/dashboard-responsavel/dashboard-responsavel').then(m => m.DashboardResponsavel)
+        loadComponent: () => import('./funcionalidades/dashboard/dashboard-responsavel/dashboard-responsavel').then(m => m.DashboardResponsavel)
       }
     ]
   }

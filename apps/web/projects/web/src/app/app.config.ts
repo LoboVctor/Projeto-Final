@@ -2,10 +2,10 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { errorInterceptor } from './core/interceptors/error.interceptor';
-import { authInterceptor } from './core/interceptors/auth-interceptor';
+import { errorInterceptor } from './nucleo/interceptors/error.interceptor';
+import { authInterceptor } from './nucleo/interceptors/auth-interceptor';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { API_BASE_URL } from './core/config/api.config';
+import { API_BASE_URL } from './nucleo/config/api.config';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -18,5 +18,4 @@ export const appConfig: ApplicationConfig = {
       withFetch(),
       withInterceptors([authInterceptor, errorInterceptor])
     ),
-  ],
-};
+  ] };

@@ -1,0 +1,345 @@
+<div
+  class="flex-1 bg-gray-50/50 p-6 md:p-8 rounded-r-3xl overflow-y-auto max-h-[90vh] md:max-h-[85vh] relative w-full min-h-full"
+>
+  <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center space-x-3 text-blue-700">
+      <div class="bg-blue-100 p-2 rounded-full">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold font-sora">Saúde</h2>
+        <p class="text-sm text-elo-texto-secundario">Informações sobre a saúde do aluno</p>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-3">
+      <button
+        (click)="onRecolher()"
+        class="flex items-center space-x-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>Recolher</span>
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <div class="text-center py-10 text-blue-600 font-medium opacity-70">
+      <p>⏳ Buscando informações médicas...</p>
+    </div>
+  }
+
+  @if (!isLoading && !dadosSaude) {
+    <div class="bg-red-50 border border-red-100 rounded-xl p-6 text-center">
+      <p class="text-red-700 font-medium mb-3">
+        Não foi possível carregar os dados de saúde. Tente novamente.
+      </p>
+      <button
+        (click)="carregarDadosSaude()"
+        class="px-4 py-2 bg-white text-red-600 rounded-lg border border-red-200 font-semibold text-sm hover:bg-red-50 cursor-pointer"
+      >
+        Tentar Novamente
+      </button>
+    </div>
+  }
+
+  @if (!isLoading && dadosSaude) {
+    <div class="space-y-8">
+      <section>
+        <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+          <h4 class="text-base font-bold font-['Sora'] text-blue-800 m-0">Restrições e Alertas</h4>
+          <button
+            (click)="abrirModalEspecificidades()"
+            class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5 cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+              />
+            </svg>
+            Editar Restrições
+          </button>
+        </div>
+        @if (dadosSaude.especificidades && dadosSaude.especificidades.length > 0) {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div
+              class="bg-yellow-50/40 border border-yellow-200 rounded-xl p-4 flex flex-col h-full"
+            >
+              <h5
+                class="text-yellow-800 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-yellow-200 m-0"
+              >
+                Restrições Alimentares
+              </h5>
+              @if (especificidadesAlimentares && especificidadesAlimentares.length > 0) {
+                <div class="space-y-3 flex-1">
+                  @for (espec of especificidadesAlimentares; track espec) {
+                    <div class="bg-white border-l-4 border-yellow-500 p-3 rounded shadow-sm">
+                      <strong class="text-yellow-700 block mb-1 text-xs uppercase">{{
+                        espec.descricao
+                      }}</strong>
+                      <p class="text-yellow-900 text-sm m-0 leading-relaxed">
+                        {{ espec.observacao }}
+                      </p>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p
+                  class="text-yellow-600/70 italic text-sm m-0 flex-1 flex items-center justify-center"
+                >
+                  Nenhuma restrição alimentar cadastrada.
+                </p>
+              }
+            </div>
+            <div class="bg-red-50/40 border border-red-200 rounded-xl p-4 flex flex-col h-full">
+              <h5
+                class="text-red-800 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-red-200 m-0"
+              >
+                Alergias e Gatilhos
+              </h5>
+              @if (outrasEspecificidades && outrasEspecificidades.length > 0) {
+                <div class="space-y-3 flex-1">
+                  @for (espec of outrasEspecificidades; track espec) {
+                    <div class="bg-white border-l-4 border-red-500 p-3 rounded shadow-sm">
+                      <strong class="text-red-700 block mb-1 text-xs uppercase">{{
+                        espec.descricao
+                      }}</strong>
+                      <p class="text-red-900 text-sm m-0 leading-relaxed">{{ espec.observacao }}</p>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p
+                  class="text-red-600/70 italic text-sm m-0 flex-1 flex items-center justify-center"
+                >
+                  Nenhuma alergia ou gatilho cadastrado.
+                </p>
+              }
+            </div>
+          </div>
+        } @else {
+          <p class="text-gray-400 italic text-sm m-0">
+            Nenhuma especificidade ou alerta cadastrado para este estudante.
+          </p>
+        }
+      </section>
+      <section>
+        <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+          <h4 class="text-base font-bold font-['Sora'] text-blue-800 m-0">Laudos e Diagnósticos</h4>
+          <button
+            (click)="adicionarLaudo()"
+            class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5 cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+              />
+            </svg>
+            Anexar Laudo
+          </button>
+        </div>
+        @if (dadosSaude.laudos && dadosSaude.laudos.length > 0) {
+          <div class="space-y-3">
+            @for (laudo of dadosSaude.laudos; track laudo) {
+              <div
+                class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition-all group gap-4"
+              >
+                <div class="flex items-center gap-4">
+                  <div
+                    class="bg-blue-50 p-3 rounded-md group-hover:bg-blue-600 transition-colors duration-200 shrink-0"
+                  >
+                    <svg
+                      class="w-6 h-6 text-blue-600 group-hover:text-white transition-colors duration-200"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <p
+                      class="text-sm font-semibold text-slate-700 m-0 group-hover:text-blue-600 transition-colors duration-150"
+                    >
+                      {{ laudo.diagnostico }}
+                    </p>
+                    <p class="text-xs text-slate-500 m-0 mt-1">
+                      Emitido em: {{ laudo.dataEmissao | date: 'dd/MM/yyyy' : 'UTC' }}
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button
+                    (click)="abrirPreview(laudo.urlArquivo)"
+                    class="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-transparent rounded-md hover:bg-blue-100 hover:border-blue-200 transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
+                    Visualizar
+                  </button>
+                  <a
+                    [href]="getDownloadUrl(laudo.urlArquivo)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                    class="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-transparent rounded-md hover:bg-slate-200 transition-colors no-underline flex items-center gap-1.5"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    Baixar
+                  </a>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="text-gray-400 italic text-sm m-0">
+            Nenhum laudo anexado ao perfil do estudante.
+          </p>
+        }
+      </section>
+      <section>
+        <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+          <h4 class="text-base font-bold font-['Sora'] text-blue-800 m-0">Medicamentos</h4>
+          <button
+            (click)="adicionarMedicamento()"
+            class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5 cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Novo Medicamento
+          </button>
+        </div>
+        @if (dadosSaude.medicamentos && dadosSaude.medicamentos.length > 0) {
+          <ul class="space-y-2 p-0 m-0 list-none">
+            @for (med of dadosSaude.medicamentos; track med) {
+              <li
+                class="bg-slate-50/60 p-3 rounded-lg border border-gray-100 flex items-center justify-between"
+              >
+                <div class="text-sm">
+                  <span class="font-semibold text-slate-700">{{ med.nome }}</span>
+                  <span class="text-slate-400 font-normal ml-2">({{ med.dosagem }})</span>
+                </div>
+                @if (med.administradoEscola) {
+                  <span
+                    class="bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded border border-blue-100 font-['Sora']"
+                    >Administrar na Escola</span
+                  >
+                }
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="text-gray-400 italic text-sm m-0">Nenhum medicamento recorrente registrado.</p>
+        }
+      </section>
+    </div>
+  }
+</div>
+
+@if (isModalEspecificidadesOpen) {
+  <app-modal-especificidades
+    [estudanteId]="estudanteId()"
+    [especificidades]="restricoes"
+    (fechar)="fecharModalEspecificidades()"
+    (salvo)="carregarDadosSaude()"
+  >
+  </app-modal-especificidades>
+}
+
+@if (isPreviewOpen) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in"
+  >
+    <div
+      class="bg-white rounded-xl shadow-xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden border border-gray-100"
+    >
+      <div class="flex items-center justify-between p-4 border-b border-gray-100 bg-slate-50">
+        <h3 class="text-sm font-bold font-['Sora'] text-slate-700 m-0">
+          Visualizador de Documentos Oficial
+        </h3>
+        <button
+          (click)="fecharPreview()"
+          class="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-200/60 transition-colors cursor-pointer"
+        >
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div class="flex-1 bg-slate-100 p-3">
+        @if (safePreviewUrl) {
+          <iframe
+            [src]="safePreviewUrl"
+            class="w-full h-full rounded-lg border-0 shadow-inner bg-white"
+            allow="autoplay"
+          ></iframe>
+        }
+      </div>
+    </div>
+  </div>
+}

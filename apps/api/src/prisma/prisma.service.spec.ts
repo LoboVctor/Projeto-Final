@@ -1,23 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from './prisma.service';
-
+import { PrismaService } from './prisma.service.js';
 import { ConfigService } from '@nestjs/config';
 
 describe('PrismaService', () => {
   let service: PrismaService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        PrismaService,
-        {
-          provide: ConfigService,
-          useValue: { get: jest.fn(), getOrThrow: jest.fn() },
-        },
-      ],
-    }).compile();
-
-    service = module.get<PrismaService>(PrismaService);
+  beforeEach(() => {
+    const configService = { getOrThrow: () => 'postgresql://fake:fake@fake:5432/fake' } as unknown as ConfigService;
+    service = new PrismaService(configService);
   });
 
   it('should be defined', () => {

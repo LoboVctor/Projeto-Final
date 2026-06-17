@@ -8,10 +8,10 @@ import {
   Turno,
   Etapa,
   TipoTurma,
-  TipoEspecificidade,      
-  CategoriaEspecificidade,  
-  UnidadeM,                 
-  TipoDocumento             
+  TipoEspecificidade,
+  CategoriaEspecificidade,
+  UnidadeM,
+  TipoDocumento
 } from '../../generated/prisma/index.js';
 import * as bcrypt from 'bcrypt';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -81,7 +81,7 @@ async function main() {
     create: {
       id: '22222222-2222-2222-2222-222222222222',
       matricula: 'REG-2026',
-      nome: 'Professor Cláudio Xavier',
+      nome: 'Cláudio Xavier',
       cpf: '111.111.111-11',
       dataContratacao: new Date('2024-02-10'),
       tipo: TipoEducador.REGENTE,
@@ -368,7 +368,7 @@ async function main() {
       arquivo: 'https://drive.google.com/file/d/1hAiGtbKqyAF-mZCTvuf5VSk6YxuCc5yh/view?usp=sharing', // Simulando a URL do arquivo
       dataEmissao: new Date('2025-02-10'),
       estudanteId: lucasId,
-      diagnosticoId: tea.id, 
+      diagnosticoId: tea.id,
     },
   });
 

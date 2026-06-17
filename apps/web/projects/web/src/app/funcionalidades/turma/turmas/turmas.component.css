@@ -1,0 +1,485 @@
+/* ── Layout principal ────────────────────────────────── */
+.turmas-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #f8f9fa;
+}
+
+/* ── Top bar de turmas ───────────────────────────────── */
+.turmas-topbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e1e4e8;
+  flex-shrink: 0;
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  height: 52px;
+  overflow: visible;
+}
+
+.topbar-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #57606a;
+  flex-shrink: 0;
+  padding-right: 16px;
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 22px;
+  background: #e1e4e8;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.topbar-empty {
+  font-size: 12.5px;
+  color: #8c95a0;
+  padding: 0 8px;
+}
+
+/* ── Dropdown wrapper ────────────────────────────────── */
+.turma-dropdown-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Trigger (botão principal do dropdown) ───────────── */
+.turma-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 10px;
+  background: #f3f5f8;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.14s, border-color 0.14s, box-shadow 0.14s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.turma-dropdown-trigger:hover {
+  background: #eaedf1;
+  border-color: #b0b7c2;
+}
+
+.turma-dropdown-trigger.open {
+  background: #eef4ff;
+  border-color: #3c5f94;
+  box-shadow: 0 0 0 3px rgba(60, 95, 148, 0.12);
+}
+
+.trigger-icon {
+  display: flex;
+  align-items: center;
+  color: #57606a;
+  flex-shrink: 0;
+}
+
+.turma-dropdown-trigger.open .trigger-icon {
+  color: #3c5f94;
+}
+
+.trigger-nome {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2328;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trigger-placeholder {
+  color: #8c95a0;
+  font-weight: 400;
+}
+
+.trigger-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #57606a;
+  background: #e1e4e8;
+  border-radius: 99px;
+  padding: 1px 7px;
+}
+
+.trigger-chevron {
+  color: #57606a;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  margin-left: 2px;
+}
+
+.trigger-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+/* ── Overlay para fechar ao clicar fora ──────────────── */
+.dropdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  background: transparent;
+}
+
+/* ── Menu dropdown ───────────────────────────────────── */
+.turma-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 50;
+  min-width: 240px;
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  animation: dropdownIn 0.15s ease;
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-menu-header {
+  padding: 8px 14px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #8c95a0;
+  border-bottom: 1px solid #f0f2f4;
+}
+
+/* ── Opção do dropdown ───────────────────────────────── */
+.dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.1s;
+  text-align: left;
+  font-family: inherit;
+}
+
+.dropdown-option:hover {
+  background: #f6f8fa;
+}
+
+.dropdown-option.selected {
+  background: #eef4ff;
+}
+
+.option-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 2px solid #d0d7de;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.option-indicator.active {
+  background: #3c5f94;
+  border-color: #3c5f94;
+}
+
+.option-nome {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2328;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-option.selected .option-nome {
+  color: #3c5f94;
+}
+
+.option-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.badge-turno,
+.badge-count {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.badge-turno {
+  background: #ddf4ff;
+  color: #0969da;
+}
+
+.badge-count {
+  background: #f3f5f8;
+  color: #57606a;
+}
+
+
+/* ── Conteúdo principal ──────────────────────────────── */
+.turmas-main {
+  flex: 1;
+  min-height: 0;
+  max-height: 100vh;
+  padding: 24px 28px;
+  padding-bottom: 2rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Cabeçalho ───────────────────────────────────────── */
+.main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.main-title-block {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.main-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2328;
+  margin: 0;
+}
+
+.turma-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #57606a;
+  background: #f3f5f8;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid #d0d7de;
+}
+
+/* ── Toggle de visualização ──────────────────────────── */
+.view-toggle {
+  display: flex;
+  background: #f3f5f8;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #57606a;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.toggle-btn:hover {
+  background: #e8eaed;
+}
+
+.toggle-btn.active {
+  background: #ffffff;
+  color: #1f2328;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Estado de erro ──────────────────────────────────── */
+.state-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fff0f0;
+  border: 1px solid #ffb3b3;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #cf222e;
+}
+
+/* ── Estado vazio ────────────────────────────────────── */
+.state-empty {
+  padding: 48px 0;
+  text-align: center;
+  font-size: 14px;
+  color: #8c95a0;
+}
+
+/* ── Skeleton loader ─────────────────────────────────── */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.skeleton-card {
+  height: 160px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #e8eaed 25%, #f3f5f8 50%, #e8eaed 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ── Grid de cards ───────────────────────────────────── */
+.students-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+/* ── Tabela de lista ─────────────────────────────────── */
+.students-list {
+  overflow-x: auto;
+}
+
+.list-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.list-table thead tr {
+  background: #f6f8fa;
+  border-bottom: 2px solid #d0d7de;
+}
+
+.list-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #57606a;
+}
+
+.list-row {
+  border-bottom: 1px solid #e1e4e8;
+  transition: background 0.12s, box-shadow 0.12s;
+  cursor: pointer;
+}
+
+.list-row:hover {
+  background: #f0f4ff;
+}
+
+.list-row:hover .list-cell-nome span {
+  color: #3c5f94;
+}
+
+
+.list-row td {
+  padding: 10px 14px;
+  vertical-align: middle;
+}
+
+.list-cell-nome {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: #1f2328;
+}
+
+.list-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #dce1e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.list-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.list-avatar-placeholder {
+  font-size: 14px;
+  font-weight: 700;
+  color: #57606a;
+}
+
+.list-cell-mat {
+  color: #57606a;
+  font-size: 13px;
+}
+
+.list-cell-diag {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag-diagnostico {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #3c5f94;
+  background: #e8f0fb;
+  border-radius: 4px;
+  padding: 1px 7px;
+}
+
+.no-diag {
+  color: #aaa;
+  font-size: 12px;
+}

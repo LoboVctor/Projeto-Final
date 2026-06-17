@@ -18,15 +18,15 @@
     "incremental": true,
     "tsBuildInfoFile": "./dist/tsconfig.build.tsbuildinfo",
     "skipLibCheck": true,
+    "strict": true,
+    "noImplicitAny": true,
     "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
     "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@prisma-client": ["../../infra/generated/prisma/index.js"],
+      "@prisma-client": ["../../infra/generated/prisma"],
       "@prisma-client/*": ["../../infra/generated/prisma/*"]
     }
   },
-  "exclude": ["node_modules", "dist", "prisma.config.ts", "test", "**/*.spec.ts"]
+  "exclude": ["node_modules", "dist", "prisma.config.ts", "test", "**/*.spec.ts", "vitest.config.ts"]
 }
