@@ -6,6 +6,7 @@
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
+  compilerBuild = "fast"
 }
 
 datasource db {
@@ -317,8 +318,10 @@ model Pibi {
 // ==========================================
 
 enum Role {
+  PROFESSOR_REGENTE
+  PROFESSOR_ATENDIMENTO
   COORDENADOR
-  PROFESSOR
+  RESPONSAVEL
 }
 
 enum Sexo {
@@ -330,8 +333,6 @@ enum Sexo {
 enum Fcom {
   VERBAL
   NAO_VERBAL
-  LIBRAS
-  COMUNICACAO_ALTERNATIVA
 }
 
 enum GrauParentesco {
@@ -362,16 +363,16 @@ enum TipoDocumento {
 }
 
 enum TipoEspecificidade {
+  RESTRICAO
+  COMPORTAMENTO_ATIPICO
+  GATILHO_CRISE
+}
+
+enum CategoriaEspecificidade {
   ALIMENTAR
   SENSORIAL
   MOTORA
   COMPORTAMENTAL
-}
-
-enum CategoriaEspecificidade {
-  RESTRICAO
-  PREFERENCIA
-  GATILHO_CRISE
 }
 
 enum UnidadeM {
@@ -388,17 +389,14 @@ enum Turno {
 }
 
 enum Etapa {
-  EDUCACAO_INFANTIL
-  ENSINO_FUNDAMENTAL_1
-  ENSINO_FUNDAMENTAL_2
-  EJA
+  ETAPA_1
+  ETAPA_2
+  ETAPA_3
 }
 
 enum TipoEducador {
   REGENTE
-  APOIO_ESPECIALIZADO
-  EDUCACAO_FISICA
-  ARTES
+  ATENDIMENTO
   COORDENADOR
 }
 
@@ -432,8 +430,6 @@ enum Eixos {
 enum Bimestre {
   PRIMEIRO
   SEGUNDO
-  TERCEIRO
-  QUARTO
 }
 
 enum TipoTurma {

@@ -1,0 +1,477 @@
+<!-- LADO DIREITO: Visão Geral (Expansão) -->
+<div
+  class="flex-1 bg-gray-50/50 p-6 md:p-8 rounded-r-3xl overflow-y-auto max-h-[90vh] md:max-h-[85vh] relative"
+>
+  <!-- Cabeçalho Visão Geral -->
+  <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center space-x-3 text-blue-700">
+      <div class="bg-blue-100 p-2 rounded-full">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold font-sora">Visão Geral</h2>
+        <p class="text-sm text-elo-texto-secundario">Dados gerais e contato do aluno</p>
+      </div>
+    </div>
+
+    <!-- Ações do header direito -->
+    <div class="flex items-center space-x-3">
+      <button
+        (click)="onRecolher()"
+        class="flex items-center space-x-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>Recolher</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Estado: Loading -->
+  @if (loading()) {
+    <div class="animate-pulse space-y-6">
+      <div class="h-32 bg-gray-200 rounded-xl w-full"></div>
+      <div class="h-32 bg-gray-200 rounded-xl w-full"></div>
+      <div class="h-48 bg-gray-200 rounded-xl w-full"></div>
+    </div>
+  }
+
+  <!-- Estado: Erro -->
+  @if (error) {
+    <div class="bg-red-50 border border-red-100 rounded-xl p-6 text-center">
+      <p class="text-red-700 font-medium mb-3">{{ error }}</p>
+      <button
+        (click)="onTentarNovamente()"
+        class="px-4 py-2 bg-white text-red-600 rounded-lg border border-red-200 font-semibold text-sm hover:bg-red-50"
+      >
+        Tentar Novamente
+      </button>
+    </div>
+  }
+
+  <!-- Conteúdo Real -->
+  @if (!loading() && !error && visaoGeralData(); as vg) {
+    <div class="space-y-6">
+      <!-- Dados Gerais -->
+      <div class="bg-white border border-gray-100 shadow-sm rounded-2xl p-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div>
+            <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
+              Nome Completo
+            </p>
+            <p class="text-sm font-semibold text-gray-900">{{ vg.nomeCompleto }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Gênero</p>
+            <p class="text-sm font-semibold text-gray-900">{{ vg.sexo }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">CPF</p>
+            <p class="text-sm font-semibold text-gray-900">{{ vg.cpf }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
+              Data de Nascimento
+            </p>
+            <p class="text-sm font-semibold text-gray-900">
+              {{ vg.dataNascimento | date: 'dd/MM/yyyy' }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <!-- Informações Acadêmicas -->
+      <div>
+        <div class="flex items-center space-x-2 mb-3">
+          <h3 class="font-bold text-blue-800 font-sora">Informações Acadêmicas</h3>
+          @if (userRole === 'PROFESSOR') {
+            <span
+              class="flex items-center text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="mr-1"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              Gerenciadas pela coordenação
+            </span>
+          }
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div
+            class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-start space-x-3"
+          >
+            <div class="bg-blue-50 text-blue-500 p-2 rounded-lg">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-blue-500">Professor Regente</p>
+              <p class="text-sm font-bold text-gray-800">
+                {{ vg.professorRegente?.nomeCompleto || 'Sem atribuição' }}
+              </p>
+              <p class="text-xs text-gray-500 mt-0.5">Professor(a)</p>
+            </div>
+          </div>
+          <div
+            class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-start space-x-3"
+          >
+            <div class="bg-blue-50 text-blue-500 p-2 rounded-lg">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-blue-500">Turma</p>
+              <p class="text-sm font-bold text-gray-800">{{ vg.turma?.nome || 'Sem Turma' }}</p>
+              <p class="text-xs text-gray-500 mt-0.5">{{ vg.turma?.etapa || '-' }}</p>
+            </div>
+          </div>
+          <div
+            class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-start space-x-3"
+          >
+            <div class="bg-blue-50 text-blue-500 p-2 rounded-lg">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-blue-500">Ano Letivo</p>
+              <p class="text-sm font-bold text-gray-800">{{ vg.turma?.anoLetivo || '-' }}</p>
+              <p class="text-xs text-gray-500 mt-0.5">
+                {{ vg.turma?.turno || 'Turno não informado' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Informações Pessoais -->
+      <div>
+        <div class="flex items-center space-x-2 mb-3">
+          <h3 class="font-bold text-blue-800 font-sora">Informações Pessoais</h3>
+          @if (userRole === 'PROFESSOR') {
+            <span
+              class="flex items-center text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="mr-1"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              Gerenciadas pela coordenação
+            </span>
+          }
+        </div>
+        <div class="bg-white border border-gray-100 shadow-sm rounded-xl divide-y divide-gray-100">
+          <!-- Endereço -->
+          <div class="p-5 flex flex-col md:flex-row md:items-start md:space-x-4">
+            <div class="text-blue-500 mb-2 md:mb-0 pt-0.5">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-xs font-semibold text-blue-600 mb-1">Endereço</p>
+              @if (vg.responsavel) {
+                <p class="text-sm text-gray-800 font-medium">{{ vg.responsavel.endereco }}</p>
+              }
+              @if (!vg.responsavel) {
+                <p class="text-sm text-gray-400 italic">Endereço do responsável não cadastrado.</p>
+              }
+            </div>
+          </div>
+          <!-- Responsável -->
+          <div class="p-5 flex flex-col md:flex-row md:items-start md:space-x-4">
+            <div class="text-blue-500 mb-2 md:mb-0 pt-0.5">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-xs font-semibold text-blue-600 mb-1">Responsável</p>
+              @if (vg.responsavel) {
+                <p class="text-sm text-gray-800 font-bold">{{ vg.responsavel.nomeCompleto }}</p>
+              }
+              @if (!vg.responsavel) {
+                <p class="text-sm text-gray-400 italic">Sem responsável principal atribuído.</p>
+              }
+            </div>
+            @if (vg.responsavel) {
+              <div class="mt-4 md:mt-0 flex flex-col space-y-2 min-w-[200px]">
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="text-blue-500"
+                  >
+                    <path
+                      d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+                    ></path>
+                  </svg>
+                  <span>{{ vg.responsavel.telefone || 'Sem telefone' }}</span>
+                </div>
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="text-blue-500"
+                  >
+                    <path
+                      d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+                    ></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                  </svg>
+                  <span>{{ vg.responsavel.email || 'Sem email' }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      <!-- Especificidades -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center space-x-2">
+            <h3 class="font-bold text-blue-800 font-sora">Especificidades</h3>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button
+              (click)="abrirModalEspecificidade()"
+              class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5 cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                />
+              </svg>
+              Editar Especificidade
+            </button>
+          </div>
+        </div>
+        @if (especificidadesFiltradas.length === 0) {
+          <div class="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-8 text-center">
+            <p class="text-gray-500 font-medium">Nenhuma especificidade cadastrada para o aluno.</p>
+          </div>
+        }
+        @if (especificidadesFiltradas.length > 0) {
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Bloco de Gatilhos -->
+            <div class="bg-red-50/40 border border-red-200 rounded-xl p-4 flex flex-col h-full">
+              <h5
+                class="text-red-800 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-red-200 m-0"
+              >
+                Gatilhos
+              </h5>
+              @if (gatilhos.length > 0) {
+                <div class="space-y-3 flex-1">
+                  @for (espec of gatilhos; track espec) {
+                    <div class="bg-white border-l-4 border-red-500 p-3 rounded shadow-sm">
+                      <strong class="text-red-700 block mb-1 text-xs uppercase">{{
+                        espec.descricao
+                      }}</strong>
+                      @if (espec.observacao) {
+                        <p class="text-red-900 text-sm m-0 leading-relaxed">
+                          {{ espec.observacao }}
+                        </p>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="flex-1 flex items-center justify-center py-6">
+                  <p class="text-red-400/70 text-sm text-center font-medium m-0">
+                    Nenhum gatilho cadastrado
+                  </p>
+                </div>
+              }
+            </div>
+            <!-- Bloco de Comportamentos Atípicos -->
+            <div class="bg-blue-50/40 border border-blue-200 rounded-xl p-4 flex flex-col h-full">
+              <h5
+                class="text-blue-800 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-blue-200 m-0"
+              >
+                Comportamentos Atípicos
+              </h5>
+              @if (comportamentosAtipicos.length > 0) {
+                <div class="space-y-3 flex-1">
+                  @for (espec of comportamentosAtipicos; track espec) {
+                    <div class="bg-white border-l-4 border-blue-500 p-3 rounded shadow-sm">
+                      <strong class="text-blue-700 block mb-1 text-xs uppercase">{{
+                        espec.descricao
+                      }}</strong>
+                      @if (espec.observacao) {
+                        <p class="text-blue-900 text-sm m-0 leading-relaxed">
+                          {{ espec.observacao }}
+                        </p>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="flex-1 flex items-center justify-center py-6">
+                  <p class="text-blue-400/70 text-sm text-center font-medium m-0">
+                    Nenhum comportamento atípico cadastrado
+                  </p>
+                </div>
+              }
+            </div>
+            <!-- Bloco de Protocolos de Contenção -->
+            <div
+              class="bg-emerald-50/40 border border-emerald-200 rounded-xl p-4 flex flex-col h-full"
+            >
+              <h5
+                class="text-emerald-800 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-emerald-200 m-0"
+              >
+                Protocolos de Contenção
+              </h5>
+              @if (protocolosContencao.length > 0) {
+                <div class="space-y-3 flex-1">
+                  @for (espec of protocolosContencao; track espec) {
+                    <div class="bg-white border-l-4 border-emerald-500 p-3 rounded shadow-sm">
+                      <strong class="text-emerald-700 block mb-1 text-xs uppercase">{{
+                        espec.descricao
+                      }}</strong>
+                      @if (espec.observacao) {
+                        <p class="text-emerald-900 text-sm m-0 leading-relaxed">
+                          {{ espec.observacao }}
+                        </p>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="flex-1 flex items-center justify-center py-6">
+                  <p class="text-emerald-400/70 text-sm text-center font-medium m-0">
+                    Nenhum protocolo cadastrado
+                  </p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+@if (showModalEspecificidade) {
+  <app-especificidade-modal
+    [estudanteId]="visaoGeralData()?.id || ''"
+    [especificidades]="especificidadesFiltradas"
+    (fechar)="fecharModalEspecificidade()"
+    (salvo)="onEspecificidadeSalva()"
+  >
+  </app-especificidade-modal>
+}

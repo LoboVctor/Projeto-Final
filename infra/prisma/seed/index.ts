@@ -7,7 +7,11 @@ import {
   Fcom,
   Turno,
   Etapa,
-  TipoTurma
+  TipoTurma,
+  TipoEspecificidade,
+  CategoriaEspecificidade,
+  UnidadeM,
+  TipoDocumento
 } from '../../generated/prisma/index.js';
 import * as bcrypt from 'bcrypt';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -26,7 +30,6 @@ const SALT_ROUNDS = 12;
 async function main() {
   console.log('Iniciando seed...\n');
 
-  // Limpeza de tabelas dependentes
   console.log('Limpando dados anteriores...');
   await prisma.estudanteDiagnostico.deleteMany();
   await prisma.documentoDiagnostico.deleteMany();
@@ -43,7 +46,6 @@ async function main() {
   await prisma.diagnostico.deleteMany();
   console.log('Limpeza concluída.');
 
-  // Escola padrão
   const escola = await prisma.escola.upsert({
     where: { id: '11111111-1111-1111-1111-111111111111' },
     update: {},
@@ -59,7 +61,7 @@ async function main() {
   });
   console.log(` Escolaridade criada: "${escola.nome}" (id: ${escola.id})`);
 
-  // 2. Usuário Admin (COORDENADOR)
+  // Usuário Admin (COORDENADOR)
   const senhaAdminHash = await bcrypt.hash('Admin@1234', SALT_ROUNDS);
   const admin = await prisma.usuario.upsert({
     where: { email: 'admin@escola.elo' },
@@ -72,14 +74,14 @@ async function main() {
   });
   console.log(` Admin criado: "${admin.email}" (role: ${admin.role})`);
 
-  // 3. Criar Educador (Professor Regente)
+  // Educador (Professor Regente)
   const educador = await prisma.educador.upsert({
     where: { id: '22222222-2222-2222-2222-222222222222' },
     update: {},
     create: {
       id: '22222222-2222-2222-2222-222222222222',
       matricula: 'REG-2026',
-      nome: 'Professor Cláudio Xavier',
+      nome: 'Cláudio Xavier',
       cpf: '111.111.111-11',
       dataContratacao: new Date('2024-02-10'),
       tipo: TipoEducador.REGENTE,
@@ -89,7 +91,7 @@ async function main() {
   });
   console.log(` Educador criado: "${educador.nome}" (id: ${educador.id})`);
 
-  // 4. Criar Usuário do tipo PROFESSOR vinculado ao Educador
+  // Criar Usuário do tipo PROFESSOR vinculado ao Educador
   const senhaProfHash = await bcrypt.hash('Prof@1234', SALT_ROUNDS);
   const usuarioProfessor = await prisma.usuario.upsert({
     where: { email: 'professor@escola.elo' },
@@ -100,13 +102,13 @@ async function main() {
     create: {
       email: 'professor@escola.elo',
       senha: senhaProfHash,
-      role: Role.PROFESSOR,
+      role: Role.PROFESSOR_REGENTE,
       educadorId: educador.id,
     },
   });
   console.log(` Usuário do Educador criado: "${usuarioProfessor.email}"`);
 
-  // 5. Criar Turma (tipo REGENCIA) ligando Escola, Educador
+  // Turma (tipo REGENCIA) ligando Escola, Educador
   const turmaAlpha = await prisma.turma.upsert({
     where: { id: '44444444-4444-4444-4444-444444444444' },
     update: { educadorId: educador.id },
@@ -117,7 +119,7 @@ async function main() {
       nome: '1º Ano - Turma Alpha',
       turno: Turno.MATUTINO,
       anoLetivo: 2026,
-      etapa: Etapa.ENSINO_FUNDAMENTAL_1,
+      etapa: Etapa.ETAPA_1,
       tipo: TipoTurma.REGENCIA,
     },
   });
@@ -170,7 +172,7 @@ async function main() {
       nome: '1º Ano A',
       turno: Turno.VESPERTINO,
       anoLetivo: 2026,
-      etapa: Etapa.ENSINO_FUNDAMENTAL_1,
+      etapa: Etapa.ETAPA_1,
       tipo: TipoTurma.REGENCIA,
     },
   });
@@ -185,7 +187,7 @@ async function main() {
       nome: '2º Ano B',
       turno: Turno.MATUTINO,
       anoLetivo: 2026,
-      etapa: Etapa.ENSINO_FUNDAMENTAL_1,
+      etapa: Etapa.ETAPA_1,
       tipo: TipoTurma.REGENCIA,
     },
   });
@@ -200,7 +202,7 @@ async function main() {
       nome: 'Infantil IV',
       turno: Turno.MATUTINO,
       anoLetivo: 2026,
-      etapa: Etapa.EDUCACAO_INFANTIL,
+      etapa: Etapa.ETAPA_2,
       tipo: TipoTurma.REGENCIA,
     },
   });
@@ -297,7 +299,7 @@ async function main() {
       cpf: '456.789.012-34',
       sexo: Sexo.FEMININO,
       foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Daniela',
-      formaComunicacao: Fcom.COMUNICACAO_ALTERNATIVA,
+      formaComunicacao: Fcom.NAO_VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
       turmas: { connect: [{ id: turma3.id }] },
@@ -318,6 +320,59 @@ async function main() {
       create: est,
     });
   }
+
+  // ==========================================
+  // POPULANDO DADOS DE SAÚDE
+  // ==========================================
+  console.log('Populando dados de saúde para testes...');
+
+  const alergiaAmendoim = await prisma.especificidade.create({
+    data: {
+      tipo: TipoEspecificidade.RESTRICAO,
+      descricao: 'Alergia severa a amendoim',
+      categoria: CategoriaEspecificidade.ALIMENTAR,
+    },
+  });
+
+  const risperidona = await prisma.medicamento.create({
+    data: {
+      nome: 'Risperidona',
+    },
+  });
+
+  const lucasId = '33333333-3333-3333-3333-333333333333';
+
+  await prisma.estudanteEspecificidade.create({
+    data: {
+      estudanteId: lucasId,
+      especificidadeId: alergiaAmendoim.id,
+      obsReacao: 'Em caso de contato, apresenta manchas vermelhas e falta de ar. Ligar para emergência imediatamente.',
+    },
+  });
+
+  await prisma.estudanteMedicamento.create({
+    data: {
+      estudanteId: lucasId,
+      medicamentoId: risperidona.id,
+      dosagem: 1.5,
+      unidadeMedida: UnidadeM.ML,
+      intervaloAdministracao: 12,
+      horarioAdministrado: new Date('2026-01-01T13:00:00.000Z'), // Exemplo de horário
+      administradoEscola: true,
+    },
+  });
+
+  await prisma.documentoDiagnostico.create({
+    data: {
+      tipo: TipoDocumento.LAUDO_MEDICO,
+      arquivo: 'https://drive.google.com/file/d/1hAiGtbKqyAF-mZCTvuf5VSk6YxuCc5yh/view?usp=sharing', // Simulando a URL do arquivo
+      dataEmissao: new Date('2025-02-10'),
+      estudanteId: lucasId,
+      diagnosticoId: tea.id,
+    },
+  });
+
+  console.log('Dados de saúde de teste populados com sucesso.');
 
   console.log('Estudantes criados e vinculados às turmas.');
 
