@@ -4,11 +4,12 @@ import { AlunoModalData } from '../../models/aluno-modal.model';
 import { EstudantesService } from '../../services/estudantes.service';
 import { EstudanteVisaoGeral } from '../../models/estudante-visao-geral.model';
 import { BlocoVisaoGeralComponent } from '../../../features/estudantes/components/bloco-visao-geral/bloco-visao-geral.component';
+import { BlocoSaudeComponent } from '../../../features/estudantes/components/bloco-saude/bloco-saude';
 
 @Component({
   selector: 'app-aluno-modal',
   standalone: true,
-  imports: [CommonModule, BlocoVisaoGeralComponent],
+  imports: [CommonModule, BlocoVisaoGeralComponent, BlocoSaudeComponent],
   templateUrl: './aluno-modal.component.html',
   styleUrls: ['./aluno-modal.component.css']
 })
@@ -25,6 +26,7 @@ export class AlunoModalComponent {
   // Estados
   isInfoGeraisOpen = signal(false);
   isVisaoGeralExpanded = signal(false);
+  isSaudeExpanded = signal(false);
   
   visaoGeralData = signal<EstudanteVisaoGeral | null>(null);
   loadingVisaoGeral = signal(false);
@@ -32,6 +34,7 @@ export class AlunoModalComponent {
 
   onClose(): void {
     this.isVisaoGeralExpanded.set(false);
+    this.isSaudeExpanded.set(false);
     this.isInfoGeraisOpen.set(false);
     this.visaoGeralData.set(null);
     this.fecharModal.emit();
@@ -43,7 +46,7 @@ export class AlunoModalComponent {
 
   abrirVisaoGeral(): void {
     if (!this.aluno) return;
-
+    this.isSaudeExpanded.set(false);
     this.isVisaoGeralExpanded.set(true);
     
     if (this.visaoGeralData()?.id === this.aluno.id) {
@@ -51,6 +54,17 @@ export class AlunoModalComponent {
     }
 
     this.carregarVisaoGeral();
+  }
+
+  abrirSaude(): void {
+    if (!this.aluno) return;
+    this.isVisaoGeralExpanded.set(false); 
+    this.isSaudeExpanded.set(true);
+  }
+
+  recolherPaineis(): void {
+    this.isVisaoGeralExpanded.set(false);
+    this.isSaudeExpanded.set(false);
   }
 
   carregarVisaoGeral(): void {

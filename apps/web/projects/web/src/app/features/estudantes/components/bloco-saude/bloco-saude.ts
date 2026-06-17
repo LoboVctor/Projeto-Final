@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { EstudantesService, EstudanteSaude } from '../../../../shared/services/estudantes.service';
@@ -13,21 +13,21 @@ import { ModalEspecificidadesComponent } from './modais/restricoes';
 })
 export class BlocoSaudeComponent implements OnInit {
   @Input() estudanteId!: string;
+  @Output() recolher = new EventEmitter<void>();
   
   dadosSaude: EstudanteSaude | null = null;
-  
+  restricoes: any[] = [];
   especificidadesAlimentares: any[] = [];
   outrasEspecificidades: any[] = [];
   
-  isDropdownOpen = false;
   isLoading = false;
-
   isPreviewOpen = false;
   isModalEspecificidadesOpen = false;
   safePreviewUrl: SafeResourceUrl | null = null;
 
   private sanitizer = inject(DomSanitizer);
   private estudantesService = inject(EstudantesService);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     if (this.estudanteId) {
@@ -41,20 +41,32 @@ export class BlocoSaudeComponent implements OnInit {
       next: (dados) => {
         this.dadosSaude = dados;
         
-        this.especificidadesAlimentares = dados.especificidades.filter(e => e.categoria === 'ALIMENTAR');
-        this.outrasEspecificidades = dados.especificidades.filter(e => e.categoria !== 'ALIMENTAR');
+        this.restricoes = dados.especificidades.filter((e: any) => e.tipo === 'RESTRICAO');
+        
+        this.especificidadesAlimentares = this.restricoes.filter((e: any) => e.categoria === 'ALIMENTAR');
+        this.outrasEspecificidades = this.restricoes.filter((e: any) => e.categoria !== 'ALIMENTAR');
         
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Erro ao buscar dados de saúde', err);
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
 
-  toggleDropdown(): void {
-    this.isDropdownOpen = !this.isDropdownOpen;
+  onRecolher(): void {
+    this.recolher.emit();
+  }
+
+  adicionarLaudo(): void {
+    console.log('Abrir modal de laudo em breve...');
+  }
+
+  adicionarMedicamento(): void {
+    console.log('Abrir modal de medicamento em breve...');
   }
 
   abrirModalEspecificidades(): void {
@@ -66,6 +78,7 @@ export class BlocoSaudeComponent implements OnInit {
   }
 
   // --- MÉTODOS DO GOOGLE DRIVE ---
+
   private extrairFileId(driveUrl: string): string | null {
     const idMatch = driveUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
     return idMatch ? idMatch[1] : null;
@@ -87,7 +100,4 @@ export class BlocoSaudeComponent implements OnInit {
   fecharPreview(): void {
     this.isPreviewOpen = false;
   }
-
-  adicionarMedicamento(): void {}
-  adicionarLaudo(): void {}
 }

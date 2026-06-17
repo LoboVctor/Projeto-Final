@@ -16,14 +16,17 @@
     <form [formGroup]="especificidadeForm" (ngSubmit)="salvar()" class="p-6 space-y-5 m-0">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-bold text-slate-600 font-['Sora']">Tipo de Registro</label>
-          <select formControlName="tipo" class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm font-medium">
-            <option value="RESTRICAO">Restrição</option>
-            <option value="COMPORTAMENTO_ATIPICO">Comportamento Atípico</option>
-            <option value="GATILHO_CRISE">Gatilho de Crise</option>
-          </select>
-        </div>
-
+  <label class="text-xs font-bold text-slate-600 font-['Sora']">Tipo de Registro</label>
+  
+  <select 
+    formControlName="tipo" 
+    class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-100 text-slate-500 opacity-60 cursor-not-allowed outline-none text-sm font-medium">
+    
+    <option value="RESTRICAO">Restrição</option>
+    <option value="COMPORTAMENTO_ATIPICO">Comportamento Atípico / Preferência</option>
+    <option value="GATILHO_CRISE">Gatilho de Crise</option>
+  </select>
+</div>
         <div class="flex flex-col gap-1.5">
           <label class="text-xs font-bold text-slate-600 font-['Sora']">Categoria Clínica</label>
           <select formControlName="categoria" class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm font-medium">

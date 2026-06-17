@@ -1,16 +1,12 @@
-<!-- Overlay -->
 <div *ngIf="isVisible" class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto" (click)="onClose()">
   
-  <!-- Modal Container (Dinâmico: Cresce se Visão Geral estiver ativa) -->
   <div 
     class="bg-white rounded-3xl shadow-xl relative transition-all duration-300 ease-in-out my-auto flex flex-col md:flex-row"
-    [class]="isVisaoGeralExpanded() ? 'w-full max-w-5xl md:max-w-6xl' : 'w-full max-w-sm md:max-w-md'"
+    [class]="isVisaoGeralExpanded() || isSaudeExpanded() ? 'w-full max-w-5xl md:max-w-6xl' : 'w-full max-w-sm md:max-w-md'"
     (click)="$event.stopPropagation()">
     
-    <!-- LADO ESQUERDO: Modal Base (Sempre Visível) -->
-    <div class="relative p-6 md:p-8 flex-shrink-0" [class]="isVisaoGeralExpanded() ? 'w-full md:w-[350px] border-b md:border-b-0 md:border-r border-elo-borda' : 'w-full'">
+    <div class="relative p-6 md:p-8 flex-shrink-0" [class]="isVisaoGeralExpanded() || isSaudeExpanded() ? 'w-full md:w-[350px] border-b md:border-b-0 md:border-r border-elo-borda' : 'w-full'">
       
-      <!-- Close Button -->
       <button (click)="onClose()" class="absolute top-4 right-4 text-elo-texto-secundario hover:text-elo-texto-principal transition-colors p-2 rounded-full hover:bg-elo-borda/50 z-10">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -20,7 +16,6 @@
 
       <div *ngIf="aluno" class="flex flex-col items-center mt-2">
         
-        <!-- Foto -->
         <div class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-elo-borda mb-4 overflow-hidden border-4 border-white shadow-sm flex items-center justify-center">
           <img *ngIf="aluno.foto; else placeholder" [src]="aluno.foto" [alt]="aluno.nome" class="w-full h-full object-cover">
           <ng-template #placeholder>
@@ -31,11 +26,9 @@
           </ng-template>
         </div>
 
-        <!-- Nome e Turma -->
         <h2 class="text-2xl font-bold text-elo-texto-principal font-sora text-center">{{ aluno.nome }}</h2>
         <p class="text-elo-texto-secundario text-sm md:text-base mt-1">Turma {{ aluno.turma }}</p>
 
-        <!-- Diagnóstico -->
         <div class="w-full bg-[#F3EEFC] border border-elo-lavanda/30 rounded-2xl p-4 mt-6 flex items-start space-x-3">
           <div class="text-elo-roxo-principal mt-0.5 flex-shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -52,10 +45,8 @@
           </div>
         </div>
 
-        <!-- Ações -->
         <div class="w-full mt-6 space-y-3">
           
-          <!-- Info Gerais (Accordion) -->
           <div class="rounded-xl overflow-hidden" [class.bg-blue-50]="!isInfoGeraisOpen()" [class.bg-blue-100]="isInfoGeraisOpen()">
             <button (click)="toggleInfoGerais()" class="w-full flex items-center justify-between text-blue-700 p-4 transition-colors group">
               <div class="flex items-center space-x-3 font-semibold">
@@ -70,16 +61,18 @@
               </svg>
             </button>
             
-            <!-- Sub-menu de Informações Gerais -->
             <div *ngIf="isInfoGeraisOpen()" class="flex flex-col bg-blue-50/50 pb-2 px-4 space-y-1">
-              <button (click)="abrirVisaoGeral()" [class.font-bold]="isVisaoGeralExpanded()" class="flex items-center space-x-2 text-sm text-blue-800 p-2 rounded hover:bg-blue-100/80 transition-colors text-left">
-                <div class="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
+              
+              <button (click)="abrirVisaoGeral()" [class.font-bold]="isVisaoGeralExpanded()" class="flex items-center space-x-2 text-sm text-blue-800 p-2 rounded hover:bg-blue-100/80 transition-colors text-left cursor-pointer">
+                <div class="w-1.5 h-1.5 rounded-full" [ngClass]="isVisaoGeralExpanded() ? 'bg-blue-600' : 'bg-blue-400'"></div>
                 <span>Visão Geral</span>
               </button>
-              <button class="flex items-center space-x-2 text-sm text-blue-800 p-2 rounded hover:bg-blue-100/80 transition-colors text-left opacity-60 cursor-not-allowed">
-                <div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-                <span>Saúde (Em breve)</span>
+              
+              <button (click)="abrirSaude()" [class.font-bold]="isSaudeExpanded()" class="flex items-center space-x-2 text-sm text-blue-800 p-2 rounded hover:bg-blue-100/80 transition-colors text-left cursor-pointer">
+                <div class="w-1.5 h-1.5 rounded-full" [ngClass]="isSaudeExpanded() ? 'bg-blue-600' : 'bg-blue-400'"></div>
+                <span>Saúde e Especificidades</span>
               </button>
+
               <button class="flex items-center space-x-2 text-sm text-blue-800 p-2 rounded hover:bg-blue-100/80 transition-colors text-left opacity-60 cursor-not-allowed">
                 <div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
                 <span>Relatórios (Em breve)</span>
@@ -87,7 +80,6 @@
             </div>
           </div>
 
-          <!-- Agenda -->
           <button (click)="onAgenda()" class="w-full flex items-center justify-between bg-green-50 hover:bg-green-100 text-green-700 p-4 rounded-xl transition-colors group">
             <div class="flex items-center space-x-3 font-semibold">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -103,7 +95,6 @@
             </svg>
           </button>
 
-          <!-- Dashboard -->
           <button (click)="onDashboard()" class="w-full flex items-center justify-between bg-amber-50 hover:bg-amber-100 text-amber-700 p-4 rounded-xl transition-colors group">
             <div class="flex items-center space-x-3 font-semibold">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -122,16 +113,24 @@
       </div>
     </div>
 
-    <!-- LADO DIREITO: Visão Geral (Expansão) -->
-    <ng-container *ngIf="isVisaoGeralExpanded()">
+    <ng-container *ngIf="isVisaoGeralExpanded() || isSaudeExpanded()">
+      
       <app-bloco-visao-geral
+        *ngIf="isVisaoGeralExpanded()"
         [visaoGeralData]="visaoGeralData()"
         [loading]="loadingVisaoGeral()"
         [error]="errorVisaoGeral()"
-        (recolher)="recolherVisaoGeral()"
+        (recolher)="recolherPaineis()"
         (fechar)="onClose()"
         (tentarNovamente)="forceReloadVisaoGeral()">
       </app-bloco-visao-geral>
+
+      <app-bloco-saude 
+        *ngIf="isSaudeExpanded()"
+        [estudanteId]="aluno!.id"
+        (recolher)="recolherPaineis()">
+      </app-bloco-saude>
+
     </ng-container>
 
   </div>
