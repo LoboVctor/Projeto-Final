@@ -24,7 +24,7 @@ export class ModalEspecificidadesComponent implements OnInit {
 
   constructor() {
     this.especificidadeForm = this.fb.group({
-      tipo: ['RESTRICAO', Validators.required],
+      tipo: [{ value: 'RESTRICAO', disabled: true }, Validators.required],
       categoria: ['ALIMENTAR', Validators.required],
       descricao: ['', [Validators.required, Validators.minLength(3)]],
       observacao: ['', Validators.required]
@@ -46,7 +46,8 @@ export class ModalEspecificidadesComponent implements OnInit {
   salvar(): void {
     if (this.especificidadeForm.invalid) return;
 
-    const dados = this.especificidadeForm.value;
+    const dados = this.especificidadeForm.getRawValue();
+    
     const acao = this.editingEspecificidadeId 
       ? this.estudantesService.updateEspecificidade(this.estudanteId, this.editingEspecificidadeId, dados)
       : this.estudantesService.saveEspecificidade(this.estudanteId, dados);
