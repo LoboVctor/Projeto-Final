@@ -18,7 +18,7 @@ import * as Joi from 'joi';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env', '../../.env'],
+      envFilePath: '.env',
       validationSchema: Joi.object({
         DATABASE_URL: Joi.string().required(),
         PORT: Joi.number().default(3000),
@@ -57,4 +57,4 @@ import * as Joi from 'joi';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }
