@@ -33,8 +33,8 @@ async function main() {
   console.log('Iniciando seed...\n');
 
   console.log('Limpando dados anteriores...');
-  await prisma.estudanteDiagnostico.deleteMany();
   await prisma.documentoDiagnostico.deleteMany();
+  await prisma.estudanteDiagnostico.deleteMany();
   await prisma.estudanteResponsavel.deleteMany();
   await prisma.estudanteEspecificidade.deleteMany();
   await prisma.estudanteMedicamento.deleteMany();
