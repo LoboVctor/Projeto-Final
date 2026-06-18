@@ -1,4 +1,6 @@
-import 'dotenv/config';
+import { config } from 'dotenv';
+config({ path: resolve(__dirname, '../../../apps/api/.env') });
+import { resolve } from 'path';
 import {
   PrismaClient,
   Role,
