@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico } from './interfaces/IEstudanteRepositorio.js';
 import { EspecificidadeDto } from './dtos/create.especifidades.dto.js';
+import { GoogleDriveService } from './google-drive.service.js';
 
 @Injectable()
 export class EstudanteService {
   constructor(
     @Inject('IEstudanteRepositorio')
     private readonly estudanteRepositorio: IEstudanteRepositorio,
+    private readonly googleDriveService: GoogleDriveService,
   ) {}
 
   async getVisaoGeral(estudanteId: string) {
@@ -100,8 +102,11 @@ export class EstudanteService {
       ),
 
       medicamentos: dados.medicamentos.map((m) => ({
+        medicamentoId: m.medicamentoId,
         nome: m.medicamento.nome,
-        dosagem: `${m.dosagem} ${m.unidadeMedida}`,
+        dosagem: m.dosagem,
+        unidadeMedida: m.unidadeMedida,
+        intervaloAdministracao: m.intervaloAdministracao,
         horarioAdministrado: m.horarioAdministrado,
         administradoEscola: m.administradoEscola,
       })),
@@ -224,5 +229,83 @@ export class EstudanteService {
     }
 
     return deletedVinculo;
+  }
+
+  async adicionarLaudo(estudanteId: string, dados: any, arquivo: any) {
+    if (!arquivo) {
+      throw new Error('Nenhum arquivo foi enviado.');
+    }
+
+    // Faz o upload da imagem/PDF pro Google Drive
+    const linkDoArquivo = await this.googleDriveService.uploadFile(arquivo);
+
+    // Salva no banco de dados
+    return this.estudanteRepositorio.criarLaudoEDocumento(estudanteId, {
+      nomeDiagnostico: dados.diagnostico,
+      dataEmissao: dados.dataEmissao,
+      linkArquivo: linkDoArquivo,
+      tipoArquivo: arquivo.mimetype.includes('pdf') ? 'PDF' : 'IMAGEM'
+    });
+  }
+
+  // Conversão da hora para o formato adequado
+  private parseTime(timeStr: string): Date {
+    if (!timeStr) return new Date('1970-01-01T00:00:00.000Z');
+    return new Date(`1970-01-01T${timeStr}:00.000Z`);
+  }
+
+  async addMedicamento(estudanteId: string, dados: any) {
+    let medicamento = await this.estudanteRepositorio.buscarMedicamentoPorNome(dados.nomeMedicamento);
+
+    if (!medicamento) {
+      medicamento = await this.estudanteRepositorio.criarMedicamento(dados.nomeMedicamento);
+    }
+
+    return this.estudanteRepositorio.criarVinculoMedicamento({
+      estudanteId,
+      medicamentoId: medicamento.id,
+      dosagem: Number(dados.dosagem),
+      unidadeMedida: dados.unidadeMedida,
+      administradoEscola: dados.administradoNaEscola,
+      intervaloAdministracao: dados.administradoNaEscola ? Number(dados.intervaloAdministracao) : 0,
+      horarioAdministrado: (dados.administradoNaEscola && dados.horarioAdministracao)
+        ? this.parseTime(dados.horarioAdministracao)
+        : this.parseTime('00:00'),
+    });
+  }
+
+  async updateMedicamento(estudanteId: string, medicamentoId: number, dados: any) {
+    let medicamentoAtual = await this.estudanteRepositorio.buscarMedicamentoPorId(medicamentoId);
+    let novoMedicamentoId = medicamentoId;
+
+    if (medicamentoAtual && medicamentoAtual.nome !== dados.nomeMedicamento) {
+      let medExistente = await this.estudanteRepositorio.buscarMedicamentoPorNome(dados.nomeMedicamento);
+
+      if (!medExistente) {
+        medExistente = await this.estudanteRepositorio.criarMedicamento(dados.nomeMedicamento);
+      }
+      novoMedicamentoId = medExistente.id;
+    }
+
+    // Se o nome do remédio mudou, precisamos recriar o vínculo com o ID novo
+    if (novoMedicamentoId !== medicamentoId) {
+      await this.estudanteRepositorio.removerVinculoMedicamento(estudanteId, medicamentoId);
+      return this.addMedicamento(estudanteId, dados); 
+    }
+
+    // Se é o mesmo remédio, só atualiza os dados da relação
+    return this.estudanteRepositorio.atualizarVinculoMedicamento(estudanteId, medicamentoId, {
+      dosagem: Number(dados.dosagem),
+      unidadeMedida: dados.unidadeMedida,
+      administradoEscola: dados.administradoNaEscola,
+      intervaloAdministracao: dados.administradoNaEscola ? Number(dados.intervaloAdministracao) : 0,
+      horarioAdministrado: dados.administradoNaEscola && dados.horarioAdministracao 
+        ? this.parseTime(dados.horarioAdministracao) 
+        : this.parseTime('00:00'),
+    });
+  }
+
+  async removeMedicamento(estudanteId: string, medicamentoId: number) {
+    return this.estudanteRepositorio.removerVinculoMedicamento(estudanteId, medicamentoId);
   }
 }

@@ -154,7 +154,7 @@
         <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
           <h4 class="text-base font-bold font-['Sora'] text-blue-800 m-0">Laudos e Diagnósticos</h4>
           <button
-            (click)="adicionarLaudo()"
+            (click)="abrirModalLaudos()"
             class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5 cursor-pointer"
           >
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -255,7 +255,7 @@
         <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
           <h4 class="text-base font-bold font-['Sora'] text-blue-800 m-0">Medicamentos</h4>
           <button
-            (click)="adicionarMedicamento()"
+            (click)="abrirModalMedicamento()"
             class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5 cursor-pointer"
           >
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -263,10 +263,10 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M12 4v16m8-8H4"
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
               />
             </svg>
-            Novo Medicamento
+            Editar Medicamento
           </button>
         </div>
         @if (dadosSaude.medicamentos && dadosSaude.medicamentos.length > 0) {
@@ -277,7 +277,7 @@
               >
                 <div class="text-sm">
                   <span class="font-semibold text-slate-700">{{ med.nome }}</span>
-                  <span class="text-slate-400 font-normal ml-2">({{ med.dosagem }})</span>
+                  <span class="text-slate-400 font-normal ml-2">({{ med.dosagem }} {{ med.unidadeMedida | lowercase }})</span>
                 </div>
                 @if (med.administradoEscola) {
                   <span
@@ -304,6 +304,26 @@
     (salvo)="carregarDadosSaude()"
   >
   </app-modal-especificidades>
+}
+
+@if (isModalLaudosOpen) {
+  <app-modal-laudos
+    [estudanteId]="estudanteId()"
+    [laudos]="dadosSaude?.laudos || []"
+    (fechar)="fecharModalLaudos()"
+    (salvo)="carregarDadosSaude()"
+  >
+  </app-modal-laudos>
+}
+
+@if (isModalMedicamentosOpen) {
+  <app-modal-medicamentos
+    [estudanteId]="estudanteId()"
+    [medicamentos]="dadosSaude?.medicamentos || []"
+    (fechar)="fecharModalMedicamento()"
+    (salvo)="carregarDadosSaude()"
+  >
+  </app-modal-medicamentos>
 }
 
 @if (isPreviewOpen) {
