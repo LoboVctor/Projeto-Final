@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico } from './interfaces/IEstudanteRepositorio.js';
+import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico, AulaAgenda } from './interfaces/IEstudanteRepositorio.js';
 import { Especificidade, EstudanteEspecificidade, TipoEspecificidade, CategoriaEspecificidade } from '@prisma-client';
 
 @Injectable()
@@ -118,6 +118,21 @@ export class EstudanteRepository implements IEstudanteRepositorio {
         tipo,
         categoria,
         descricao: { equals: descricao, mode: 'insensitive' },
+      },
+    });
+  }
+
+ async buscarAulasDoEstudante(estudanteId: string): Promise<AulaAgenda[]> {
+    return this.prisma.client.aula.findMany({
+      where: {
+        OR: [
+         { estudanteId: estudanteId }, 
+         { turma: { estudantes: { some: { id: estudanteId } } } }
+        ]
+      },
+      include: {
+        area: true,
+        educador: true,
       },
     });
   }

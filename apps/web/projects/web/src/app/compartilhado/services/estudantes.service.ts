@@ -1,9 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../nucleo/config/api.config';
 import { EstudantePedagogico } from '../models/estudante-pedagogico.model';
 import { EstudanteVisaoGeral } from '../models/estudante-visao-geral.model';
+import { DiaAgenda } from '../models/estudante-agenda.model';
 
 export interface EspecificidadePayload {
   tipo: string;
@@ -41,6 +42,7 @@ export interface EstudanteSaude {
   providedIn: 'root'
 })
 export class EstudantesService {
+  totalEventosSemana = signal<number>(0);
   private readonly baseUrl = inject(API_BASE_URL);
 
   constructor(private http: HttpClient) {}
@@ -72,4 +74,11 @@ export class EstudantesService {
   deleteEspecificidade(estudanteId: string, especificidadeId: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/estudantes/${estudanteId}/especificidades/${especificidadeId}`);
   }
-}
+
+  // --- AGENDA ---
+  getAgendaSemana(estudanteId: string, dataBase: string): Observable<DiaAgenda[]> {
+    return this.http.get<DiaAgenda[]>(`${this.baseUrl}/estudantes/${estudanteId}/agenda/semana`, {
+      params: { dataBase }
+    });
+  }
+}

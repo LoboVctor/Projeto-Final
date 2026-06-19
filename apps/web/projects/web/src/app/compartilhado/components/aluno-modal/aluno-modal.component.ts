@@ -14,10 +14,11 @@ import { EstudanteVisaoGeral } from '../../models/estudante-visao-geral.model';
 import { BlocoVisaoGeralComponent } from '../../../funcionalidades/estudante/components/bloco-visao-geral/bloco-visao-geral.component';
 import { BlocoSaudeComponent } from '../../../funcionalidades/estudante/components/bloco-saude/bloco-saude';
 import { BlocoRelatoriosComponent } from '../../../funcionalidades/estudante/components/bloco-relatorios/bloco-relatorios';
+import { AgendaEstudanteComponent } from '../../../funcionalidades/estudante/components/agenda-estudante/agenda-estudante';
 
 @Component({
   selector: 'app-aluno-modal',
-  imports: [CommonModule, BlocoVisaoGeralComponent, BlocoSaudeComponent, BlocoRelatoriosComponent],
+  imports: [CommonModule, BlocoVisaoGeralComponent, BlocoSaudeComponent, BlocoRelatoriosComponent, AgendaEstudanteComponent],
   templateUrl: './aluno-modal.component.html',
   styleUrls: ['./aluno-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush })
@@ -36,7 +37,7 @@ export class AlunoModalComponent {
   isVisaoGeralExpanded = signal(false);
   isSaudeExpanded = signal(false);
   isRelatoriosExpanded = signal(false);
-
+  isAgendaExpanded = signal(false);
   visaoGeralData = signal<EstudanteVisaoGeral | null>(null);
   loadingVisaoGeral = signal(false);
   errorVisaoGeral = signal<string | null>(null);
@@ -113,8 +114,9 @@ export class AlunoModalComponent {
     this.isVisaoGeralExpanded.set(false);
   }
 
-  onAgenda(): void {
-    this.agendaClick.emit();
+  onAgenda() {
+    this.recolherPaineis();
+    this.isAgendaExpanded.set(true);
   }
 
   onDashboard(): void {

@@ -24,7 +24,9 @@
     "noUncheckedIndexedAccess": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
+      "@prisma/client": ["../../infra/generated/prisma"],
       "@prisma-client": ["../../infra/generated/prisma"],
+      "@prisma/client/*": ["../../infra/generated/prisma/*"],
       "@prisma-client/*": ["../../infra/generated/prisma/*"]
     }
   },
