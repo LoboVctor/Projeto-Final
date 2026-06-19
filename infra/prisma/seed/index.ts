@@ -367,7 +367,7 @@ async function main() {
   await prisma.documentoDiagnostico.create({
     data: {
       tipo: TipoDocumento.LAUDO_MEDICO,
-      arquivo: 'https://drive.google.com/file/d/1hAiGtbKqyAF-mZCTvuf5VSk6YxuCc5yh/view?usp=sharing', // Simulando a URL do arquivo
+      arquivo: 'http://localhost:3000/api/v1/uploads/laudos/1781883929415-924710107.pdf', // Simulando a URL do arquivo
       dataEmissao: new Date('2025-02-10'),
       estudanteId: lucasId,
       diagnosticoId: tea.id,

@@ -96,12 +96,16 @@ export class EstudanteService {
           tipo: doc.tipo,
           urlArquivo: doc.arquivo,
           dataEmissao: doc.dataEmissao,
+          createdAt: doc.createdAt,
         }))
       ),
 
       medicamentos: dados.medicamentos.map((m) => ({
+        medicamentoId: m.medicamentoId,
         nome: m.medicamento.nome,
-        dosagem: `${m.dosagem} ${m.unidadeMedida}`,
+        dosagem: m.dosagem,
+        unidadeMedida: m.unidadeMedida,
+        intervaloAdministracao: m.intervaloAdministracao,
         horarioAdministrado: m.horarioAdministrado,
         administradoEscola: m.administradoEscola,
       })),
@@ -224,5 +228,99 @@ export class EstudanteService {
     }
 
     return deletedVinculo;
+  }
+
+  async adicionarLaudo(estudanteId: string, dados: any, arquivo: Express.Multer.File) {
+    if (!arquivo) {
+      throw new Error('Nenhum arquivo foi enviado.');
+    }
+
+    const urlLocal = `http://localhost:3000/api/v1/uploads/laudos/${arquivo.filename}`;
+
+    return this.estudanteRepositorio.criarLaudoEDocumento(estudanteId, {
+      tipoDiagnostico: dados.tipoDiagnostico, 
+      tipoDocumento: dados.tipoDocumento,    
+      dataEmissao: dados.dataEmissao,
+      linkArquivo: urlLocal,
+    });
+  }
+
+  async removerLaudo(documentoId: string) {
+    return this.estudanteRepositorio.deletarDocumento(documentoId);
+  }
+
+  async atualizarLaudo(documentoId: string, dados: any, arquivo?: any) {
+    let linkArquivo = undefined;
+
+    if (arquivo) {
+      linkArquivo = `http://localhost:3000/api/v1/uploads/laudos/${arquivo.filename}`;
+    }
+
+    return this.estudanteRepositorio.atualizarDocumento(documentoId, {
+      tipoDocumento: dados.tipoDocumento,
+      dataEmissao: dados.dataEmissao,
+      linkArquivo
+    });
+  }
+
+  // Conversão da hora para o formato adequado
+  private parseTime(timeStr: string): Date {
+    if (!timeStr) return new Date('1970-01-01T00:00:00.000Z');
+    return new Date(`1970-01-01T${timeStr}:00.000Z`);
+  }
+
+  async addMedicamento(estudanteId: string, dados: any) {
+    let medicamento = await this.estudanteRepositorio.buscarMedicamentoPorNome(dados.nomeMedicamento);
+
+    if (!medicamento) {
+      medicamento = await this.estudanteRepositorio.criarMedicamento(dados.nomeMedicamento);
+    }
+
+    return this.estudanteRepositorio.criarVinculoMedicamento({
+      estudanteId,
+      medicamentoId: medicamento.id,
+      dosagem: Number(dados.dosagem),
+      unidadeMedida: dados.unidadeMedida,
+      administradoEscola: dados.administradoNaEscola,
+      intervaloAdministracao: dados.administradoNaEscola ? Number(dados.intervaloAdministracao) : 0,
+      horarioAdministrado: (dados.administradoNaEscola && dados.horarioAdministracao)
+        ? this.parseTime(dados.horarioAdministracao)
+        : this.parseTime('00:00'),
+    });
+  }
+
+  async updateMedicamento(estudanteId: string, medicamentoId: number, dados: any) {
+    let medicamentoAtual = await this.estudanteRepositorio.buscarMedicamentoPorId(medicamentoId);
+    let novoMedicamentoId = medicamentoId;
+
+    if (medicamentoAtual && medicamentoAtual.nome !== dados.nomeMedicamento) {
+      let medExistente = await this.estudanteRepositorio.buscarMedicamentoPorNome(dados.nomeMedicamento);
+
+      if (!medExistente) {
+        medExistente = await this.estudanteRepositorio.criarMedicamento(dados.nomeMedicamento);
+      }
+      novoMedicamentoId = medExistente.id;
+    }
+
+    // Se o nome do remédio mudou, precisamos recriar o vínculo com o ID novo
+    if (novoMedicamentoId !== medicamentoId) {
+      await this.estudanteRepositorio.removerVinculoMedicamento(estudanteId, medicamentoId);
+      return this.addMedicamento(estudanteId, dados); 
+    }
+
+    // Se é o mesmo remédio, só atualiza os dados da relação
+    return this.estudanteRepositorio.atualizarVinculoMedicamento(estudanteId, medicamentoId, {
+      dosagem: Number(dados.dosagem),
+      unidadeMedida: dados.unidadeMedida,
+      administradoEscola: dados.administradoNaEscola,
+      intervaloAdministracao: dados.administradoNaEscola ? Number(dados.intervaloAdministracao) : 0,
+      horarioAdministrado: dados.administradoNaEscola && dados.horarioAdministracao 
+        ? this.parseTime(dados.horarioAdministracao) 
+        : this.parseTime('00:00'),
+    });
+  }
+
+  async removeMedicamento(estudanteId: string, medicamentoId: number) {
+    return this.estudanteRepositorio.removerVinculoMedicamento(estudanteId, medicamentoId);
   }
 }

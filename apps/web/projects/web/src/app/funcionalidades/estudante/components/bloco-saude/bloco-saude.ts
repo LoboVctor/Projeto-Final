@@ -13,10 +13,12 @@ import {
   EstudantesService,
   EstudanteSaude } from '../../../../compartilhado/services/estudantes.service';
 import { ModalEspecificidadesComponent } from './modais/restricoes';
+import { ModalMedicamentosComponent } from './modais/medicamentos';
+import { ModalLaudosComponent } from './modais/laudos';
 
 @Component({
   selector: 'app-bloco-saude',
-  imports: [CommonModule, ModalEspecificidadesComponent],
+  imports: [CommonModule, ModalEspecificidadesComponent, ModalMedicamentosComponent, ModalLaudosComponent],
   templateUrl: './bloco-saude.html',
   styleUrls: ['./bloco-saude.css'],
   changeDetection: ChangeDetectionStrategy.OnPush })
@@ -32,6 +34,8 @@ export class BlocoSaudeComponent implements OnInit {
   isLoading = false;
   isPreviewOpen = false;
   isModalEspecificidadesOpen = false;
+  isModalMedicamentosOpen = false;
+  isModalLaudosOpen = false;
   safePreviewUrl: SafeResourceUrl | null = null;
 
   private sanitizer = inject(DomSanitizer);
@@ -89,6 +93,33 @@ export class BlocoSaudeComponent implements OnInit {
     this.isModalEspecificidadesOpen = false;
   }
 
+  onEspecificidadeSalva(): void {
+    this.fecharModalEspecificidades();
+  }
+
+  abrirModalLaudos(): void {
+    this.isModalLaudosOpen = true;
+  }
+
+  fecharModalLaudos(): void {
+    this.isModalLaudosOpen = false;
+  }
+
+  onLaudoSalvo(): void {
+    this.fecharModalLaudos();
+  }
+
+  abrirModalMedicamento(): void {
+    this.isModalMedicamentosOpen = true;
+  }
+
+  fecharModalMedicamento(): void {
+    this.isModalMedicamentosOpen = false;
+  }
+
+  onMedicamentoSalvo(): void {
+    this.fecharModalMedicamento();
+  }
 
 
   private extrairFileId(driveUrl: string): string | null {
@@ -101,14 +132,9 @@ export class BlocoSaudeComponent implements OnInit {
     return fileId ? `https://drive.google.com/uc?export=download&id=${fileId}` : driveUrl;
   }
 
-  abrirPreview(driveUrl: string): void {
-    const fileId = this.extrairFileId(driveUrl);
-    if (fileId) {
-      this.safePreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
-        `https://drive.google.com/file/d/${fileId}/preview`,
-      );
-      this.isPreviewOpen = true;
-    }
+  abrirPreview(url: string): void {
+    this.safePreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.isPreviewOpen = true;
   }
 
   fecharPreview(): void {

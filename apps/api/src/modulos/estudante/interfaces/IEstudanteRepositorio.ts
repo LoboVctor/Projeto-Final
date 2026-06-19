@@ -1,4 +1,4 @@
-import { Prisma, Estudante, EstudanteEspecificidade, Especificidade, TipoEspecificidade, CategoriaEspecificidade } from '@prisma-client';
+import { Prisma, Estudante, EstudanteEspecificidade, Especificidade, TipoEspecificidade, CategoriaEspecificidade, Medicamento, EstudanteMedicamento, UnidadeM } from '@prisma-client';
 import { EspecificidadeDto } from '../dtos/create.especifidades.dto.js';
 
 export type EstudanteVisaoGeral = Prisma.EstudanteGetPayload<{
@@ -42,14 +42,17 @@ export type EstudanteSaude = Prisma.EstudanteGetPayload<{
             tipo: true;
             arquivo: true;
             dataEmissao: true;
+            createdAt: true;
           };
         };
       };
     };
     medicamentos: {
       select: {
+        medicamentoId: true,
         dosagem: true;
         unidadeMedida: true;
+        intervaloAdministracao: true,
         horarioAdministrado: true;
         administradoEscola: true;
         medicamento: { select: { nome: true } };
@@ -107,4 +110,49 @@ export interface IEstudanteRepositorio {
   removerVinculoEspecificidade(estudanteId: string, especificidadeId: number): Promise<EstudanteEspecificidade>;
   contarVinculosEspecificidade(especificidadeId: number): Promise<number>;
   removerEspecificidade(especificidadeId: number): Promise<void>;
+  buscarMedicamentoPorNome(nome: string): Promise<Medicamento | null>;
+  
+  buscarMedicamentoPorId(id: number): Promise<Medicamento | null>;
+  
+  criarMedicamento(nome: string): Promise<Medicamento>;
+  
+  criarVinculoMedicamento(dados: {
+    estudanteId: string;
+    medicamentoId: number;
+    dosagem: number;
+    unidadeMedida: UnidadeM; 
+    administradoEscola: boolean;
+    intervaloAdministracao: number;
+    horarioAdministrado: Date;
+  }): Promise<EstudanteMedicamento>;
+  
+  atualizarVinculoMedicamento(
+    estudanteId: string, 
+    medicamentoId: number, 
+    dados: {
+      dosagem: number;
+      unidadeMedida: UnidadeM;
+      administradoEscola: boolean;
+      intervaloAdministracao: number;
+      horarioAdministrado: Date;
+    }
+  ): Promise<EstudanteMedicamento>;
+  
+  removerVinculoMedicamento(estudanteId: string, medicamentoId: number): Promise<EstudanteMedicamento>;
+
+  criarLaudoEDocumento(estudanteId: string, dados: {
+    tipoDiagnostico: string; 
+    tipoDocumento: string;  
+    dataEmissao: string;
+    linkArquivo: string;
+  }): Promise<any>;
+
+  deletarDocumento(documentoId: string): Promise<any>;
+  
+  atualizarDocumento(documentoId: string, dados: {
+    tipoDocumento: string;
+    dataEmissao: string;
+    linkArquivo?: string;
+  }): Promise<any>;
 }
+

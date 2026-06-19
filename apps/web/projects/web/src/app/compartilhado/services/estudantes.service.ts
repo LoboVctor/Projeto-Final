@@ -28,10 +28,14 @@ export interface EstudanteSaude {
     tipo: string;
     urlArquivo: string;
     dataEmissao: string;
+    createdAt: string;
   }>;
   medicamentos: Array<{
+    medicamentoId: number;
     nome: string;
-    dosagem: string;
+    dosagem: number;
+    unidadeMedida: string;
+    intervaloAdministracao: number;
     horarioAdministrado: string;
     administradoEscola: boolean;
   }>;
@@ -72,4 +76,30 @@ export class EstudantesService {
   deleteEspecificidade(estudanteId: string, especificidadeId: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/estudantes/${estudanteId}/especificidades/${especificidadeId}`);
   }
-}
+
+  // --- CRUD DE LAUDOS ---
+  uploadLaudo(estudanteId: string, formData: FormData): Observable<any> {
+    return this.http.post(`${this.baseUrl}/estudantes/${estudanteId}/laudos`, formData);
+  }
+
+  atualizarLaudo(estudanteId: string, documentoId: string, formData: FormData): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/estudantes/${estudanteId}/laudos/${documentoId}`, formData);
+  }
+
+  excluirLaudo(estudanteId: string, documentoId: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/estudantes/${estudanteId}/laudos/${documentoId}`);
+  }
+
+  // --- CRUD DE MEDICAMENTOS ---
+  saveMedicamento(estudanteId: string, dados: any) {
+    return this.http.post(`${this.baseUrl}/estudantes/${estudanteId}/medicamentos`, dados);
+  }
+
+  updateMedicamento(estudanteId: string, medicamentoId: number, dados: any) {
+    return this.http.put(`${this.baseUrl}/estudantes/${estudanteId}/medicamentos/${medicamentoId}`, dados);
+  }
+
+  deleteMedicamento(estudanteId: string, medicamentoId: number) {
+    return this.http.delete(`${this.baseUrl}/estudantes/${estudanteId}/medicamentos/${medicamentoId}`);
+  }
+}
