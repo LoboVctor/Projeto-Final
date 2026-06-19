@@ -6,6 +6,8 @@ import { EspecificidadeDto } from './dtos/create.especifidades.dto';
 import { VisaoGeralResponseDto } from './dtos/visao-geral-response.dto';
 import { UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @ApiTags('Estudantes')
 @ApiBearerAuth()
@@ -73,13 +75,46 @@ export class EstudantesController {
   // LAUDOS E DIAGNÓSTICOS
   // ==========================================
   @Post(':estudanteId/laudos')
-  @UseInterceptors(FileInterceptor('arquivo'))
+  @UseInterceptors(FileInterceptor('arquivo', {
+    storage: diskStorage({
+      destination: './uploads/laudos',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const extensao = extname(file.originalname);
+        cb(null, `${uniqueSuffix}${extensao}`);
+      }
+    })
+  }))
   async adicionarLaudo(
     @Param('estudanteId') estudanteId: string,
     @Body() body: any,
-    @UploadedFile() arquivo: any,
+    @UploadedFile() arquivo: Express.Multer.File,
   ) {
     return this.estudanteService.adicionarLaudo(estudanteId, body, arquivo);
+  }
+
+  @Delete(':estudanteId/laudos/:documentoId')
+  async removerLaudo(@Param('documentoId') documentoId: string) {
+    return this.estudanteService.removerLaudo(documentoId);
+  }
+
+  @Patch(':estudanteId/laudos/:documentoId')
+  @UseInterceptors(FileInterceptor('arquivo', {
+    storage: diskStorage({
+      destination: './uploads/laudos',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const extensao = extname(file.originalname);
+        cb(null, `${uniqueSuffix}${extensao}`);
+      }
+    })
+  }))
+  async atualizarLaudo(
+    @Param('documentoId') documentoId: string,
+    @Body() body: any,
+    @UploadedFile() arquivo?: Express.Multer.File, 
+  ) {
+    return this.estudanteService.atualizarLaudo(documentoId, body, arquivo);
   }
 
   // ==========================================

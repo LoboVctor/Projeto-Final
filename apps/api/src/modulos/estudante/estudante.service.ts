@@ -1,14 +1,12 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico } from './interfaces/IEstudanteRepositorio.js';
 import { EspecificidadeDto } from './dtos/create.especifidades.dto.js';
-import { GoogleDriveService } from './google-drive.service.js';
 
 @Injectable()
 export class EstudanteService {
   constructor(
     @Inject('IEstudanteRepositorio')
     private readonly estudanteRepositorio: IEstudanteRepositorio,
-    private readonly googleDriveService: GoogleDriveService,
   ) {}
 
   async getVisaoGeral(estudanteId: string) {
@@ -98,6 +96,7 @@ export class EstudanteService {
           tipo: doc.tipo,
           urlArquivo: doc.arquivo,
           dataEmissao: doc.dataEmissao,
+          createdAt: doc.createdAt,
         }))
       ),
 
@@ -231,20 +230,36 @@ export class EstudanteService {
     return deletedVinculo;
   }
 
-  async adicionarLaudo(estudanteId: string, dados: any, arquivo: any) {
+  async adicionarLaudo(estudanteId: string, dados: any, arquivo: Express.Multer.File) {
     if (!arquivo) {
       throw new Error('Nenhum arquivo foi enviado.');
     }
 
-    // Faz o upload da imagem/PDF pro Google Drive
-    const linkDoArquivo = await this.googleDriveService.uploadFile(arquivo);
+    const urlLocal = `http://localhost:3000/api/v1/uploads/laudos/${arquivo.filename}`;
 
-    // Salva no banco de dados
     return this.estudanteRepositorio.criarLaudoEDocumento(estudanteId, {
-      nomeDiagnostico: dados.diagnostico,
+      tipoDiagnostico: dados.tipoDiagnostico, 
+      tipoDocumento: dados.tipoDocumento,    
       dataEmissao: dados.dataEmissao,
-      linkArquivo: linkDoArquivo,
-      tipoArquivo: arquivo.mimetype.includes('pdf') ? 'PDF' : 'IMAGEM'
+      linkArquivo: urlLocal,
+    });
+  }
+
+  async removerLaudo(documentoId: string) {
+    return this.estudanteRepositorio.deletarDocumento(documentoId);
+  }
+
+  async atualizarLaudo(documentoId: string, dados: any, arquivo?: any) {
+    let linkArquivo = undefined;
+
+    if (arquivo) {
+      linkArquivo = `http://localhost:3000/api/v1/uploads/laudos/${arquivo.filename}`;
+    }
+
+    return this.estudanteRepositorio.atualizarDocumento(documentoId, {
+      tipoDocumento: dados.tipoDocumento,
+      dataEmissao: dados.dataEmissao,
+      linkArquivo
     });
   }
 

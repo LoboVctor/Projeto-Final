@@ -132,14 +132,9 @@ export class BlocoSaudeComponent implements OnInit {
     return fileId ? `https://drive.google.com/uc?export=download&id=${fileId}` : driveUrl;
   }
 
-  abrirPreview(driveUrl: string): void {
-    const fileId = this.extrairFileId(driveUrl);
-    if (fileId) {
-      this.safePreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
-        `https://drive.google.com/file/d/${fileId}/preview`,
-      );
-      this.isPreviewOpen = true;
-    }
+  abrirPreview(url: string): void {
+    this.safePreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.isPreviewOpen = true;
   }
 
   fecharPreview(): void {

@@ -53,6 +53,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
                 tipo: true,
                 arquivo: true,
                 dataEmissao: true,
+                createdAt: true,
               },
             },
           },
@@ -184,33 +185,54 @@ export class EstudanteRepository implements IEstudanteRepositorio {
   }
 
   async criarLaudoEDocumento(estudanteId: string, dados: {
-    nomeDiagnostico: string;
+    tipoDiagnostico: string;
+    tipoDocumento: string;
     dataEmissao: string;
     linkArquivo: string;
-    tipoArquivo: string;
   }) {
+    
+    // 1. Busca ou cria o Diagnóstico Base
     let diagnosticoBase = await this.prisma.client.diagnostico.findFirst({
-      where: { nome: { equals: dados.nomeDiagnostico, mode: 'insensitive' } }
+      where: { tipo: dados.tipoDiagnostico as any }
     });
 
     if (!diagnosticoBase) {
       diagnosticoBase = await this.prisma.client.diagnostico.create({
         data: {
-          nome: dados.nomeDiagnostico,
+          nome: dados.tipoDiagnostico, 
           descricao: '',
-          tipo: 'OUTRO', 
+          tipo: dados.tipoDiagnostico as any, 
         },
       });
     }
 
-    return this.prisma.client.estudanteDiagnostico.create({
-      data: {
+    // 2. Cria o vínculo novo OU atualiza o vínculo existente (UPSERT)
+    return this.prisma.client.estudanteDiagnostico.upsert({
+      where: {
+        // Usa a chave composta para encontrar a relação única
+        estudanteId_diagnosticoId: {
+          estudanteId,
+          diagnosticoId: diagnosticoBase.id,
+        }
+      },
+      update: {
+        // Se o aluno já tem o diagnóstico, apenas joga o arquivo novo lá dentro!
+        documentos: {
+          create: {
+            tipo: dados.tipoDocumento as any,
+            arquivo: dados.linkArquivo, 
+            dataEmissao: new Date(dados.dataEmissao)
+          }
+        }
+      },
+      create: {
+        // Se o aluno NÃO tem o diagnóstico, cria a relação e já insere o arquivo!
         estudanteId,
         diagnosticoId: diagnosticoBase.id,
         documentos: {
           create: {
-            tipo: dados.tipoArquivo as any, 
-            arquivo: dados.linkArquivo, // link do Google Drive!
+            tipo: dados.tipoDocumento as any,
+            arquivo: dados.linkArquivo, 
             dataEmissao: new Date(dados.dataEmissao)
           }
         }
@@ -218,6 +240,26 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     });
   }
 
+  async deletarDocumento(documentoId: string) {
+    return this.prisma.client.documentoDiagnostico.delete({
+      where: { id: documentoId }
+    });
+  }
+
+  async atualizarDocumento(documentoId: string, dados: {
+    tipoDocumento: string;
+    dataEmissao: string;
+    linkArquivo?: string;
+  }) {
+    return this.prisma.client.documentoDiagnostico.update({
+      where: { id: documentoId },
+      data: {
+        tipo: dados.tipoDocumento as any,
+        dataEmissao: new Date(dados.dataEmissao),
+        ...(dados.linkArquivo && { arquivo: dados.linkArquivo })
+      }
+    });
+  }
 
   async buscarMedicamentoPorNome(nome: string) {
     // Usamos 'insensitive' para evitar duplicar "Ritalina" e "ritalina"

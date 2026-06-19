@@ -162,10 +162,10 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
               />
             </svg>
-            Anexar Laudo
+            Editar Laudos
           </button>
         </div>
         @if (dadosSaude.laudos && dadosSaude.laudos.length > 0) {
@@ -198,9 +198,16 @@
                     >
                       {{ laudo.diagnostico }}
                     </p>
-                    <p class="text-xs text-slate-500 m-0 mt-1">
-                      Emitido em: {{ laudo.dataEmissao | date: 'dd/MM/yyyy' : 'UTC' }}
-                    </p>
+                    
+                    <div class="flex items-center gap-3 mt-1">
+                      <p class="text-xs text-slate-500 m-0 whitespace-nowrap">
+                        Emitido em: <span class="font-medium text-slate-500">{{ laudo.dataEmissao | date:'dd/MM/yyyy':'UTC' }}</span>
+                      </p>
+                      <span class="text-xs text-slate-400 font-medium whitespace-nowrap border-l border-gray-300 pl-3">
+                        Inserido em: <span class="font-medium text-slate-500">{{ laudo.createdAt | date:'dd/MM/yyyy': 'UTC' }}</span>
+                      </span>
+                    </div>
+
                   </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">

@@ -42,6 +42,7 @@ export type EstudanteSaude = Prisma.EstudanteGetPayload<{
             tipo: true;
             arquivo: true;
             dataEmissao: true;
+            createdAt: true;
           };
         };
       };
@@ -140,10 +141,18 @@ export interface IEstudanteRepositorio {
   removerVinculoMedicamento(estudanteId: string, medicamentoId: number): Promise<EstudanteMedicamento>;
 
   criarLaudoEDocumento(estudanteId: string, dados: {
-    nomeDiagnostico: string;
+    tipoDiagnostico: string; 
+    tipoDocumento: string;  
     dataEmissao: string;
     linkArquivo: string;
-    tipoArquivo: string;
+  }): Promise<any>;
+
+  deletarDocumento(documentoId: string): Promise<any>;
+  
+  atualizarDocumento(documentoId: string, dados: {
+    tipoDocumento: string;
+    dataEmissao: string;
+    linkArquivo?: string;
   }): Promise<any>;
 }
 

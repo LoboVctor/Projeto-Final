@@ -28,6 +28,7 @@ export interface EstudanteSaude {
     tipo: string;
     urlArquivo: string;
     dataEmissao: string;
+    createdAt: string;
   }>;
   medicamentos: Array<{
     medicamentoId: number;
@@ -79,6 +80,14 @@ export class EstudantesService {
   // --- CRUD DE LAUDOS ---
   uploadLaudo(estudanteId: string, formData: FormData): Observable<any> {
     return this.http.post(`${this.baseUrl}/estudantes/${estudanteId}/laudos`, formData);
+  }
+
+  atualizarLaudo(estudanteId: string, documentoId: string, formData: FormData): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/estudantes/${estudanteId}/laudos/${documentoId}`, formData);
+  }
+
+  excluirLaudo(estudanteId: string, documentoId: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/estudantes/${estudanteId}/laudos/${documentoId}`);
   }
 
   // --- CRUD DE MEDICAMENTOS ---
