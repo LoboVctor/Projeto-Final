@@ -6,7 +6,7 @@
     <div
       class="bg-white rounded-3xl shadow-xl relative transition-all duration-300 ease-in-out my-auto flex flex-col md:flex-row"
       [class]="
-        isVisaoGeralExpanded() || isSaudeExpanded() || isRelatoriosExpanded()
+        isVisaoGeralExpanded() || isSaudeExpanded() || isRelatoriosExpanded() || isDashboardExpanded()
           ? 'w-full max-w-5xl md:max-w-6xl'
           : 'w-full max-w-sm md:max-w-md'
       "
@@ -15,7 +15,7 @@
       <div
         class="relative p-6 md:p-8 flex-shrink-0"
         [class]="
-          isVisaoGeralExpanded() || isSaudeExpanded() || isRelatoriosExpanded()
+          isVisaoGeralExpanded() || isSaudeExpanded() || isRelatoriosExpanded() || isDashboardExpanded()
             ? 'w-full md:w-[350px] border-b md:border-b-0 md:border-r border-elo-borda'
             : 'w-full'
         "
@@ -261,7 +261,7 @@
           </div>
         }
       </div>
-      @if (isVisaoGeralExpanded() || isSaudeExpanded() || isRelatoriosExpanded()) {
+      @if (isVisaoGeralExpanded() || isSaudeExpanded() || isRelatoriosExpanded() || isDashboardExpanded()) {
         @if (isVisaoGeralExpanded()) {
           <app-bloco-visao-geral
             [visaoGeralData]="visaoGeralData()"
@@ -280,6 +280,12 @@
         @if (isRelatoriosExpanded()) {
           <app-bloco-relatorios [estudanteId]="aluno!.id" (recolher)="recolherPaineis()">
           </app-bloco-relatorios>
+        }
+        @if (isDashboardExpanded()) {
+          <app-bloco-dashboard 
+            [estudanteId]="aluno!.id" 
+            (recolher)="recolherPaineis()">
+          </app-bloco-dashboard>
         }
       }
     </div>

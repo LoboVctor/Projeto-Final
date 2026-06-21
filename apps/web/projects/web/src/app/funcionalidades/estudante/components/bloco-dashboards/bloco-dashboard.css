@@ -1,0 +1,20 @@
+/* Animação suave ao alternar entre o Dashboard Principal e o Modal Interno */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Garante que os tooltips ou overlays do ChartJS fiquem corretos */
+canvas {
+  max-width: 100%;
+}

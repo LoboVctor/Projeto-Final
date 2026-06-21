@@ -1,0 +1,201 @@
+<div class="flex-1 bg-gray-50/50 p-6 md:p-8 rounded-r-3xl overflow-y-auto h-full max-h-[90vh] md:max-h-[85vh] relative w-full flex flex-col">
+  
+  <div class="flex items-center justify-between mb-8 shrink-0">
+    <div class="flex items-center space-x-3 text-blue-700">
+      <div class="bg-blue-100 p-2 rounded-full flex items-center justify-center w-10 h-10">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold font-sora">Dashboard</h2>
+        <p class="text-sm text-elo-texto-secundario">Visão geral de desempenho da rotina do aluno</p>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-3">
+      <button
+        (click)="onRecolher()"
+        class="flex items-center space-x-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>Recolher</span>
+      </button>
+    </div>
+  </div>
+
+  @if (!dashboardData()) {
+    <div class="text-center py-10 text-blue-600 font-medium opacity-70 flex-1">
+      <p>⏳ Carregando métricas analíticas...</p>
+    </div>
+  }
+
+  @if (dashboardData(); as data) {
+    <div class="flex justify-between items-center mb-6 shrink-0">
+      <div class="flex items-center space-x-2">
+        <span class="text-sm text-gray-500 font-medium">Período</span>
+        <select 
+          [value]="periodo()" 
+          (change)="onPeriodoChange($event)"
+          class="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 cursor-pointer outline-none">
+          <option value="semana">Últimos 7 dias</option>
+          <option value="mes">Últimos 30 dias</option>
+          <option value="semestre">Último Semestre</option>
+        </select>
+      </div>
+      
+      <button class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center space-x-1.5 cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>Exportar Relatório</span>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6 shrink-0 items-stretch">
+      
+      <div class="lg:col-span-6 flex flex-col gap-4">
+        
+        <div class="bg-orange-50/50 border border-orange-100 rounded-2xl p-6 flex flex-col items-center justify-center relative shadow-sm flex-1 min-h-[200px]">
+          <div class="absolute top-4 right-4 w-3 h-3 rounded-full bg-orange-200"></div>
+          
+          <h3 class="text-lg font-bold text-gray-800 mb-2">Média Geral</h3>
+          
+          <div class="relative w-48 h-24 mb-2 shrink-0">
+            <canvas id="mediaGaugeCanvas"></canvas>
+            <div class="absolute bottom-0 w-full text-center">
+              <span class="text-4xl font-extrabold text-gray-800">{{ data.mediaGeral.valor | number:'1.1-1' }}</span><span class="text-gray-500 text-xl">/5</span>
+            </div>
+          </div>
+          <p class="text-sm font-medium text-gray-500 mb-2">Desempenho global</p>
+          
+          <div class="flex items-center text-xs font-semibold" [ngClass]="data.mediaGeral.variacao >= 0 ? 'text-green-600' : 'text-red-500'">
+            <span class="mr-1">{{ data.mediaGeral.variacao >= 0 ? '↑' : '↓' }}</span>
+            <span>{{ data.mediaGeral.variacao | number:'1.1-1' }} em relação ao período anterior</span>
+          </div>
+        </div>
+
+        <div class="bg-white border border-gray-100 rounded-2xl px-4 py-3 shadow-sm flex items-center justify-between shrink-0">
+          <div class="flex items-center space-x-3">
+            <div class="bg-green-50 p-2 rounded-xl text-green-600 flex items-center justify-center">
+              <i class="fa-solid fa-users text-sm"></i>
+            </div>
+            <h3 class="text-sm font-bold text-gray-800 m-0">Frequência</h3>
+          </div>
+          
+          <div class="relative w-20 h-10 shrink-0">
+            <canvas id="frequenciaGaugeCanvas"></canvas>
+            <div class="absolute bottom-0 w-full text-center flex justify-center items-end">
+              <span class="text-base font-extrabold text-gray-800 leading-none">{{ data.frequencia.valor }}%</span>
+            </div>
+          </div>
+          
+          <div class="text-[10px] font-semibold px-2 py-1 rounded-lg bg-gray-50 border border-gray-100 flex items-center" [ngClass]="data.frequencia.variacao >= 0 ? 'text-green-600' : 'text-red-500'">
+            <span class="mr-0.5">{{ data.frequencia.variacao >= 0 ? '↑' : '↓' }}</span>
+            <span>{{ data.frequencia.variacao >= 0 ? '+' : '' }}{{ data.frequencia.variacao | number:'1.1-1' }}</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="lg:col-span-6 flex flex-col">
+        <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex-1 flex flex-col min-h-[300px]">
+          <div class="mb-2 shrink-0">
+            <h3 class="text-base font-bold text-gray-800 m-0">Desenvolvimento por Categoria</h3>
+            <p class="text-xs text-gray-500 m-0">Média do período selecionado.</p>
+          </div>
+          
+          <div class="flex-1 w-full relative">
+            <div class="absolute inset-0">
+              <canvas id="radarCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-6">
+      @for (item of [
+        { key: 'Alimentacao', title: 'Alimentação', color: 'text-green-600', bgIcon: 'bg-green-50', svgPath: 'M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2H3zm14 0v11h1v8h2v-8h1V2c-1.1 0-2 .9-2 2v7h-2V2h-1z' },
+        { key: 'Banheiro', title: 'Banheiro', color: 'text-blue-500', bgIcon: 'bg-blue-50', svgPath: 'M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm1.5 13H14v-1.5h-2V15H9v-2.5h3v-1.5h2.5V15z' },
+        { key: 'Autonomia', title: 'Autonomia', color: 'text-orange-500', bgIcon: 'bg-orange-50', svgPath: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z' },
+        { key: 'Comportamento', title: 'Comportamento', color: 'text-purple-600', bgIcon: 'bg-purple-50', svgPath: 'M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM8.5 8c.83 0 1.5.67 1.5 1.5S9.33 11 8.5 11 7 10.33 7 9.5 7.67 8 8.5 8zM12 18c-2.28 0-4.22-1.66-5-4h10c-.78 2.34-2.72 4-5 4zm3.5-7c-.83 0-1.5-.67-1.5-1.5S14.67 8 15.5 8s1.5.67 1.5 1.5S16.33 11 15.5 11z' },
+        { key: 'Interacao', title: 'Interação Social', color: 'text-teal-500', bgIcon: 'bg-teal-50', svgPath: 'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z' },
+        { key: 'Foco', title: 'Foco nas Atividades', color: 'text-red-500', bgIcon: 'bg-red-50', svgPath: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm4-8c0 2.21-1.79 4-4 4s-4-1.79-4-4 1.79-4 4-4 4 1.79 4 4zm-4-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z' }
+      ]; track item.key) {
+        
+        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm group hover:shadow-md hover:border-blue-100 transition-all duration-200">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+              <div class="p-2 rounded-lg flex items-center justify-center w-10 h-10" [ngClass]="[item.bgIcon, item.color]">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                  <path [attr.d]="item.svgPath" />
+                </svg>
+              </div>
+              <h4 class="font-bold text-gray-800 text-sm">{{ item.title }}</h4>
+            </div>
+            
+            <button 
+              (click)="abrirDetalheCategoria(item.title)"
+              class="text-xs font-semibold px-2.5 py-1 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 cursor-pointer flex items-center justify-center"
+              title="Ver Evolução"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            </button>
+          </div>
+          
+          <div class="mb-1">
+            <span class="text-3xl font-extrabold text-gray-800">{{ data.categorias[item.key]?.valor | number:'1.1-1' }}</span>
+            <span class="text-gray-400 font-medium">/5</span>
+          </div>
+          <p class="text-xs text-gray-400 mb-4">Desempenho médio</p>
+          
+          <div class="flex items-center text-xs font-semibold" [ngClass]="data.categorias[item.key]?.variacao >= 0 ? 'text-green-600' : 'text-red-500'">
+            <span class="mr-1">{{ data.categorias[item.key]?.variacao >= 0 ? '↑' : '↓' }}</span>
+            <span>{{ data.categorias[item.key]?.variacao | number:'1.1-1' }} em relação ao período anterior</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@if (categoriaSelecionada()) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl h-[70vh] flex flex-col overflow-hidden border border-gray-100 relative" (click)="$event.stopPropagation()">
+      
+      <div class="flex items-center justify-between p-4 border-b border-gray-100 bg-slate-50 shrink-0">
+        <div>
+          <h3 class="text-sm font-bold font-['Sora'] text-slate-700 m-0">Evolução Analítica: {{ categoriaSelecionada() }}</h3>
+          <p class="text-xs text-slate-500 mt-1 m-0">Acompanhamento dos indicadores do período</p>
+        </div>
+        <button (click)="fecharDetalheCategoria()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-200/60 transition-colors cursor-pointer">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex-1 bg-slate-50/50 p-6 flex flex-col overflow-y-auto">
+        
+        <div class="flex justify-center mb-8 shrink-0">
+          <div class="bg-white p-1 rounded-xl inline-flex text-sm border border-gray-200 shadow-sm">
+            <button (click)="mudarPeriodo('semana')" [class]="periodo() === 'semana' ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' : 'text-gray-500 hover:text-gray-700'" class="px-6 py-2 rounded-lg transition-all cursor-pointer">Semana Atual</button>
+            <button (click)="mudarPeriodo('mes')" [class]="periodo() === 'mes' ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' : 'text-gray-500 hover:text-gray-700'" class="px-6 py-2 rounded-lg transition-all cursor-pointer">Mês</button>
+            <button (click)="mudarPeriodo('semestre')" [class]="periodo() === 'semestre' ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' : 'text-gray-500 hover:text-gray-700'" class="px-6 py-2 rounded-lg transition-all cursor-pointer">Semestre</button>
+          </div>
+        </div>
+
+        <div class="flex-1 w-full relative min-h-[300px]">
+          <div class="absolute inset-0 bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+             <canvas id="historicoCanvas"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+}
