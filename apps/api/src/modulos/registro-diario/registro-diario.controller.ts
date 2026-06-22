@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Put } from '@nestjs/common';
 import { RegistroDiarioService } from './registro-diario.service.js';
 import { CreateRegistrosDiarioDto } from './dtos/create-registros-diario.dto.js';
 import { UpdateRegistrosDiarioDto } from './dtos/update-registros-diario.dto.js';
@@ -10,6 +10,16 @@ export class RegistroDiarioController {
   @Post()
   create(@Body() createRegistrosDiarioDto: CreateRegistrosDiarioDto) {
     return this.registroDiarioService.create(createRegistrosDiarioDto);
+  }
+
+  @Put('salvar')
+  upsert(@Body() dto: CreateRegistrosDiarioDto) {
+    return this.registroDiarioService.upsertRegistro(dto);
+  }
+
+  @Get('semana')
+  getSemana(@Query('estudanteId') estudanteId: string, @Query('data') data: string) {
+    return this.registroDiarioService.getSemana(estudanteId, data);
   }
 
   @Get('alertas')

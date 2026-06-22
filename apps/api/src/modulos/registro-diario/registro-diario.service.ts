@@ -63,6 +63,73 @@ export class RegistroDiarioService {
     return this.registroDiarioRepositorio.atualizar(id, dadosAtualizados);
   }
 
+  async getSemana(estudanteId: string, dataBaseStr: string) {
+    const dataBase = new Date(dataBaseStr);
+    if (isNaN(dataBase.getTime())) {
+      throw new Error('Data inválida');
+    }
+    
+    // Calcula domingo (0) e sábado (6) da semana
+    const diaDaSemana = dataBase.getDay();
+    const domingo = new Date(dataBase);
+    domingo.setDate(dataBase.getDate() - diaDaSemana);
+    domingo.setHours(0, 0, 0, 0);
+
+    const sabado = new Date(domingo);
+    sabado.setDate(domingo.getDate() + 6);
+    sabado.setHours(23, 59, 59, 999);
+
+    const registros = await this.registroDiarioRepositorio.buscarPorPeriodo(estudanteId, domingo, sabado);
+
+    // Monta o array de 7 dias
+    const semana = [];
+    for (let i = 0; i < 7; i++) {
+      const dataAtual = new Date(domingo);
+      dataAtual.setDate(domingo.getDate() + i);
+      
+      const registroDoDia = registros.find(r => {
+        const d = new Date(r.data);
+        return d.getDate() === dataAtual.getDate() && d.getMonth() === dataAtual.getMonth() && d.getFullYear() === dataAtual.getFullYear();
+      });
+
+      semana.push({
+        data: dataAtual,
+        registro: registroDoDia || null,
+      });
+    }
+
+    return semana;
+  }
+
+  async upsertRegistro(dto: CreateRegistrosDiarioDto) {
+    const dataOperacao = dto.data ? new Date(dto.data) : new Date();
+    dataOperacao.setHours(0, 0, 0, 0);
+
+    const existente = await this.registroDiarioRepositorio.buscarPorEstudanteEData(dto.estudanteId, dataOperacao);
+
+    const dados = {
+      scoreComportamento: dto.scoreComportamento,
+      scoreInteracao: dto.scoreInteracao,
+      scoreFoco: dto.scoreFoco,
+      scoreAutonomia: dto.scoreAutonomia,
+      statusAlimentacao: dto.statusAlimentacao,
+      usoBanheiro: dto.usoBanheiro,
+      anotacoes: dto.anotacoes,
+      preenchido: dto.preenchido ?? true,
+    };
+
+    if (existente) {
+      return this.registroDiarioRepositorio.atualizar(existente.id, dados);
+    } else {
+      return this.registroDiarioRepositorio.criar({
+        ...dados,
+        estudanteId: dto.estudanteId,
+        educadorId: dto.educadorId,
+        data: dataOperacao,
+      });
+    }
+  }
+
   async remove(id: string) {
     await this.findOne(id);
     return this.registroDiarioRepositorio.remover(id);

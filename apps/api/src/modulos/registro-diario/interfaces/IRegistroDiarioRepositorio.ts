@@ -19,4 +19,6 @@ export interface IRegistroDiarioRepositorio {
   remover(id: string): Promise<RegistroDiario>;
   buscarEstudantesParaGeracaoAutomatica(): Promise<EstudanteParaGeracaoDiario[]>;
   criarVarios(registros: Prisma.RegistroDiarioCreateManyInput[]): Promise<{ count: number }>;
+  buscarPorPeriodo(estudanteId: string, dataInicio: Date, dataFim: Date): Promise<RegistroDiario[]>;
+  buscarPorEstudanteEData(estudanteId: string, data: Date): Promise<RegistroDiario | null>;
 }

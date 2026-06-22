@@ -90,4 +90,23 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
       skipDuplicates: true,
     });
   }
+
+  async buscarPorPeriodo(estudanteId: string, dataInicio: Date, dataFim: Date): Promise<RegistroDiario[]> {
+    return this.prisma.client.registroDiario.findMany({
+      where: {
+        estudanteId,
+        data: { gte: dataInicio, lte: dataFim },
+      },
+      orderBy: { data: 'asc' },
+    });
+  }
+
+  async buscarPorEstudanteEData(estudanteId: string, data: Date): Promise<RegistroDiario | null> {
+    return this.prisma.client.registroDiario.findFirst({
+      where: {
+        estudanteId,
+        data,
+      },
+    });
+  }
 }
