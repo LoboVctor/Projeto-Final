@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Put } from '@nestjs/common';
 import { RegistroDiarioService } from './registro-diario.service.js';
 import { CreateRegistrosDiarioDto } from './dtos/create-registros-diario.dto.js';
 import { UpdateRegistrosDiarioDto } from './dtos/update-registros-diario.dto.js';
+import { AnalyticsQueryDto } from './dtos/analytics-query.dto.js';
 
 @Controller('registros-diarios')
 export class RegistroDiarioController {
@@ -12,6 +13,27 @@ export class RegistroDiarioController {
     return this.registroDiarioService.create(createRegistrosDiarioDto);
   }
 
+  @Put('salvar')
+  upsert(@Body() dto: CreateRegistrosDiarioDto) {
+    return this.registroDiarioService.upsertRegistro(dto);
+  }
+
+  @Get('semana')
+  getSemana(@Query('estudanteId') estudanteId: string, @Query('data') data: string) {
+    return this.registroDiarioService.getSemana(estudanteId, data);
+  }
+
+  @Get('analytics/:id')
+  @Get('analytics/:id')
+  async getAnalytics(@Param('id') id: string, @Query() query: AnalyticsQueryDto) {
+    return this.registroDiarioService.getStudentAnalytics(id, query.periodo, query.categoria, query.dataInicio, query.dataFim);
+  }
+
+  @Get('dashboard/:id')
+  async getDashboardSummary(@Param('id') id: string, @Query() query: AnalyticsQueryDto) {
+    return this.registroDiarioService.getDashboardSummary(id, query.periodo);
+  }
+  
   @Get('alertas')
   findAlertas(@Query('educadorId') educadorId: string) {
     return this.registroDiarioService.findAlertasDiasAnteriores(educadorId);
@@ -31,6 +53,7 @@ export class RegistroDiarioController {
   findOne(@Param('id') id: string) {
     return this.registroDiarioService.findOne(id);
   }
+
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRegistrosDiarioDto: UpdateRegistrosDiarioDto) {

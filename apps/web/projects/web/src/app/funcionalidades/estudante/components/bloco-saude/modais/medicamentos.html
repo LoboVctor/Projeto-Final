@@ -1,0 +1,160 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-gray-100">
+    
+    <div class="flex items-center justify-between p-5 border-b border-gray-100 bg-slate-50">
+      <div>
+        <h3 class="text-lg font-bold font-['Sora'] text-slate-700 m-0">
+          {{ editingMedicamentoId ? 'Editar Medicamento' : 'Novo Medicamento' }}
+        </h3>
+        <p class="text-xs text-slate-500 m-0 mt-0.5">
+          Adicione e gerencie as medicações e horários do estudante.
+        </p>
+      </div>
+      <button (click)="emitirFechar()" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <form [formGroup]="medicamentoForm" (ngSubmit)="salvar()" class="p-6 space-y-5 m-0">
+      
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-600 font-['Sora']">Nome do Medicamento *</label>
+        <input 
+          type="text" 
+          formControlName="nomeMedicamento"
+          placeholder="Ex: Ritalina, Depakene"
+          class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm" />
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Dosagem *</label>
+          <input 
+            type="number" 
+            formControlName="dosagem"
+            placeholder="Ex: 10"
+            class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm" />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Unidade de Medida *</label>
+          <select 
+            formControlName="unidadeMedida" 
+            class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium">
+            <option value="MG">mg (Miligramas)</option>
+            <option value="ML">ml (Mililitros)</option>
+            <option value="GOTAS">Gotas</option>
+            <option value="COMPRIMIDO">Comprimido(s)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 bg-slate-50">
+        <input 
+          type="checkbox" 
+          formControlName="administradoNaEscola"
+          id="adminEscola"
+          class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-600 cursor-pointer" />
+        <label for="adminEscola" class="text-sm font-bold text-slate-700 cursor-pointer select-none">
+          Este medicamento precisa ser administrado na escola?
+        </label>
+      </div>
+
+      @if (medicamentoForm.get('administradoNaEscola')?.value) {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg border border-purple-100 bg-purple-50/50">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">Horário Base</label>
+            <input 
+              type="time" 
+              formControlName="horarioAdministracao"
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-white focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm" />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">Intervalo (Horas)</label>
+            <input 
+              type="number" 
+              formControlName="intervaloAdministracao"
+              placeholder="Ex: 8"
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-white focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm" />
+          </div>
+        </div>
+      }
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
+        @if (editingMedicamentoId) {
+          <button 
+            type="button" 
+            (click)="cancelarEdicao()" 
+            class="px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+            Cancelar Edição
+          </button>
+        }
+        @if (!editingMedicamentoId) {
+          <button 
+            type="button" 
+            (click)="emitirFechar()" 
+            class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">
+            Fechar
+          </button>
+        }
+        <button 
+          type="submit" 
+          [disabled]="medicamentoForm.invalid"
+          class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xs">
+          {{ editingMedicamentoId ? 'Atualizar Dados' : 'Adicionar Medicamento' }}
+        </button>
+      </div>
+
+    </form>
+
+    @if (medicamentos && medicamentos.length > 0) {
+      <div class="p-6 bg-slate-50 border-t border-gray-100 flex-1 overflow-y-auto max-h-[220px]">
+        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 font-['Sora']">
+          Medicamentos Atuais do Aluno
+        </h4>
+        <div class="space-y-2">
+          @for (med of medicamentos; track med.medicamentoId) {
+            <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-2xs">
+              <div class="min-w-0 flex-1 pr-3">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-sm mr-2 inline-block uppercase bg-blue-100 text-blue-800">
+                  {{ med.dosagem }} {{ med.unidadeMedida | lowercase }}
+                </span>
+                
+                @if (med.administradoEscola) {
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-sm mr-2 inline-block uppercase bg-purple-100 text-purple-800">
+                    Na Escola
+                  </span>
+                }
+                
+                <span class="text-sm font-semibold text-slate-700 truncate">{{ med.nome }}</span>
+              </div>
+              
+              <div class="flex items-center gap-1 shrink-0">
+                <button 
+                  (click)="selecionarParaEdicao(med)" 
+                  class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer" 
+                  title="Editar">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </button>
+                <button 
+                  (click)="excluir(med.medicamentoId)" 
+                  class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer" 
+                  title="Excluir">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

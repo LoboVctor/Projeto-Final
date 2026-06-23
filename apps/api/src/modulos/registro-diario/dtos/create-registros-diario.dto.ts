@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsOptional, IsUUID, IsBoolean } from 'class-validator';
+import { IsString, IsInt, IsOptional, IsUUID, IsBoolean, IsDateString } from 'class-validator';
 
 export class CreateRegistrosDiarioDto {
   @IsUUID()
@@ -10,6 +10,10 @@ export class CreateRegistrosDiarioDto {
   @IsBoolean()
   @IsOptional()
   preenchido?: boolean;
+
+  @IsDateString()
+  @IsOptional()
+  data?: string;
 
   @IsInt()
   scoreComportamento!: number;

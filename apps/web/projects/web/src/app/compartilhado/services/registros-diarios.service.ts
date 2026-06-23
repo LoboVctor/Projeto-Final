@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { RegistroDiarioPendente } from '../models/registros-diarios.models';
+import { RegistroDiarioPendente, DiaSemanaRegistro, RegistroDiario, RegistroDiarioPayload } from '../models/registros-diarios.models';
 import { API_BASE_URL } from '../../nucleo/config/api.config';
 
 export interface ResumoMensalResponse {
@@ -31,4 +31,17 @@ export class RegistrosDiariosService {
     const params = new HttpParams().set('educadorId', educadorId);
     return this.http.get<ResumoMensalResponse>(`${this.API}/resumo-mensal`, { params });
   }
-}
+
+  /** Busca a semana de registros para um estudante baseando-se numa data-base */
+  getSemana(estudanteId: string, data: string): Observable<DiaSemanaRegistro[]> {
+    const params = new HttpParams()
+      .set('estudanteId', estudanteId)
+      .set('data', data);
+    return this.http.get<DiaSemanaRegistro[]>(`${this.API}/semana`, { params });
+  }
+
+  /** Salva ou atualiza um registro diário — envia payload completo compatível com o DTO do backend */
+  salvarRegistro(payload: RegistroDiarioPayload): Observable<RegistroDiario> {
+    return this.http.put<RegistroDiario>(`${this.API}/salvar`, payload);
+  }
+}

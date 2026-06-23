@@ -19,6 +19,11 @@ import { AgendaEstudanteComponent } from '../../../funcionalidades/estudante/com
 @Component({
   selector: 'app-aluno-modal',
   imports: [CommonModule, BlocoVisaoGeralComponent, BlocoSaudeComponent, BlocoRelatoriosComponent, AgendaEstudanteComponent],
+import { BlocoAgendaComponent } from '../../../funcionalidades/estudante/components/bloco-agenda/bloco-agenda.component';
+
+@Component({
+  selector: 'app-aluno-modal',
+  imports: [CommonModule, BlocoVisaoGeralComponent, BlocoSaudeComponent, BlocoRelatoriosComponent, BlocoAgendaComponent],
   templateUrl: './aluno-modal.component.html',
   styleUrls: ['./aluno-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush })
@@ -38,6 +43,7 @@ export class AlunoModalComponent {
   isSaudeExpanded = signal(false);
   isRelatoriosExpanded = signal(false);
   isAgendaExpanded = signal(false);
+
   visaoGeralData = signal<EstudanteVisaoGeral | null>(null);
   loadingVisaoGeral = signal(false);
   errorVisaoGeral = signal<string | null>(null);
@@ -46,6 +52,7 @@ export class AlunoModalComponent {
     this.isVisaoGeralExpanded.set(false);
     this.isSaudeExpanded.set(false);
     this.isRelatoriosExpanded.set(false);
+    this.isAgendaExpanded.set(false);
     this.isInfoGeraisOpen.set(false);
     this.visaoGeralData.set(null);
     this.fecharModal.emit();
@@ -59,6 +66,7 @@ export class AlunoModalComponent {
     if (!this.aluno) return;
     this.isSaudeExpanded.set(false);
     this.isRelatoriosExpanded.set(false);
+    this.isAgendaExpanded.set(false);
     this.isVisaoGeralExpanded.set(true);
 
     if (this.visaoGeralData()?.id === this.aluno.id) {
@@ -72,6 +80,7 @@ export class AlunoModalComponent {
     if (!this.aluno) return;
     this.isVisaoGeralExpanded.set(false);
     this.isRelatoriosExpanded.set(false);
+    this.isAgendaExpanded.set(false);
     this.isSaudeExpanded.set(true);
   }
 
@@ -79,13 +88,21 @@ export class AlunoModalComponent {
     if (!this.aluno) return;
     this.isVisaoGeralExpanded.set(false);
     this.isSaudeExpanded.set(false);
+    this.isAgendaExpanded.set(false);
     this.isRelatoriosExpanded.set(true);
+  }
+
+  onDashboard(): void {
+    if (!this.aluno) return;
+    this.recolherPaineis();
+    this.isDashboardExpanded.set(true);
   }
 
   recolherPaineis(): void {
     this.isVisaoGeralExpanded.set(false);
     this.isSaudeExpanded.set(false);
     this.isRelatoriosExpanded.set(false);
+    this.isAgendaExpanded.set(false);
   }
 
   carregarVisaoGeral(): void {
@@ -117,9 +134,14 @@ export class AlunoModalComponent {
   onAgenda() {
     this.recolherPaineis();
     this.isAgendaExpanded.set(true);
+  onAgenda(): void {
+    if (!this.aluno) return;
+    this.isVisaoGeralExpanded.set(false);
+    this.isSaudeExpanded.set(false);
+    this.isRelatoriosExpanded.set(false);
+    this.isAgendaExpanded.set(true);
+    this.agendaClick.emit();
   }
 
-  onDashboard(): void {
-    this.dashboardClick.emit();
-  }
+
 }

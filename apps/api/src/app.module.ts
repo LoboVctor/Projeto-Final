@@ -12,6 +12,7 @@ import { TurmaModule } from './modulos/turma/turma.module.js';
 import { RegistroDiarioModule } from './modulos/registro-diario/registro-diario.module.js';
 import { ScheduleModule } from '@nestjs/schedule';
 import { EstudanteModule } from './modulos/estudante/estudante.module.js';
+import { EstudoCasoModule } from './modulos/estudo-de-caso/estudo-de-caso.module.js';
 import * as Joi from 'joi';
 
 @Module({
@@ -33,6 +34,7 @@ import * as Joi from 'joi';
     TurmaModule,
     RegistroDiarioModule,
     EstudanteModule,
+    EstudoCasoModule,
   ],
   controllers: [],
 
