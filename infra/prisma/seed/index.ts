@@ -376,6 +376,47 @@ async function main() {
 
   console.log('Dados de saúde de teste populados com sucesso.');
 
+// ==========================================
+// POPULANDO HISTÓRICO PARA OS GRÁFICOS (90 DIAS)
+// ==========================================
+  console.log('\nPopulando histórico de registros diários para os gráficos...');
+
+  const registrosDiariosMock = [];
+  const hoje = new Date();
+
+  const gerarNotaAleatoria = (min: number, max: number): number => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
+  for (let i = 0; i < 90; i++) {
+    const dataRegistro = new Date(hoje);
+    dataRegistro.setDate(hoje.getDate() - i);
+
+    const diaDaSemana = dataRegistro.getDay();
+    
+    if (diaDaSemana === 0 || diaDaSemana === 6) continue;
+
+    registrosDiariosMock.push({
+      estudanteId: lucasId,
+      educadorId: educador.id, // Vinculado ao Cláudio Xavier
+      data: dataRegistro,
+      scoreComportamento: gerarNotaAleatoria(3, 5),  
+      scoreInteracao: gerarNotaAleatoria(2, 5),     
+      scoreFoco: gerarNotaAleatoria(3, 5),            
+      scoreAutonomia: gerarNotaAleatoria(2, 5),       
+      statusAlimentacao: gerarNotaAleatoria(4, 5),   
+      usoBanheiro: gerarNotaAleatoria(3, 5),          
+      preenchido: true,
+      anotacoes: 'Registro diário de dias úteis gerado automaticamente via seed script.',
+    });
+  }
+
+  await prisma.registroDiario.createMany({
+    data: registrosDiariosMock,
+  });
+
+  console.log(` ${registrosDiariosMock.length} registros diários (Segunda a Sexta) criados para o Lucas.`);
+
   console.log('Estudantes criados e vinculados às turmas.');
 
   console.log('\n Seed concluído com sucesso!');

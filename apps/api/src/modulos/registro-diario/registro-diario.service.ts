@@ -121,23 +121,76 @@ export class RegistroDiarioService {
     }
   }
 
-  async getStudentAnalytics(studentId: string, periodo: string, categoria?: string) {
-    const dataLimite = this.getDateLimitByPeriod(periodo);
-    const registros = await this.registroDiarioRepositorio.buscarRegistrosPorPeriodo(studentId, dataLimite);
+  async getStudentAnalytics(studentId: string, periodo: string, categoria?: string, dataInicio?: string, dataFim?: string) {
+    let inicioBusca: Date;
+    let fimBusca: Date;
 
-    const labels = this.generateLabels(periodo);
+    if (dataInicio && dataFim) {
+      // Força a criação das datas cravadas no fuso UTC neutro
+      inicioBusca = new Date(`${dataInicio.split('T')[0]}T00:00:00.000Z`);
+      fimBusca = new Date(`${dataFim.split('T')[0]}T23:59:59.999Z`);
+    } else {
+      inicioBusca = this.getDateLimitByPeriod(periodo);
+      inicioBusca.setUTCHours(0, 0, 0, 0);
+      fimBusca = new Date();
+    }
+
+    const registros = await this.registroDiarioRepositorio.buscarRegistrosPorIntervalo(studentId, inicioBusca, fimBusca);
+
+    const labels = (dataInicio && dataFim) 
+      ? ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'] 
+      : this.generateLabels(periodo);
+
     const numLabels = labels.length;
 
     const agrupamento = {
       Comportamento: Array.from({ length: numLabels }, () => [] as number[]),
-      Interação: Array.from({ length: numLabels }, () => [] as number[]), 
+      Interação: Array.from({ length: numLabels }, () => [] as number[]),
       Foco: Array.from({ length: numLabels }, () => [] as number[]),
       Autonomia: Array.from({ length: numLabels }, () => [] as number[]),
       Alimentação: Array.from({ length: numLabels }, () => [] as number[]),
       Banheiro: Array.from({ length: numLabels }, () => [] as number[]),
     };
 
-    registros.forEach((registro) => { /* ... */ });
+    registros.forEach((registro) => {
+      let index = -1;
+
+      if (dataInicio && dataFim) {
+        // MÁGICA AQUI: getUTCDay() lê o dia exato salvo pelo seed sem shifts!
+        const diaDaSemana = registro.data.getUTCDay(); // 1 = Seg, 2 = Ter, 3 = Qua, 4 = Qui, 5 = Sex
+        
+        if (diaDaSemana >= 1 && diaDaSemana <= 5) {
+          index = diaDaSemana - 1; // Segunda vira 0, Terça vira 1... Sexta vira 4!
+        }
+      } 
+      else {
+        const timeDiff = registro.data.getTime() - inicioBusca.getTime();
+        const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+
+        if (periodo === 'semana') {
+          index = daysDiff;
+        } else if (periodo === 'mes') {
+          index = Math.floor(daysDiff / 7);
+        } else if (periodo === 'semestre') {
+          const monthDiff = (registro.data.getUTCFullYear() - inicioBusca.getUTCFullYear()) * 12 + 
+                            (registro.data.getUTCMonth() - inicioBusca.getUTCMonth());
+          index = monthDiff;
+        }
+
+        if (index >= numLabels) {
+          index = numLabels - 1;
+        }
+      }
+
+      if (index >= 0 && index < numLabels) {
+        agrupamento.Comportamento[index]!.push(registro.scoreComportamento);
+        agrupamento.Interação[index]!.push(registro.scoreInteracao);
+        agrupamento.Foco[index]!.push(registro.scoreFoco);
+        agrupamento.Autonomia[index]!.push(registro.scoreAutonomia);
+        agrupamento.Alimentação[index]!.push(registro.statusAlimentacao);
+        agrupamento.Banheiro[index]!.push(registro.usoBanheiro);
+      }
+    });
 
     let datasets = Object.keys(agrupamento).map((indicador) => {
       const valoresAgrupados = agrupamento[indicador as keyof typeof agrupamento];
@@ -146,11 +199,7 @@ export class RegistroDiarioService {
         const soma = valores.reduce((acc, val) => acc + Number(val || 0), 0);
         return parseFloat((soma / valores.length).toFixed(1));
       });
-
-      return {
-        label: indicador,
-        data: medias,
-      };
+      return { label: indicador, data: medias };
     });
 
     if (categoria) {

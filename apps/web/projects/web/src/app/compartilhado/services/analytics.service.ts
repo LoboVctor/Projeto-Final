@@ -12,7 +12,15 @@ export class AnalyticsService {
     return this.http.get(`${this.baseUrl}/registros-diarios/dashboard/${studentId}`, { params: { periodo } });
   }
 
-  getAnalyticsHistorico(studentId: string, periodo: string, categoria: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/registros-diarios/analytics/${studentId}`, { params: { periodo, categoria } });
+  getAnalyticsHistorico(studentId: string, periodo: string, categoria: string, dataInicio?: string, dataFim?: string): Observable<any> {
+    let params: any = { categoria };
+    
+    if (dataInicio && dataFim) {
+      params.dataInicio = dataInicio;
+      params.dataFim = dataFim;
+    } else {
+      params.periodo = periodo;
+    }
+    return this.http.get(`${this.baseUrl}/registros-diarios/analytics/${studentId}`, {params});
   }
 }

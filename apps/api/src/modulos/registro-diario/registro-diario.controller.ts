@@ -16,7 +16,7 @@ export class RegistroDiarioController {
   @Get('analytics/:id')
   @Get('analytics/:id')
   async getAnalytics(@Param('id') id: string, @Query() query: AnalyticsQueryDto) {
-    return this.registroDiarioService.getStudentAnalytics(id, query.periodo, query.categoria);
+    return this.registroDiarioService.getStudentAnalytics(id, query.periodo, query.categoria, query.dataInicio, query.dataFim);
   }
 
   @Get('dashboard/:id')
