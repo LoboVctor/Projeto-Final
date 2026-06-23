@@ -10,6 +10,41 @@ export interface RegistroDiarioPendente {
   preenchido: boolean;
   estudanteId: string;
   educadorId: string;
-  // O Prisma faz o join e traz os dados do estudante aninhados
-  estudante: EstudanteResumo; 
+  estudante: EstudanteResumo;
+}
+
+
+export interface RegistroDiario {
+  id?: string;
+  estudanteId: string;
+  educadorId: string;
+  data: string;
+  preenchido: boolean;
+  scoreComportamento: number;
+  scoreInteracao: number;
+  scoreFoco: number;
+  scoreAutonomia: number;
+  statusAlimentacao: number;
+  usoBanheiro: number;
+  anotacoes?: string;
+}
+
+export interface DiaSemanaRegistro {
+  data: string;
+  registro: RegistroDiario | null;
+}
+
+
+export interface RegistroDiarioPayload {
+  estudanteId: string;
+  educadorId: string;
+  data: string;
+  preenchido: boolean;
+  scoreComportamento: number;
+  scoreInteracao: number;
+  scoreFoco: number;
+  scoreAutonomia: number;
+  statusAlimentacao: number;
+  usoBanheiro: number;
+  anotacoes?: string;
 }

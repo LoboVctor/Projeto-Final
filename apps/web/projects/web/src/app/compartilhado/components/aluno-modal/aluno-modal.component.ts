@@ -14,11 +14,11 @@ import { EstudanteVisaoGeral } from '../../models/estudante-visao-geral.model';
 import { BlocoVisaoGeralComponent } from '../../../funcionalidades/estudante/components/bloco-visao-geral/bloco-visao-geral.component';
 import { BlocoSaudeComponent } from '../../../funcionalidades/estudante/components/bloco-saude/bloco-saude';
 import { BlocoRelatoriosComponent } from '../../../funcionalidades/estudante/components/bloco-relatorios/bloco-relatorios';
-import { BlocoDashboardComponent } from '../../../funcionalidades/estudante/components/bloco-dashboards/bloco-dashboard';
+import { BlocoAgendaComponent } from '../../../funcionalidades/estudante/components/bloco-agenda/bloco-agenda.component';
 
 @Component({
   selector: 'app-aluno-modal',
-  imports: [CommonModule, BlocoVisaoGeralComponent, BlocoSaudeComponent, BlocoRelatoriosComponent, BlocoDashboardComponent],
+  imports: [CommonModule, BlocoVisaoGeralComponent, BlocoSaudeComponent, BlocoRelatoriosComponent, BlocoAgendaComponent],
   templateUrl: './aluno-modal.component.html',
   styleUrls: ['./aluno-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush })
@@ -37,7 +37,7 @@ export class AlunoModalComponent {
   isVisaoGeralExpanded = signal(false);
   isSaudeExpanded = signal(false);
   isRelatoriosExpanded = signal(false);
-  isDashboardExpanded = signal(false);
+  isAgendaExpanded = signal(false);
 
   visaoGeralData = signal<EstudanteVisaoGeral | null>(null);
   loadingVisaoGeral = signal(false);
@@ -47,6 +47,7 @@ export class AlunoModalComponent {
     this.isVisaoGeralExpanded.set(false);
     this.isSaudeExpanded.set(false);
     this.isRelatoriosExpanded.set(false);
+    this.isAgendaExpanded.set(false);
     this.isInfoGeraisOpen.set(false);
     this.visaoGeralData.set(null);
     this.fecharModal.emit();
@@ -60,7 +61,7 @@ export class AlunoModalComponent {
     if (!this.aluno) return;
     this.isSaudeExpanded.set(false);
     this.isRelatoriosExpanded.set(false);
-    this.isDashboardExpanded.set(false);
+    this.isAgendaExpanded.set(false);
     this.isVisaoGeralExpanded.set(true);
 
     if (this.visaoGeralData()?.id === this.aluno.id) {
@@ -74,7 +75,7 @@ export class AlunoModalComponent {
     if (!this.aluno) return;
     this.isVisaoGeralExpanded.set(false);
     this.isRelatoriosExpanded.set(false);
-    this.isDashboardExpanded.set(false);
+    this.isAgendaExpanded.set(false);
     this.isSaudeExpanded.set(true);
   }
 
@@ -82,7 +83,7 @@ export class AlunoModalComponent {
     if (!this.aluno) return;
     this.isVisaoGeralExpanded.set(false);
     this.isSaudeExpanded.set(false);
-    this.isDashboardExpanded.set(false);
+    this.isAgendaExpanded.set(false);
     this.isRelatoriosExpanded.set(true);
   }
 
@@ -96,7 +97,7 @@ export class AlunoModalComponent {
     this.isVisaoGeralExpanded.set(false);
     this.isSaudeExpanded.set(false);
     this.isRelatoriosExpanded.set(false);
-    this.isDashboardExpanded.set(false);
+    this.isAgendaExpanded.set(false);
   }
 
   carregarVisaoGeral(): void {
@@ -126,6 +127,11 @@ export class AlunoModalComponent {
   }
 
   onAgenda(): void {
+    if (!this.aluno) return;
+    this.isVisaoGeralExpanded.set(false);
+    this.isSaudeExpanded.set(false);
+    this.isRelatoriosExpanded.set(false);
+    this.isAgendaExpanded.set(true);
     this.agendaClick.emit();
   }
 

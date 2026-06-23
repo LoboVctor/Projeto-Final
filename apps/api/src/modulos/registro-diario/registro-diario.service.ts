@@ -15,10 +15,12 @@ export class RegistroDiarioService {
   ) {}
 
   async create(dto: CreateRegistrosDiarioDto) {
+    const dataSegura = dto.data ? this.parseDateOnlyToSafeDate(dto.data) : new Date();
+
     return this.registroDiarioRepositorio.criar({
       estudanteId: dto.estudanteId,
       educadorId: dto.educadorId,
-      data: new Date(),
+      data: dataSegura,
       preenchido: dto.preenchido ?? true,
       scoreComportamento: dto.scoreComportamento,
       scoreInteracao: dto.scoreInteracao,
@@ -62,6 +64,87 @@ export class RegistroDiarioService {
     const dadosAtualizados = { ...dto, preenchido: true };
 
     return this.registroDiarioRepositorio.atualizar(id, dadosAtualizados);
+  }
+
+  private parseDateOnlyToSafeDate(dateString?: string): Date {
+    if (!dateString) return new Date();
+    if (dateString.includes('T')) {
+      dateString = dateString.split('T')[0]!;
+    }
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(Date.UTC(year!, month! - 1, day!, 12, 0, 0));
+  }
+
+  async getSemana(estudanteId: string, dataBaseStr: string) {
+    const dataBase = this.parseDateOnlyToSafeDate(dataBaseStr);
+    
+
+    const diaDaSemana = dataBase.getUTCDay();
+    const domingo = new Date(dataBase);
+    domingo.setUTCDate(dataBase.getUTCDate() - diaDaSemana);
+    domingo.setUTCHours(0, 0, 0, 0);
+
+    const sabado = new Date(domingo);
+    sabado.setUTCDate(domingo.getUTCDate() + 6);
+    sabado.setUTCHours(23, 59, 59, 999);
+
+    const registros = await this.registroDiarioRepositorio.buscarPorPeriodo(estudanteId, domingo, sabado);
+
+
+    const semana = [];
+    for (let i = 0; i < 7; i++) {
+      const dataAtual = new Date(domingo);
+      dataAtual.setUTCDate(domingo.getUTCDate() + i);
+      dataAtual.setUTCHours(12, 0, 0, 0); 
+      
+      const registroDoDia = registros.find(r => {
+        const d = new Date(r.data);
+        return d.getUTCDate() === dataAtual.getUTCDate() && 
+               d.getUTCMonth() === dataAtual.getUTCMonth() && 
+               d.getUTCFullYear() === dataAtual.getUTCFullYear();
+      });
+
+      semana.push({
+        data: dataAtual,
+        registro: registroDoDia || null,
+      });
+    }
+
+    return semana;
+  }
+
+  async upsertRegistro(dto: CreateRegistrosDiarioDto) {
+    const dataOperacao = this.parseDateOnlyToSafeDate(dto.data);
+
+
+    const inicioDia = new Date(dataOperacao);
+    inicioDia.setUTCHours(0, 0, 0, 0);
+    const fimDia = new Date(dataOperacao);
+    fimDia.setUTCHours(23, 59, 59, 999);
+
+    const existente = await this.registroDiarioRepositorio.buscarPorEstudanteEData(dto.estudanteId, dataOperacao);
+
+    const dados = {
+      scoreComportamento: dto.scoreComportamento,
+      scoreInteracao: dto.scoreInteracao,
+      scoreFoco: dto.scoreFoco,
+      scoreAutonomia: dto.scoreAutonomia,
+      statusAlimentacao: dto.statusAlimentacao,
+      usoBanheiro: dto.usoBanheiro,
+      anotacoes: dto.anotacoes,
+      preenchido: dto.preenchido ?? true,
+    };
+
+    if (existente) {
+      return this.registroDiarioRepositorio.atualizar(existente.id, dados);
+    } else {
+      return this.registroDiarioRepositorio.criar({
+        ...dados,
+        estudanteId: dto.estudanteId,
+        educadorId: dto.educadorId,
+        data: dataOperacao, 
+      });
+    }
   }
 
   async remove(id: string) {

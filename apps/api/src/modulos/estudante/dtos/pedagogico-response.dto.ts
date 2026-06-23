@@ -1,4 +1,4 @@
-import { Eixos, StatusRelatorio, Semestre, Bimestre } from '@prisma/client';
+import { Eixos, StatusRelatorio, Semestre, Bimestre } from '@prisma-client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class PibiResponseDto {
