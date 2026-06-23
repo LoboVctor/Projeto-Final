@@ -215,7 +215,7 @@ async function main() {
   const estudantesData = [
     {
       id: '123e4567-e89b-42d3-8456-426614174000',
-      matricula: 20260001,
+      matricula: '20260001',
       nomeCompleto: 'Lucas Almeida Santos',
       dataNascimento: new Date('2016-04-15'),
       cpf: '222.222.222-22',
@@ -234,8 +234,8 @@ async function main() {
       },
     },
     {
-      id: 'c0000000-0000-0000-0000-000000000001',
-      matricula: 202601,
+      id: '123e4567-e89b-42d3-8456-426614174001',
+      matricula: '202601',
       nomeCompleto: 'Ana Silva',
       dataNascimento: new Date('2019-05-15'),
       cpf: '123.456.789-01',
@@ -254,8 +254,8 @@ async function main() {
       },
     },
     {
-      id: 'c0000000-0000-0000-0000-000000000002',
-      matricula: 202602,
+      id: '123e4567-e89b-42d3-8456-426614174002',
+      matricula: '202602',
       nomeCompleto: 'Bruno Santos',
       dataNascimento: new Date('2018-08-22'),
       cpf: '234.567.890-12',
@@ -274,8 +274,8 @@ async function main() {
       },
     },
     {
-      id: 'c0000000-0000-0000-0000-000000000003',
-      matricula: 202603,
+      id: '123e4567-e89b-42d3-8456-426614174003',
+      matricula: '202603',
       nomeCompleto: 'Carlos Souza',
       dataNascimento: new Date('2018-03-10'),
       cpf: '345.678.901-23',
@@ -294,8 +294,8 @@ async function main() {
       },
     },
     {
-      id: 'c0000000-0000-0000-0000-000000000004',
-      matricula: 202604,
+      id: '123e4567-e89b-42d3-8456-426614174004',
+      matricula: '202604',
       nomeCompleto: 'Daniela Lima',
       dataNascimento: new Date('2020-11-05'),
       cpf: '456.789.012-34',
@@ -367,7 +367,7 @@ async function main() {
   await prisma.documentoDiagnostico.create({
     data: {
       tipo: TipoDocumento.LAUDO_MEDICO,
-      arquivo: 'https://drive.google.com/file/d/1hAiGtbKqyAF-mZCTvuf5VSk6YxuCc5yh/view?usp=sharing', // Simulando a URL do arquivo
+      arquivo: 'http://localhost:3000/api/v1/uploads/laudos/1781883929415-924710107.pdf', // Simulando a URL do arquivo
       dataEmissao: new Date('2025-02-10'),
       estudanteId: lucasId,
       diagnosticoId: tea.id,
@@ -375,6 +375,47 @@ async function main() {
   });
 
   console.log('Dados de saúde de teste populados com sucesso.');
+
+// ==========================================
+// POPULANDO HISTÓRICO PARA OS GRÁFICOS (90 DIAS)
+// ==========================================
+  console.log('\nPopulando histórico de registros diários para os gráficos...');
+
+  const registrosDiariosMock = [];
+  const hoje = new Date();
+
+  const gerarNotaAleatoria = (min: number, max: number): number => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
+  for (let i = 0; i < 90; i++) {
+    const dataRegistro = new Date(hoje);
+    dataRegistro.setDate(hoje.getDate() - i);
+
+    const diaDaSemana = dataRegistro.getDay();
+    
+    if (diaDaSemana === 0 || diaDaSemana === 6) continue;
+
+    registrosDiariosMock.push({
+      estudanteId: lucasId,
+      educadorId: educador.id, // Vinculado ao Cláudio Xavier
+      data: dataRegistro,
+      scoreComportamento: gerarNotaAleatoria(3, 5),  
+      scoreInteracao: gerarNotaAleatoria(2, 5),     
+      scoreFoco: gerarNotaAleatoria(3, 5),            
+      scoreAutonomia: gerarNotaAleatoria(2, 5),       
+      statusAlimentacao: gerarNotaAleatoria(4, 5),   
+      usoBanheiro: gerarNotaAleatoria(3, 5),          
+      preenchido: true,
+      anotacoes: 'Registro diário de dias úteis gerado automaticamente via seed script.',
+    });
+  }
+
+  await prisma.registroDiario.createMany({
+    data: registrosDiariosMock,
+  });
+
+  console.log(` ${registrosDiariosMock.length} registros diários (Segunda a Sexta) criados para o Lucas.`);
 
   console.log('Estudantes criados e vinculados às turmas.');
 

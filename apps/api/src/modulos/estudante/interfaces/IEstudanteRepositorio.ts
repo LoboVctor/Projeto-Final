@@ -1,5 +1,38 @@
-import { Prisma, Estudante, EstudanteEspecificidade, Especificidade, TipoEspecificidade, CategoriaEspecificidade } from '@prisma-client';
-import { EspecificidadeDto } from '../dtos/create.especifidades.dto.js';
+import { Prisma, EstudanteEspecificidade, Especificidade, TipoEspecificidade, CategoriaEspecificidade, Medicamento, EstudanteMedicamento, UnidadeM } from '@prisma-client';
+import { BuscarEstudantesQueryDto } from '../dtos/buscar-estudantes-query.dto.js';
+
+/** Projeção leve de Estudante usada na listagem geral (Tela 4). */
+export type EstudanteListagem = Prisma.EstudanteGetPayload<{
+  select: {
+    id: true;
+    nomeCompleto: true;
+    matricula: true;
+    foto: true;
+    statusMatricula: true;
+    turmas: {
+      select: {
+        id: true;
+        nome: true;
+      };
+    };
+    diagnosticos: {
+      select: {
+        diagnostico: {
+          select: { nome: true; tipo: true };
+        };
+      };
+    };
+  };
+}>;
+
+/** Resposta paginada para GET /estudantes */
+export interface EstudanteListagemPaginado {
+  data: EstudanteListagem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPaginas: number;
+}
 
 export type EstudanteVisaoGeral = Prisma.EstudanteGetPayload<{
   include: {
@@ -42,14 +75,17 @@ export type EstudanteSaude = Prisma.EstudanteGetPayload<{
             tipo: true;
             arquivo: true;
             dataEmissao: true;
+            createdAt: true;
           };
         };
       };
     };
     medicamentos: {
       select: {
+        medicamentoId: true,
         dosagem: true;
         unidadeMedida: true;
+        intervaloAdministracao: true,
         horarioAdministrado: true;
         administradoEscola: true;
         medicamento: { select: { nome: true } };
@@ -98,6 +134,7 @@ export interface IEstudanteRepositorio {
   buscarVisaoGeral(estudanteId: string): Promise<EstudanteVisaoGeral | null>;
   buscarSaude(estudanteId: string): Promise<EstudanteSaude | null>;
   buscarPedagogico(estudanteId: string): Promise<EstudantePedagogico | null>;
+  buscarComFiltros(query: BuscarEstudantesQueryDto): Promise<EstudanteListagemPaginado>;
   buscarEspecificidadeExata(tipo: TipoEspecificidade, categoria: CategoriaEspecificidade, descricao: string): Promise<Especificidade | null>;
   criarEspecificidade(dados: { tipo: TipoEspecificidade; categoria: CategoriaEspecificidade; descricao: string }): Promise<Especificidade>;
   buscarVinculoEspecificidade(estudanteId: string, especificidadeId: number): Promise<EstudanteEspecificidade | null>;
@@ -107,4 +144,41 @@ export interface IEstudanteRepositorio {
   removerVinculoEspecificidade(estudanteId: string, especificidadeId: number): Promise<EstudanteEspecificidade>;
   contarVinculosEspecificidade(especificidadeId: number): Promise<number>;
   removerEspecificidade(especificidadeId: number): Promise<void>;
+  buscarMedicamentoPorNome(nome: string): Promise<Medicamento | null>;
+  buscarMedicamentoPorId(id: number): Promise<Medicamento | null>;
+  criarMedicamento(nome: string): Promise<Medicamento>;
+  criarVinculoMedicamento(dados: {
+    estudanteId: string;
+    medicamentoId: number;
+    dosagem: number;
+    unidadeMedida: UnidadeM;
+    administradoEscola: boolean;
+    intervaloAdministracao: number;
+    horarioAdministrado: Date;
+  }): Promise<EstudanteMedicamento>;
+  atualizarVinculoMedicamento(
+    estudanteId: string,
+    medicamentoId: number,
+    dados: {
+      dosagem: number;
+      unidadeMedida: UnidadeM;
+      administradoEscola: boolean;
+      intervaloAdministracao: number;
+      horarioAdministrado: Date;
+    }
+  ): Promise<EstudanteMedicamento>;
+  removerVinculoMedicamento(estudanteId: string, medicamentoId: number): Promise<EstudanteMedicamento>;
+  criarLaudoEDocumento(estudanteId: string, dados: {
+    tipoDiagnostico: string;
+    tipoDocumento: string;
+    dataEmissao: string;
+    linkArquivo: string;
+  }): Promise<any>;
+  deletarDocumento(documentoId: string): Promise<any>;
+  atualizarDocumento(documentoId: string, dados: {
+    tipoDocumento: string;
+    dataEmissao: string;
+    linkArquivo?: string;
+  }): Promise<any>;
 }
+

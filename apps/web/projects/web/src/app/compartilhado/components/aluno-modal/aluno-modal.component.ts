@@ -87,6 +87,12 @@ export class AlunoModalComponent {
     this.isRelatoriosExpanded.set(true);
   }
 
+  onDashboard(): void {
+    if (!this.aluno) return;
+    this.recolherPaineis();
+    this.isDashboardExpanded.set(true);
+  }
+
   recolherPaineis(): void {
     this.isVisaoGeralExpanded.set(false);
     this.isSaudeExpanded.set(false);
@@ -129,7 +135,5 @@ export class AlunoModalComponent {
     this.agendaClick.emit();
   }
 
-  onDashboard(): void {
-    this.dashboardClick.emit();
-  }
+
 }
