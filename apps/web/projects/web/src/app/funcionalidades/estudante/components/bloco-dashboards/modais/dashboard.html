@@ -1,0 +1,21 @@
+<div class="modal-wrapper">
+  <h2 mat-dialog-title>Evolução Analítica: {{ dialogData.name }}</h2>
+  
+  <mat-dialog-content>
+    <div class="filter-bar">
+      <mat-button-toggle-group [value]="periodo()" (change)="mudarPeriodo($event.value)">
+        <mat-button-toggle value="semana">Semana Atual</mat-button-toggle>
+        <mat-button-toggle value="mes">Mês</mat-button-toggle>
+        <mat-button-toggle value="semestre">Semestre</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+
+    <div class="canvas-container">
+      <canvas #chartCanvas></canvas>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Fechar</button>
+  </mat-dialog-actions>
+</div>
