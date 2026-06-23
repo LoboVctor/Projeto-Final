@@ -156,11 +156,10 @@ export class RegistroDiarioService {
       let index = -1;
 
       if (dataInicio && dataFim) {
-        // MÁGICA AQUI: getUTCDay() lê o dia exato salvo pelo seed sem shifts!
-        const diaDaSemana = registro.data.getUTCDay(); // 1 = Seg, 2 = Ter, 3 = Qua, 4 = Qui, 5 = Sex
+        const diaDaSemana = registro.data.getUTCDay(); 
         
         if (diaDaSemana >= 1 && diaDaSemana <= 5) {
-          index = diaDaSemana - 1; // Segunda vira 0, Terça vira 1... Sexta vira 4!
+          index = diaDaSemana - 1; 
         }
       } 
       else {

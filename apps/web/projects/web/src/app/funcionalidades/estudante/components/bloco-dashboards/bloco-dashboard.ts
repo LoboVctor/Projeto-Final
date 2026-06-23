@@ -19,11 +19,9 @@ export class BlocoDashboardComponent {
 
   private analyticsService = inject(AnalyticsService);
 
-  // --- Controles de Estado Principal ---
   periodo = signal<'semana' | 'mes' | 'semestre'>('mes');
   categoriaSelecionada = signal<string | null>(null);
 
-  // --- Controles do Navegador de Semanas ---
   semanaAtualVisualizada = signal<Date>(this.getMonday(new Date()));
 
   labelNavegadorSemana = computed(() => {
@@ -46,7 +44,6 @@ export class BlocoDashboardComponent {
   private frequenciaGaugeChart?: Chart;
   private historicoChart?: Chart;
 
-  // --- Pipeline Reativo ---
   private dashboardResumo$ = toObservable(this.periodo).pipe(
     switchMap(p => this.analyticsService.getDashboardSummary(this.estudanteId, p)),
     catchError(() => of(null))
@@ -81,7 +78,6 @@ export class BlocoDashboardComponent {
     });
   }
 
-  // --- Controles de Navegação Dashboard ---
 
   onRecolher() {
     this.recolher.emit();
@@ -100,8 +96,6 @@ export class BlocoDashboardComponent {
     this.mudarPeriodo(novoPeriodo);
   }
 
-  // --- Controles do Modal de Histórico ---
-
   abrirDetalheCategoria(categoria: string) {
     this.categoriaSelecionada.set(categoria);
     this.semanaAtualVisualizada.set(this.getMonday(new Date())); // Reseta para a semana atual ao abrir
@@ -116,7 +110,6 @@ export class BlocoDashboardComponent {
     }
   }
 
-  // Funções de controle da semana exata
   private getMonday(d: Date) {
     const data = new Date(d);
     const dia = data.getDay();
