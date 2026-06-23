@@ -153,7 +153,7 @@
                   <!-- Botão disparador (3 pontos) -->
                   <button
                     class="btn-menu-sandwich"
-                    (click)="$event.stopPropagation(); toggleMenu(aluno.id)"
+                    (click)="$event.stopPropagation(); toggleMenu(aluno.id, $event)"
                     [attr.aria-label]="'Opções para ' + aluno.nomeCompleto"
                     [attr.aria-expanded]="menuAbertoId() === aluno.id"
                     title="Mais opções"
@@ -171,7 +171,12 @@
                     <!-- Overlay para fechar ao clicar fora -->
                     <div class="menu-overlay" (click)="fecharMenu()"></div>
 
-                    <div class="menu-dropdown" role="menu">
+                    <div
+                      class="menu-dropdown"
+                      role="menu"
+                      [style.top.px]="menuPosicao()?.top"
+                      [style.left.px]="menuPosicao()?.left"
+                    >
                       <!-- Card do Aluno -->
                       <button
                         class="menu-item"

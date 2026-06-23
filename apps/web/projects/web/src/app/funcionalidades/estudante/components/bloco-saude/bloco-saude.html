@@ -332,41 +332,4 @@
   >
   </app-modal-medicamentos>
 }
-
-@if (isPreviewOpen) {
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in"
-  >
-    <div
-      class="bg-white rounded-xl shadow-xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden border border-gray-100"
-    >
-      <div class="flex items-center justify-between p-4 border-b border-gray-100 bg-slate-50">
-        <h3 class="text-sm font-bold font-['Sora'] text-slate-700 m-0">
-          Visualizador de Documentos Oficial
-        </h3>
-        <button
-          (click)="fecharPreview()"
-          class="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-200/60 transition-colors cursor-pointer"
-        >
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
-      <div class="flex-1 bg-slate-100 p-3">
-        @if (safePreviewUrl) {
-          <iframe
-            [src]="safePreviewUrl"
-            class="w-full h-full rounded-lg border-0 shadow-inner bg-white"
-            allow="autoplay"
-          ></iframe>
-        }
-      </div>
-    </div>
-  </div>
-}
+

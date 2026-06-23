@@ -53,6 +53,9 @@ export class AlunosComponent implements OnInit {
 
   // ─── Estado do menu sanduíche ─────────────────────────────────
   menuAbertoId = signal<string | null>(null);
+  /** Coordenadas absolutas (viewport) do dropdown — permite usar position:fixed
+   *  e escapar do overflow:hidden da tabela. */
+  menuPosicao = signal<{ top: number; left: number } | null>(null);
 
   // ─── Estado do modal do aluno ─────────────────────────────────
   modalAlunoAberto = signal(false);
@@ -139,12 +142,24 @@ export class AlunosComponent implements OnInit {
 
   // ─── Menu Sanduíche ───────────────────────────────────────────
 
-  toggleMenu(alunoId: string): void {
-    this.menuAbertoId.update((atual) => (atual === alunoId ? null : alunoId));
+  toggleMenu(alunoId: string, event: MouseEvent): void {
+    if (this.menuAbertoId() === alunoId) {
+      this.menuAbertoId.set(null);
+      this.menuPosicao.set(null);
+      return;
+    }
+    const btn = event.currentTarget as HTMLElement;
+    const rect = btn.getBoundingClientRect();
+    this.menuAbertoId.set(alunoId);
+    this.menuPosicao.set({
+      top: rect.bottom + 6,
+      left: rect.right - 190, // 190px = min-width do dropdown
+    });
   }
 
   fecharMenu(): void {
     this.menuAbertoId.set(null);
+    this.menuPosicao.set(null);
   }
 
   @HostListener('document:keydown.escape')
