@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico } from './interfaces/IEstudanteRepositorio.js';
-import { Especificidade, EstudanteEspecificidade, TipoEspecificidade, CategoriaEspecificidade, UnidadeM } from '@prisma-client';
+import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico, EstudanteListagemPaginado } from './interfaces/IEstudanteRepositorio.js';
+import { Especificidade, EstudanteEspecificidade, TipoEspecificidade, CategoriaEspecificidade, TipoDiagnostico, UnidadeM } from '@prisma-client';
+import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
+
 
 @Injectable()
 export class EstudanteRepository implements IEstudanteRepositorio {
@@ -113,6 +115,59 @@ export class EstudanteRepository implements IEstudanteRepositorio {
         },
       },
     });
+  }
+
+  async buscarComFiltros(query: BuscarEstudantesQueryDto): Promise<EstudanteListagemPaginado> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const skip = (page - 1) * limit;
+
+    const where = {
+      ...(query.nome && {
+        nomeCompleto: { contains: query.nome, mode: 'insensitive' as const },
+      }),
+      ...(query.matricula && {
+        matricula: { contains: query.matricula, mode: 'insensitive' as const },
+      }),
+      ...(query.diagnosticoTipo && {
+        diagnosticos: {
+          some: {
+            diagnostico: {
+              tipo: query.diagnosticoTipo as TipoDiagnostico,
+            },
+          },
+        },
+      }),
+    };
+
+    const select = {
+      id: true,
+      nomeCompleto: true,
+      matricula: true,
+      foto: true,
+      statusMatricula: true,
+      turmas: {
+        select: { id: true, nome: true },
+      },
+      diagnosticos: {
+        select: {
+          diagnostico: { select: { nome: true, tipo: true } },
+        },
+      },
+    } as const;
+
+    const [data, total] = await this.prisma.client.$transaction([
+      this.prisma.client.estudante.findMany({ where, select, skip, take: limit, orderBy: { nomeCompleto: 'asc' } }),
+      this.prisma.client.estudante.count({ where }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPaginas: Math.ceil(total / limit),
+    };
   }
 
   async buscarEspecificidadeExata(tipo: TipoEspecificidade, categoria: CategoriaEspecificidade, descricao: string): Promise<Especificidade | null> {
