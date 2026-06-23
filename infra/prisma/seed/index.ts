@@ -78,10 +78,10 @@ async function main() {
 
   // Educador (Professor Regente)
   const educador = await prisma.educador.upsert({
-    where: { id: '22222222-2222-2222-2222-222222222222' },
+    where: { id: '123e4567-e89b-42d3-8456-426614174001' },
     update: {},
     create: {
-      id: '22222222-2222-2222-2222-222222222222',
+      id: '123e4567-e89b-42d3-8456-426614174001',
       matricula: 'REG-2026',
       nome: 'Cláudio Xavier',
       cpf: '111.111.111-11',
@@ -214,7 +214,7 @@ async function main() {
   // Estudantes
   const estudantesData = [
     {
-      id: '33333333-3333-3333-3333-333333333333',
+      id: '123e4567-e89b-42d3-8456-426614174000',
       matricula: 20260001,
       nomeCompleto: 'Lucas Almeida Santos',
       dataNascimento: new Date('2016-04-15'),
@@ -342,7 +342,7 @@ async function main() {
     },
   });
 
-  const lucasId = '33333333-3333-3333-3333-333333333333';
+  const lucasId = '123e4567-e89b-42d3-8456-426614174000';
 
   await prisma.estudanteEspecificidade.create({
     data: {

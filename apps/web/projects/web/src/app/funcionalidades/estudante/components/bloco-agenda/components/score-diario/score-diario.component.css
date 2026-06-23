@@ -1,0 +1,46 @@
+.girassol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.girassol--mini {
+  width: 18px;
+  height: 18px;
+}
+
+.girassol-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.girassol-svg--ativo {
+  opacity: 1;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.08));
+}
+
+.girassol-svg--inativo {
+  opacity: 0.3;
+}
+
+/* Grid flexível de 4 colunas por linha de score para não vazar a largura: */
+.score-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 140px) 150px 30px minmax(50px, 1fr);
+  align-items: center;
+  column-gap: 6px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.score-list-container {
+  background: rgba(255, 245, 210, 0.55);
+  border: 1px solid rgba(217, 119, 6, 0.15);
+  border-radius: 12px;
+  padding: 8px 16px;
+  box-sizing: border-box;
+}

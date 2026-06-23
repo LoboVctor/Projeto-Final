@@ -102,10 +102,15 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
   }
 
   async buscarPorEstudanteEData(estudanteId: string, data: Date): Promise<RegistroDiario | null> {
+    const inicio = new Date(data);
+    inicio.setUTCHours(0, 0, 0, 0);
+    const fim = new Date(data);
+    fim.setUTCHours(23, 59, 59, 999);
+
     return this.prisma.client.registroDiario.findFirst({
       where: {
         estudanteId,
-        data,
+        data: { gte: inicio, lte: fim },
       },
     });
   }

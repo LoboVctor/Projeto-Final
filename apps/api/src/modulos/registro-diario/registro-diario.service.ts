@@ -14,10 +14,12 @@ export class RegistroDiarioService {
   ) {}
 
   async create(dto: CreateRegistrosDiarioDto) {
+    const dataSegura = dto.data ? this.parseDateOnlyToSafeDate(dto.data) : new Date();
+
     return this.registroDiarioRepositorio.criar({
       estudanteId: dto.estudanteId,
       educadorId: dto.educadorId,
-      data: new Date(),
+      data: dataSegura,
       preenchido: dto.preenchido ?? true,
       scoreComportamento: dto.scoreComportamento,
       scoreInteracao: dto.scoreInteracao,
@@ -63,33 +65,42 @@ export class RegistroDiarioService {
     return this.registroDiarioRepositorio.atualizar(id, dadosAtualizados);
   }
 
-  async getSemana(estudanteId: string, dataBaseStr: string) {
-    const dataBase = new Date(dataBaseStr);
-    if (isNaN(dataBase.getTime())) {
-      throw new Error('Data inválida');
+  private parseDateOnlyToSafeDate(dateString?: string): Date {
+    if (!dateString) return new Date();
+    if (dateString.includes('T')) {
+      dateString = dateString.split('T')[0]!;
     }
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(Date.UTC(year!, month! - 1, day!, 12, 0, 0));
+  }
+
+  async getSemana(estudanteId: string, dataBaseStr: string) {
+    const dataBase = this.parseDateOnlyToSafeDate(dataBaseStr);
     
-    // Calcula domingo (0) e sábado (6) da semana
-    const diaDaSemana = dataBase.getDay();
+
+    const diaDaSemana = dataBase.getUTCDay();
     const domingo = new Date(dataBase);
-    domingo.setDate(dataBase.getDate() - diaDaSemana);
-    domingo.setHours(0, 0, 0, 0);
+    domingo.setUTCDate(dataBase.getUTCDate() - diaDaSemana);
+    domingo.setUTCHours(0, 0, 0, 0);
 
     const sabado = new Date(domingo);
-    sabado.setDate(domingo.getDate() + 6);
-    sabado.setHours(23, 59, 59, 999);
+    sabado.setUTCDate(domingo.getUTCDate() + 6);
+    sabado.setUTCHours(23, 59, 59, 999);
 
     const registros = await this.registroDiarioRepositorio.buscarPorPeriodo(estudanteId, domingo, sabado);
 
-    // Monta o array de 7 dias
+
     const semana = [];
     for (let i = 0; i < 7; i++) {
       const dataAtual = new Date(domingo);
-      dataAtual.setDate(domingo.getDate() + i);
+      dataAtual.setUTCDate(domingo.getUTCDate() + i);
+      dataAtual.setUTCHours(12, 0, 0, 0); 
       
       const registroDoDia = registros.find(r => {
         const d = new Date(r.data);
-        return d.getDate() === dataAtual.getDate() && d.getMonth() === dataAtual.getMonth() && d.getFullYear() === dataAtual.getFullYear();
+        return d.getUTCDate() === dataAtual.getUTCDate() && 
+               d.getUTCMonth() === dataAtual.getUTCMonth() && 
+               d.getUTCFullYear() === dataAtual.getUTCFullYear();
       });
 
       semana.push({
@@ -102,8 +113,13 @@ export class RegistroDiarioService {
   }
 
   async upsertRegistro(dto: CreateRegistrosDiarioDto) {
-    const dataOperacao = dto.data ? new Date(dto.data) : new Date();
-    dataOperacao.setHours(0, 0, 0, 0);
+    const dataOperacao = this.parseDateOnlyToSafeDate(dto.data);
+
+
+    const inicioDia = new Date(dataOperacao);
+    inicioDia.setUTCHours(0, 0, 0, 0);
+    const fimDia = new Date(dataOperacao);
+    fimDia.setUTCHours(23, 59, 59, 999);
 
     const existente = await this.registroDiarioRepositorio.buscarPorEstudanteEData(dto.estudanteId, dataOperacao);
 
@@ -125,7 +141,7 @@ export class RegistroDiarioService {
         ...dados,
         estudanteId: dto.estudanteId,
         educadorId: dto.educadorId,
-        data: dataOperacao,
+        data: dataOperacao, 
       });
     }
   }
