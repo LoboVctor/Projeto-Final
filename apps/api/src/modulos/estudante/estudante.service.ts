@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico } from './interfaces/IEstudanteRepositorio.js';
 import { EspecificidadeDto } from './dtos/create.especifidades.dto.js';
+import { DiaSemana } from '../../../../../infra/generated/prisma';
+import { ObterAgendaSemanaDto } from './dtos/obter-agenda-semana.dto.js';
 import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
 
 @Injectable()
@@ -121,7 +123,6 @@ export class EstudanteService {
     };
   }
 
-
   async getPedagogico(estudanteId: string) {
     const estudante = await this.estudanteRepositorio.buscarPedagogico(estudanteId);
 
@@ -162,7 +163,6 @@ export class EstudanteService {
     };
   }
 
-
   async createEspecificidade(estudanteId: string, dto: EspecificidadeDto) {
     let especificidade = await this.estudanteRepositorio.buscarEspecificidadeExata(
       dto.tipo,
@@ -178,7 +178,6 @@ export class EstudanteService {
           descricao: dto.descricao,
         });
       } catch {
-        // Outra requisição concurrent criou o mesmo registro — buscamos novamente
         const existente = await this.estudanteRepositorio.buscarEspecificidadeExata(
           dto.tipo,
           dto.categoria,
@@ -239,6 +238,56 @@ export class EstudanteService {
     return deletedVinculo;
   }
 
+  async obterAgendaSemana(estudanteId: string, dto: ObterAgendaSemanaDto) {
+    const aulasRecorrentes = await this.estudanteRepositorio.buscarAulasDoEstudante(estudanteId);
+
+    const [ano, mes, dia] = dto.dataBase.split('-').map(Number) as [number, number, number];
+    const dataBase = new Date(ano, mes - 1, dia);
+
+    const diaSemanaJs = dataBase.getDay();
+    const diffParaSegunda = dataBase.getDate() - diaSemanaJs + (diaSemanaJs === 0 ? -6 : 1);
+    const segundaFeira = new Date(ano, mes - 1, diffParaSegunda);
+
+    const nomesDiasUI = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
+    const mapaDiasPrisma = [
+      null, 
+      DiaSemana.SEGUNDA,
+      DiaSemana.TERCA,
+      DiaSemana.QUARTA,
+      DiaSemana.QUINTA,
+      DiaSemana.SEXTA,
+      null  
+    ];
+
+    const agendaDaSemana = [];
+
+    for (let i = 0; i < 7; i++) {
+      const dataAtual = new Date(ano, mes - 1, diffParaSegunda + i);
+      
+      const diaJs = dataAtual.getDay();
+      const diaPrismaAtual = mapaDiasPrisma[diaJs];
+
+      const dataFormatada = `${dataAtual.getFullYear()}-${String(dataAtual.getMonth() + 1).padStart(2, '0')}-${String(dataAtual.getDate()).padStart(2, '0')}`;
+
+      const aulasDoDia = diaPrismaAtual 
+        ? aulasRecorrentes.filter(aula => aula.diaSemana === diaPrismaAtual) 
+        : [];
+
+      agendaDaSemana.push({
+        data: dataFormatada,
+        diaSemana: nomesDiasUI[diaJs], 
+        eventos: aulasDoDia.map(aula => ({
+          aulaId: aula.id,
+          titulo: aula.area?.nome || 'Regência',
+          educador: aula.educador?.nome || 'Não definido',
+          horarioInicio: aula.horarioInicio,
+          horarioFim: aula.horarioFim,
+          tipoVisual: aula.area ? 'especializado' : 'regencia'
+        }))
+      });
+    }
+
+    return agendaDaSemana;
   async adicionarLaudo(estudanteId: string, dados: any, arquivo: Express.Multer.File) {
     if (!arquivo) {
       throw new Error('Nenhum arquivo foi enviado.');

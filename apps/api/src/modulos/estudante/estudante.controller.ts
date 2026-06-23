@@ -4,6 +4,7 @@ import { EstudanteService } from './estudante.service.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { EspecificidadeDto } from './dtos/create.especifidades.dto.js';
 import { VisaoGeralResponseDto } from './dtos/visao-geral-response.dto.js';
+import { ObterAgendaSemanaDto } from './dtos/obter-agenda-semana.dto.js';
 import { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -47,6 +48,14 @@ export class EstudantesController {
   @Get(':id/pedagogico')
   async buscarDadosPedagogicos(@Param('id') id: string) {
     return this.estudanteService.getPedagogico(id);
+  }
+
+  @Get(':id/agenda/semana')
+  async obterAgendaSemana(
+    @Param('id') id: string,
+    @Query() query: ObterAgendaSemanaDto 
+  ) {
+    return this.estudanteService.obterAgendaSemana(id, query);
   }
 
   // ==========================================

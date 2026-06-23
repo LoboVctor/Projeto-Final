@@ -1,1 +1,22 @@
-<p>dashboard-responsavel works!</p>
+<div class="p-6 md:p-8 bg-[#F7F5FA] min-h-screen">
+  
+  <h2 class="font-sora text-2xl font-bold text-elo-roxo-profundo mb-6">Visão Geral</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    
+    <div class="bg-white border border-[#E8E3EF] rounded-[16px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1">
+      
+      <div class="w-12 h-12 bg-elo-lavanda/20 text-elo-roxo-principal rounded-full flex items-center justify-center mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      </div>
+      
+      <h3 class="font-nunito text-sm text-gray-500 font-semibold mb-1">Eventos da Semana</h3>
+      
+      <p class="font-sora text-4xl font-bold text-elo-roxo-profundo">
+        {{ estudantesService.totalEventosSemana() }}
+      </p>
+      
+    </div>
+
+    </div>
+</div>

@@ -1,9 +1,12 @@
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../nucleo/config/api.config';
 import { EstudantePedagogico } from '../models/estudante-pedagogico.model';
 import { EstudanteVisaoGeral } from '../models/estudante-visao-geral.model';
+import { DiaAgenda } from '../models/estudante-agenda.model';
 import {
   BuscaEstudantesParams,
   EstudanteListagemItem,
@@ -35,6 +38,10 @@ export interface EstudanteSaude {
     tipo: string;
     urlArquivo: string;
     dataEmissao: string;
+  }>;
+  medicamentos: Array<{
+    nome: string;
+    dosagem: string;
     createdAt: string;
   }>;
   medicamentos: Array<{
@@ -52,6 +59,7 @@ export interface EstudanteSaude {
   providedIn: 'root'
 })
 export class EstudantesService {
+  totalEventosSemana = signal<number>(0);
   private readonly baseUrl = inject(API_BASE_URL);
 
   constructor(private http: HttpClient) {}
@@ -84,6 +92,13 @@ export class EstudantesService {
     return this.http.delete<void>(`${this.baseUrl}/estudantes/${estudanteId}/especificidades/${especificidadeId}`);
   }
 
+  // --- AGENDA ---
+  getAgendaSemana(estudanteId: string, dataBase: string): Observable<DiaAgenda[]> {
+    return this.http.get<DiaAgenda[]>(`${this.baseUrl}/estudantes/${estudanteId}/agenda/semana`, {
+      params: { dataBase }
+    });
+  }
+}
   // --- CRUD DE LAUDOS ---
   uploadLaudo(estudanteId: string, formData: FormData): Observable<any> {
     return this.http.post(`${this.baseUrl}/estudantes/${estudanteId}/laudos`, formData);

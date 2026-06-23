@@ -282,6 +282,9 @@
           </app-bloco-relatorios>
         }
         @if (isAgendaExpanded()) {
+          <div class="flex-1 w-full h-full overflow-y-auto">
+            <app-agenda-estudante [estudanteId]="aluno!.id" />
+          </div>
           <app-bloco-agenda [estudanteId]="aluno!.id" (recolher)="recolherPaineis()">
           </app-bloco-agenda>
         }

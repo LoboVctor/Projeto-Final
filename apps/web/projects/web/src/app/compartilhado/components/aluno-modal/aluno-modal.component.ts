@@ -14,6 +14,11 @@ import { EstudanteVisaoGeral } from '../../models/estudante-visao-geral.model';
 import { BlocoVisaoGeralComponent } from '../../../funcionalidades/estudante/components/bloco-visao-geral/bloco-visao-geral.component';
 import { BlocoSaudeComponent } from '../../../funcionalidades/estudante/components/bloco-saude/bloco-saude';
 import { BlocoRelatoriosComponent } from '../../../funcionalidades/estudante/components/bloco-relatorios/bloco-relatorios';
+import { AgendaEstudanteComponent } from '../../../funcionalidades/estudante/components/agenda-estudante/agenda-estudante';
+
+@Component({
+  selector: 'app-aluno-modal',
+  imports: [CommonModule, BlocoVisaoGeralComponent, BlocoSaudeComponent, BlocoRelatoriosComponent, AgendaEstudanteComponent],
 import { BlocoAgendaComponent } from '../../../funcionalidades/estudante/components/bloco-agenda/bloco-agenda.component';
 
 @Component({
@@ -126,6 +131,9 @@ export class AlunoModalComponent {
     this.isVisaoGeralExpanded.set(false);
   }
 
+  onAgenda() {
+    this.recolherPaineis();
+    this.isAgendaExpanded.set(true);
   onAgenda(): void {
     if (!this.aluno) return;
     this.isVisaoGeralExpanded.set(false);

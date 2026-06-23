@@ -130,6 +130,13 @@ export type EstudantePedagogico = Prisma.EstudanteGetPayload<{
   };
 }>;
 
+export type AulaAgenda = Prisma.AulaGetPayload<{
+  include: {
+    area: true;
+    educador: true;
+  }
+}>;
+
 export interface IEstudanteRepositorio {
   buscarVisaoGeral(estudanteId: string): Promise<EstudanteVisaoGeral | null>;
   buscarSaude(estudanteId: string): Promise<EstudanteSaude | null>;
@@ -144,6 +151,8 @@ export interface IEstudanteRepositorio {
   removerVinculoEspecificidade(estudanteId: string, especificidadeId: number): Promise<EstudanteEspecificidade>;
   contarVinculosEspecificidade(especificidadeId: number): Promise<number>;
   removerEspecificidade(especificidadeId: number): Promise<void>;
+  buscarAulasDoEstudante(estudanteId: string): Promise<AulaAgenda[]>;
+   
   buscarMedicamentoPorNome(nome: string): Promise<Medicamento | null>;
   buscarMedicamentoPorId(id: number): Promise<Medicamento | null>;
   criarMedicamento(nome: string): Promise<Medicamento>;
