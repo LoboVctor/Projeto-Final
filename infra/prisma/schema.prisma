@@ -32,7 +32,7 @@ model Usuario {
 
 model Estudante {
   id               String   @id @default(uuid())
-  matricula        Int      @unique
+  matricula        String   @unique
   nomeCompleto     String
   dataNascimento   DateTime @db.Date
   cpf              String   @unique

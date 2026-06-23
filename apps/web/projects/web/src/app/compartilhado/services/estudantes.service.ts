@@ -1,9 +1,16 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../nucleo/config/api.config';
 import { EstudantePedagogico } from '../models/estudante-pedagogico.model';
 import { EstudanteVisaoGeral } from '../models/estudante-visao-geral.model';
+import {
+  BuscaEstudantesParams,
+  EstudanteListagemItem,
+  EstudoCasoPayload,
+  EstudoCasoResponse,
+  PaginacaoResponse,
+} from '../models/gerenciamento-alunos.model';
 
 export interface EspecificidadePayload {
   tipo: string;
@@ -101,5 +108,31 @@ export class EstudantesService {
 
   deleteMedicamento(estudanteId: string, medicamentoId: number) {
     return this.http.delete(`${this.baseUrl}/estudantes/${estudanteId}/medicamentos/${medicamentoId}`);
+  }
+
+  // --- GERENCIAMENTO GERAL (Tela 4) ---
+
+  /**
+   * Lista estudantes com filtros dinâmicos e paginação.
+   * GET /estudantes?nome=&matricula=&diagnosticoTipo=&page=&limit=
+   */
+  buscarTodos(params: BuscaEstudantesParams): Observable<PaginacaoResponse<EstudanteListagemItem>> {
+    let httpParams = new HttpParams();
+    if (params.nome) httpParams = httpParams.set('nome', params.nome);
+    if (params.matricula) httpParams = httpParams.set('matricula', params.matricula);
+    if (params.diagnosticoTipo) httpParams = httpParams.set('diagnosticoTipo', params.diagnosticoTipo);
+    if (params.page !== undefined) httpParams = httpParams.set('page', String(params.page));
+    if (params.limit !== undefined) httpParams = httpParams.set('limit', String(params.limit));
+    return this.http.get<PaginacaoResponse<EstudanteListagemItem>>(`${this.baseUrl}/estudantes`, { params: httpParams });
+  }
+
+  // --- ESTUDO DE CASO ---
+
+  /**
+   * Registra um novo Estudo de Caso / Ocorrência Pedagógica.
+   * POST /estudo-de-caso
+   */
+  criarEstudoCaso(payload: EstudoCasoPayload): Observable<EstudoCasoResponse> {
+    return this.http.post<EstudoCasoResponse>(`${this.baseUrl}/estudo-de-caso`, payload);
   }
 }

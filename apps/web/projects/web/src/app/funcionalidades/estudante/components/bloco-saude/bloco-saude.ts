@@ -8,7 +8,6 @@ import {
   ChangeDetectionStrategy,
   input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import {
   EstudantesService,
   EstudanteSaude } from '../../../../compartilhado/services/estudantes.service';
@@ -32,13 +31,10 @@ export class BlocoSaudeComponent implements OnInit {
   outrasEspecificidades: any[] = [];
 
   isLoading = false;
-  isPreviewOpen = false;
   isModalEspecificidadesOpen = false;
   isModalMedicamentosOpen = false;
   isModalLaudosOpen = false;
-  safePreviewUrl: SafeResourceUrl | null = null;
 
-  private sanitizer = inject(DomSanitizer);
   private estudantesService = inject(EstudantesService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -133,11 +129,14 @@ export class BlocoSaudeComponent implements OnInit {
   }
 
   abrirPreview(url: string): void {
-    this.safePreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-    this.isPreviewOpen = true;
+    if (!url) return;
+    // Abre em nova aba — browsers modernos bloqueiam PDFs locais em iframe
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
+
   fecharPreview(): void {
-    this.isPreviewOpen = false;
+    // preview agora é aberto via window.open — método mantido para compatibilidade de template
   }
 }
+

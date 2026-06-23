@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico } from './interfaces/IEstudanteRepositorio.js';
 import { EspecificidadeDto } from './dtos/create.especifidades.dto.js';
+import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
 
 @Injectable()
 export class EstudanteService {
@@ -17,6 +18,14 @@ export class EstudanteService {
     }
 
     return this.mapearRetornoVisaoGeral(estudante);
+  }
+
+  /**
+   * Lista todos os estudantes com filtros opcionais e paginação.
+   * Utilizado pela Tela 4 (Gerenciamento Geral de Alunos).
+   */
+  async buscarTodos(query: BuscarEstudantesQueryDto) {
+    return this.estudanteRepositorio.buscarComFiltros(query);
   }
 
   private mapearRetornoVisaoGeral(dados: EstudanteVisaoGeral) {

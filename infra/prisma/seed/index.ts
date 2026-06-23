@@ -214,8 +214,8 @@ async function main() {
   // Estudantes
   const estudantesData = [
     {
-      id: '33333333-3333-3333-3333-333333333333',
-      matricula: 20260001,
+      id: '123e4567-e89b-42d3-8456-426614174000',
+      matricula: '20260001',
       nomeCompleto: 'Lucas Almeida Santos',
       dataNascimento: new Date('2016-04-15'),
       cpf: '222.222.222-22',
@@ -234,8 +234,8 @@ async function main() {
       },
     },
     {
-      id: 'c0000000-0000-0000-0000-000000000001',
-      matricula: 202601,
+      id: '123e4567-e89b-42d3-8456-426614174001',
+      matricula: '202601',
       nomeCompleto: 'Ana Silva',
       dataNascimento: new Date('2019-05-15'),
       cpf: '123.456.789-01',
@@ -254,8 +254,8 @@ async function main() {
       },
     },
     {
-      id: 'c0000000-0000-0000-0000-000000000002',
-      matricula: 202602,
+      id: '123e4567-e89b-42d3-8456-426614174002',
+      matricula: '202602',
       nomeCompleto: 'Bruno Santos',
       dataNascimento: new Date('2018-08-22'),
       cpf: '234.567.890-12',
@@ -274,8 +274,8 @@ async function main() {
       },
     },
     {
-      id: 'c0000000-0000-0000-0000-000000000003',
-      matricula: 202603,
+      id: '123e4567-e89b-42d3-8456-426614174003',
+      matricula: '202603',
       nomeCompleto: 'Carlos Souza',
       dataNascimento: new Date('2018-03-10'),
       cpf: '345.678.901-23',
@@ -294,8 +294,8 @@ async function main() {
       },
     },
     {
-      id: 'c0000000-0000-0000-0000-000000000004',
-      matricula: 202604,
+      id: '123e4567-e89b-42d3-8456-426614174004',
+      matricula: '202604',
       nomeCompleto: 'Daniela Lima',
       dataNascimento: new Date('2020-11-05'),
       cpf: '456.789.012-34',
@@ -342,7 +342,7 @@ async function main() {
     },
   });
 
-  const lucasId = '33333333-3333-3333-3333-333333333333';
+  const lucasId = '123e4567-e89b-42d3-8456-426614174000';
 
   await prisma.estudanteEspecificidade.create({
     data: {
