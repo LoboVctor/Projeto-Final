@@ -22,6 +22,7 @@ import {
 } from '../../../../compartilhado/models/registros-diarios.models';
 import { ObservacoesDiaComponent } from './components/observacoes-dia/observacoes-dia.component';
 import { ScoreDiarioComponent } from './components/score-diario/score-diario.component';
+import { AgendaSemanalComponent } from './components/agenda-semanal/agenda-semanal.component';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -39,7 +40,7 @@ function isValidUUID(uuid: string): boolean {
 @Component({
   selector: 'app-bloco-agenda',
   standalone: true,
-  imports: [CommonModule, FormsModule, ObservacoesDiaComponent, ScoreDiarioComponent],
+  imports: [CommonModule, FormsModule, ObservacoesDiaComponent, ScoreDiarioComponent, AgendaSemanalComponent],
   templateUrl: './bloco-agenda.component.html',
   styleUrls: ['./bloco-agenda.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
