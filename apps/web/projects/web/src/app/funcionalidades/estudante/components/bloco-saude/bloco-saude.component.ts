@@ -8,17 +8,18 @@ import {
   ChangeDetectionStrategy,
   input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import {
   EstudantesService,
   EstudanteSaude } from '../../../../compartilhado/services/estudantes.service';
-import { ModalEspecificidadesComponent } from './modais/restricoes';
+import { ModalEspecificidadesComponent } from './modais/restricoes-modal.component';
+import { ModalMedicamentosComponent } from './modais/medicamentos-modal.component';
+import { ModalLaudosComponent } from './modais/laudos-modal.component';
 
 @Component({
   selector: 'app-bloco-saude',
-  imports: [CommonModule, ModalEspecificidadesComponent],
-  templateUrl: './bloco-saude.html',
-  styleUrls: ['./bloco-saude.css'],
+  imports: [CommonModule, ModalEspecificidadesComponent, ModalMedicamentosComponent, ModalLaudosComponent],
+  templateUrl: './bloco-saude.component.html',
+  styleUrls: ['./bloco-saude.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush })
 export class BlocoSaudeComponent implements OnInit {
   readonly estudanteId = input.required<string>();
@@ -30,11 +31,10 @@ export class BlocoSaudeComponent implements OnInit {
   outrasEspecificidades: any[] = [];
 
   isLoading = false;
-  isPreviewOpen = false;
   isModalEspecificidadesOpen = false;
-  safePreviewUrl: SafeResourceUrl | null = null;
+  isModalMedicamentosOpen = false;
+  isModalLaudosOpen = false;
 
-  private sanitizer = inject(DomSanitizer);
   private estudantesService = inject(EstudantesService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -89,6 +89,33 @@ export class BlocoSaudeComponent implements OnInit {
     this.isModalEspecificidadesOpen = false;
   }
 
+  onEspecificidadeSalva(): void {
+    this.fecharModalEspecificidades();
+  }
+
+  abrirModalLaudos(): void {
+    this.isModalLaudosOpen = true;
+  }
+
+  fecharModalLaudos(): void {
+    this.isModalLaudosOpen = false;
+  }
+
+  onLaudoSalvo(): void {
+    this.fecharModalLaudos();
+  }
+
+  abrirModalMedicamento(): void {
+    this.isModalMedicamentosOpen = true;
+  }
+
+  fecharModalMedicamento(): void {
+    this.isModalMedicamentosOpen = false;
+  }
+
+  onMedicamentoSalvo(): void {
+    this.fecharModalMedicamento();
+  }
 
 
   private extrairFileId(driveUrl: string): string | null {
@@ -101,17 +128,47 @@ export class BlocoSaudeComponent implements OnInit {
     return fileId ? `https://drive.google.com/uc?export=download&id=${fileId}` : driveUrl;
   }
 
-  abrirPreview(driveUrl: string): void {
-    const fileId = this.extrairFileId(driveUrl);
-    if (fileId) {
-      this.safePreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
-        `https://drive.google.com/file/d/${fileId}/preview`,
-      );
-      this.isPreviewOpen = true;
-    }
+  baixarDocumento(url: string): void {
+    if (!url) return;
+    const downloadUrl = this.getDownloadUrl(url);
+
+    fetch(downloadUrl)
+      .then(response => {
+         if (!response.ok) throw new Error('Falha no download via fetch');
+         return response.blob();
+      })
+      .then(blob => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = blobUrl;
+        a.download = '';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(blobUrl);
+        document.body.removeChild(a);
+      })
+      .catch(err => {
+        console.warn('Erro ao forçar download via blob (CORS), usando fallback:', err);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = '';
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      });
   }
 
+  abrirPreview(url: string): void {
+    if (!url) return;
+    // Abre em nova aba — browsers modernos bloqueiam PDFs locais em iframe
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+
   fecharPreview(): void {
-    this.isPreviewOpen = false;
+    // preview agora é aberto via window.open — método mantido para compatibilidade de template
   }
 }
+

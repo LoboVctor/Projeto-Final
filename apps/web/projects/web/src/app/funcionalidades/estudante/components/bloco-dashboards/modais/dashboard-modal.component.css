@@ -1,0 +1,17 @@
+.modal-wrapper {
+  padding: 16px;
+  min-width: 700px; 
+}
+
+.filter-bar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+  margin-top: 8px;
+}
+
+.canvas-container {
+  position: relative;
+  height: 400px;
+  width: 100%;
+}

@@ -2,6 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { CriarUsuarioDto } from './dtos/criar-usuario.dto.js';
 import type { IUsuarioRepositorio } from './interfaces/IUsuarioRepositorio.js';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class UsuarioService {

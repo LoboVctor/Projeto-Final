@@ -13,10 +13,12 @@ export class EspecificidadeDto {
   @IsNotEmpty()
   categoria!: CategoriaEspecificidade;
 
+  @ApiProperty({ description: 'Descrição detalhada da especificidade' })
   @IsString()
   @IsNotEmpty()
   descricao!: string;
 
+  @ApiPropertyOptional({ description: 'Observações adicionais (opcional)' })
   @IsString()
   @IsOptional()
   observacao?: string;

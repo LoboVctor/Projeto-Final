@@ -1,0 +1,121 @@
+<!-- Overlay -->
+<div class="drawer-overlay" (click)="onFechar()"></div>
+
+<!-- Painel lateral -->
+<aside class="drawer-panel" role="dialog" aria-modal="true" [attr.aria-label]="'Estudo de Caso — ' + estudanteNome">
+
+  <!-- Cabeçalho -->
+  <div class="drawer-header">
+    <div class="drawer-header-info">
+      <span class="drawer-icon">📋</span>
+      <div>
+        <h2 class="drawer-title">Estudo de Caso / Ocorrência</h2>
+        @if (estudanteNome) {
+          <p class="drawer-subtitle">{{ estudanteNome }}</p>
+        }
+      </div>
+    </div>
+    <button class="drawer-close-btn" (click)="onFechar()" aria-label="Fechar drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Corpo do formulário -->
+  <div class="drawer-body">
+
+    <!-- Feedback de sucesso -->
+    @if (sucesso()) {
+      <div class="feedback-sucesso" role="status">
+        <span>✅</span>
+        <span>Estudo de Caso registrado com sucesso!</span>
+      </div>
+    }
+
+    <!-- Feedback de erro -->
+    @if (erro()) {
+      <div class="feedback-erro" role="alert">
+        <span>⚠️ {{ erro() }}</span>
+      </div>
+    }
+
+    <!-- Campo: Data da Reunião -->
+    <div class="campo-grupo">
+      <label for="dataReuniao" class="campo-label">Data da Reunião <span class="obrigatorio">*</span></label>
+      <input
+        id="dataReuniao"
+        type="date"
+        class="campo-input"
+        [value]="dataReuniao()"
+        (input)="dataReuniao.set($any($event.target).value)"
+        [disabled]="loading() || sucesso()"
+      />
+    </div>
+
+    <!-- Campo: Parecer / Decisão -->
+    <div class="campo-grupo">
+      <label for="parecerDecisao" class="campo-label">Parecer e Decisão <span class="obrigatorio">*</span></label>
+      <textarea
+        id="parecerDecisao"
+        class="campo-textarea"
+        rows="5"
+        placeholder="Descreva o parecer da reunião pedagógica, as decisões tomadas e os encaminhamentos definidos..."
+        [value]="parecerDecisao()"
+        (input)="parecerDecisao.set($any($event.target).value)"
+        [disabled]="loading() || sucesso()"
+      ></textarea>
+      <span class="campo-hint">Mínimo de 10 caracteres.</span>
+    </div>
+
+    <!-- Campo: Educadores participantes -->
+    <div class="campo-grupo">
+      <label class="campo-label">
+        Educadores Participantes <span class="obrigatorio">*</span>
+      </label>
+      <div class="educadores-lista">
+        @for (educador of educadoresDisponiveis; track educador.id) {
+          <button
+            type="button"
+            class="educador-chip"
+            [class.educador-chip--selecionado]="isEducadorSelecionado(educador.id)"
+            (click)="toggleEducador(educador.id)"
+            [disabled]="loading() || sucesso()"
+          >
+            <span class="educador-chip-inicial">{{ educador.nome.charAt(0) }}</span>
+            <span>{{ educador.nome }}</span>
+            @if (isEducadorSelecionado(educador.id)) {
+              <span class="educador-chip-check">✓</span>
+            }
+          </button>
+        }
+      </div>
+      @if (educadoresSelecionados().length > 0) {
+        <p class="educadores-contador">{{ educadoresSelecionados().length }} educador(es) selecionado(s)</p>
+      }
+    </div>
+
+  </div>
+
+  <!-- Rodapé com ações -->
+  <div class="drawer-footer">
+    <button class="btn-secundario" (click)="onFechar()" [disabled]="loading()">
+      Cancelar
+    </button>
+    <button
+      class="btn-primario"
+      (click)="salvar()"
+      [disabled]="!formularioValido || loading() || sucesso()"
+    >
+      @if (loading()) {
+        <span class="spinner"></span>
+        Salvando...
+      } @else {
+        📋 Registrar Ocorrência
+      }
+    </button>
+  </div>
+
+</aside>

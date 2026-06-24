@@ -14,7 +14,7 @@ import { EstudantesService } from '../../../../../compartilhado/services/estudan
 @Component({
   selector: 'app-modal-especificidades',
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './restricoes.html',
+  templateUrl: './restricoes-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush })
 export class ModalEspecificidadesComponent implements OnInit {
   readonly estudanteId = input.required<string>();

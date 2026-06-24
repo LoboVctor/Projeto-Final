@@ -90,4 +90,57 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
       skipDuplicates: true,
     });
   }
+
+  async buscarPorPeriodo(estudanteId: string, dataInicio: Date, dataFim: Date): Promise<RegistroDiario[]> {
+    return this.prisma.client.registroDiario.findMany({
+      where: {
+        estudanteId,
+        data: { gte: dataInicio, lte: dataFim },
+      },
+      orderBy: { data: 'asc' },
+    });
+  }
+
+  async buscarPorEstudanteEData(estudanteId: string, data: Date): Promise<RegistroDiario | null> {
+    const inicio = new Date(data);
+    inicio.setUTCHours(0, 0, 0, 0);
+    const fim = new Date(data);
+    fim.setUTCHours(23, 59, 59, 999);
+
+    return this.prisma.client.registroDiario.findFirst({
+      where: {
+        estudanteId,
+        data: { gte: inicio, lte: fim },
+      }
+    });
+  }
+
+  async buscarRegistrosPorPeriodo(estudanteId: string, dataLimite: Date): Promise<RegistroDiario[]> {
+    return this.prisma.client.registroDiario.findMany({
+      where: {
+        estudanteId: estudanteId,
+        data: {
+          gte: dataLimite,
+        },
+        preenchido: true, 
+      },
+      orderBy: {
+        data: 'asc',
+      },
+    });
+  }
+
+  async buscarRegistrosPorIntervalo(estudanteId: string, dataInicio: Date, dataFim: Date): Promise<RegistroDiario[]> {
+    return this.prisma.client.registroDiario.findMany({
+      where: {
+        estudanteId: estudanteId,
+        data: {
+          gte: dataInicio,
+          lte: dataFim,
+        },
+        preenchido: true,
+      },
+    });
+  }
 }
+

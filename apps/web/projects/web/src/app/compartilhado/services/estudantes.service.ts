@@ -1,9 +1,17 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../nucleo/config/api.config';
 import { EstudantePedagogico } from '../models/estudante-pedagogico.model';
 import { EstudanteVisaoGeral } from '../models/estudante-visao-geral.model';
+import { DiaAgenda } from '../models/estudante-agenda.model';
+import {
+  BuscaEstudantesParams,
+  EstudanteListagemItem,
+  EstudoCasoPayload,
+  EstudoCasoResponse,
+  PaginacaoResponse,
+} from '../models/gerenciamento-alunos.model';
 
 export interface EspecificidadePayload {
   tipo: string;
@@ -29,9 +37,13 @@ export interface EstudanteSaude {
     urlArquivo: string;
     dataEmissao: string;
   }>;
+
   medicamentos: Array<{
+    medicamentoId: number;
     nome: string;
-    dosagem: string;
+    dosagem: number;
+    unidadeMedida: string;
+    intervaloAdministracao: number;
     horarioAdministrado: string;
     administradoEscola: boolean;
   }>;
@@ -41,6 +53,7 @@ export interface EstudanteSaude {
   providedIn: 'root'
 })
 export class EstudantesService {
+  totalEventosSemana = signal<number>(0);
   private readonly baseUrl = inject(API_BASE_URL);
 
   constructor(private http: HttpClient) {}
@@ -72,4 +85,63 @@ export class EstudantesService {
   deleteEspecificidade(estudanteId: string, especificidadeId: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/estudantes/${estudanteId}/especificidades/${especificidadeId}`);
   }
-}
+
+  // --- AGENDA ---
+  getAgendaSemana(estudanteId: string, dataBase: string): Observable<DiaAgenda[]> {
+    return this.http.get<DiaAgenda[]>(`${this.baseUrl}/estudantes/${estudanteId}/agenda/semana`, {
+      params: { dataBase }
+    });
+  }
+
+  // --- CRUD DE LAUDOS ---
+  uploadLaudo(estudanteId: string, formData: FormData): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/estudantes/${estudanteId}/laudos`, formData);
+  }
+
+  atualizarLaudo(estudanteId: string, documentoId: string, formData: FormData): Observable<unknown> {
+    return this.http.patch(`${this.baseUrl}/estudantes/${estudanteId}/laudos/${documentoId}`, formData);
+  }
+
+  excluirLaudo(estudanteId: string, documentoId: string): Observable<unknown> {
+    return this.http.delete(`${this.baseUrl}/estudantes/${estudanteId}/laudos/${documentoId}`);
+  }
+
+  // --- CRUD DE MEDICAMENTOS ---
+  saveMedicamento(estudanteId: string, dados: unknown) {
+    return this.http.post(`${this.baseUrl}/estudantes/${estudanteId}/medicamentos`, dados);
+  }
+
+  updateMedicamento(estudanteId: string, medicamentoId: number, dados: unknown) {
+    return this.http.put(`${this.baseUrl}/estudantes/${estudanteId}/medicamentos/${medicamentoId}`, dados);
+  }
+
+  deleteMedicamento(estudanteId: string, medicamentoId: number) {
+    return this.http.delete(`${this.baseUrl}/estudantes/${estudanteId}/medicamentos/${medicamentoId}`);
+  }
+
+  // --- GERENCIAMENTO GERAL (Tela 4) ---
+
+  /**
+   * Lista estudantes com filtros dinâmicos e paginação.
+   * GET /estudantes?nome=&matricula=&diagnosticoTipo=&page=&limit=
+   */
+  buscarTodos(params: BuscaEstudantesParams): Observable<PaginacaoResponse<EstudanteListagemItem>> {
+    let httpParams = new HttpParams();
+    if (params.nome) httpParams = httpParams.set('nome', params.nome);
+    if (params.matricula) httpParams = httpParams.set('matricula', params.matricula);
+    if (params.diagnosticoTipo) httpParams = httpParams.set('diagnosticoTipo', params.diagnosticoTipo);
+    if (params.page !== undefined) httpParams = httpParams.set('page', String(params.page));
+    if (params.limit !== undefined) httpParams = httpParams.set('limit', String(params.limit));
+    return this.http.get<PaginacaoResponse<EstudanteListagemItem>>(`${this.baseUrl}/estudantes`, { params: httpParams });
+  }
+
+  // --- ESTUDO DE CASO ---
+
+  /**
+   * Registra um novo Estudo de Caso / Ocorrência Pedagógica.
+   * POST /estudo-de-caso
+   */
+  criarEstudoCaso(payload: EstudoCasoPayload): Observable<EstudoCasoResponse> {
+    return this.http.post<EstudoCasoResponse>(`${this.baseUrl}/estudo-de-caso`, payload);
+  }
+}
