@@ -10,8 +10,8 @@ import Chart from 'chart.js/auto';
   selector: 'app-bloco-dashboard',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './bloco-dashboard.html',
-  styleUrls: ['./bloco-dashboard.css']
+  templateUrl: './bloco-dashboard.component.html',
+  styleUrls: ['./bloco-dashboard.component.css']
 })
 export class BlocoDashboardComponent {
   @Input({ required: true }) estudanteId!: string;
@@ -191,7 +191,7 @@ export class BlocoDashboardComponent {
     this.renderHistoricoChart(dadosVazios, categoria);
   }
 
-  private renderHistoricoChart(data: any, categoria: string) {
+  private renderHistoricoChart(data: { labels: string[], datasets: { data: number[] }[] }, categoria: string) {
     const canvas = document.getElementById('historicoCanvas') as HTMLCanvasElement;
     if (!canvas) return;
 
@@ -206,7 +206,7 @@ export class BlocoDashboardComponent {
         datasets: [
           {
             label: categoria,
-            data: data.datasets[0].data,
+            data: data.datasets?.[0]?.data || [],
             backgroundColor: '#f97316',
             borderRadius: 20,
             borderSkipped: false,
@@ -279,12 +279,12 @@ export class BlocoDashboardComponent {
     });
   }
 
-  private renderRadarChart(categorias: any) {
+  private renderRadarChart(categorias: Record<string, { valor?: number, valorAnterior?: number, variacao?: number }>) {
     const canvas = document.getElementById('radarCanvas') as HTMLCanvasElement;
     if (!canvas) return;
     if (this.radarChart) this.radarChart.destroy();
     
-    const obterAnterior = (cat: any) => {
+    const obterAnterior = (cat?: { valor?: number, valorAnterior?: number, variacao?: number }) => {
       if (!cat) return 0;
       if (cat.valorAnterior !== undefined) return cat.valorAnterior;
       return Math.max(0, Math.min(5, (cat.valor || 0) - (cat.variacao || 0)));
@@ -298,12 +298,12 @@ export class BlocoDashboardComponent {
           {
             label: 'Período Atual',
             data: [
-              categorias.Alimentacao?.valor || 0, 
-              categorias.Banheiro?.valor || 0, 
-              categorias.Autonomia?.valor || 0, 
-              categorias.Comportamento?.valor || 0, 
-              categorias.Interacao?.valor || 0, 
-              categorias.Foco?.valor || 0
+              categorias['Alimentacao']?.valor || 0, 
+              categorias['Banheiro']?.valor || 0, 
+              categorias['Autonomia']?.valor || 0, 
+              categorias['Comportamento']?.valor || 0, 
+              categorias['Interacao']?.valor || 0, 
+              categorias['Foco']?.valor || 0
             ],
             backgroundColor: 'rgba(74, 222, 128, 0.15)', 
             borderColor: '#22c55e',
@@ -317,12 +317,12 @@ export class BlocoDashboardComponent {
           {
             label: 'Período Anterior',
             data: [
-              obterAnterior(categorias.Alimentacao), 
-              obterAnterior(categorias.Banheiro), 
-              obterAnterior(categorias.Autonomia), 
-              obterAnterior(categorias.Comportamento), 
-              obterAnterior(categorias.Interacao), 
-              obterAnterior(categorias.Foco)
+              obterAnterior(categorias['Alimentacao']), 
+              obterAnterior(categorias['Banheiro']), 
+              obterAnterior(categorias['Autonomia']), 
+              obterAnterior(categorias['Comportamento']), 
+              obterAnterior(categorias['Interacao']), 
+              obterAnterior(categorias['Foco'])
             ],
             backgroundColor: 'rgba(168, 85, 247, 0.12)', 
             borderColor: '#a855f7',                     

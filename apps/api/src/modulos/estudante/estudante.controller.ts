@@ -38,6 +38,7 @@ export class EstudantesController {
   // DADOS GERAIS DE SAÚDE
   // ==========================================
   @Get(':id/saude')
+  @ApiOperation({ summary: 'Retorna os dados de saúde do estudante (medicamentos, laudos e diagnósticos)' })
   async buscarDadosSaude(@Param('id') id: string) {
     return this.estudanteService.getSaude(id);
   }
@@ -46,11 +47,13 @@ export class EstudantesController {
   // DADOS PEDAGÓGICOS (Relatórios + Metas + PIBI)
   // ==========================================
   @Get(':id/pedagogico')
+  @ApiOperation({ summary: 'Retorna os dados pedagógicos do estudante (relatórios, metas e PIBIs)' })
   async buscarDadosPedagogicos(@Param('id') id: string) {
     return this.estudanteService.getPedagogico(id);
   }
 
   @Get(':id/agenda/semana')
+  @ApiOperation({ summary: 'Retorna a agenda da semana de um estudante a partir de uma data base' })
   async obterAgendaSemana(
     @Param('id') id: string,
     @Query() query: ObterAgendaSemanaDto 
@@ -62,6 +65,7 @@ export class EstudantesController {
   // ESPECIFICIDADES / RESTRIÇÕES
   // ==========================================
   @Post(':estudanteId/especificidades')
+  @ApiOperation({ summary: 'Adiciona uma nova especificidade (restrição, TEA, TDAH etc.) a um estudante' })
   async createEspecificidade(
     @Param('estudanteId') estudanteId: string,
     @Body() dto: EspecificidadeDto
@@ -70,6 +74,7 @@ export class EstudantesController {
   }
 
   @Patch(':estudanteId/especificidades/:especificidadeId')
+  @ApiOperation({ summary: 'Atualiza uma especificidade existente de um estudante' })
   async updateEspecificidade(
     @Param('estudanteId') estudanteId: string,
     @Param('especificidadeId', ParseIntPipe) especificidadeId: number,
@@ -79,6 +84,7 @@ export class EstudantesController {
   }
 
   @Delete(':estudanteId/especificidades/:especificidadeId')
+  @ApiOperation({ summary: 'Remove uma especificidade de um estudante' })
   async removeEspecificidade(
     @Param('estudanteId') estudanteId: string,
     @Param('especificidadeId', ParseIntPipe) especificidadeId: number
@@ -91,6 +97,7 @@ export class EstudantesController {
   // LAUDOS E DIAGNÓSTICOS
   // ==========================================
   @Post(':estudanteId/laudos')
+  @ApiOperation({ summary: 'Adiciona um laudo/diagnóstico (com upload de arquivo PDF/imagem) a um estudante' })
   @UseInterceptors(FileInterceptor('arquivo', {
     storage: diskStorage({
       destination: './uploads/laudos',
@@ -110,11 +117,13 @@ export class EstudantesController {
   }
 
   @Delete(':estudanteId/laudos/:documentoId')
+  @ApiOperation({ summary: 'Remove um laudo/documento de um estudante pelo ID do documento' })
   async removerLaudo(@Param('documentoId') documentoId: string) {
     return this.estudanteService.removerLaudo(documentoId);
   }
 
   @Patch(':estudanteId/laudos/:documentoId')
+  @ApiOperation({ summary: 'Atualiza um laudo existente, permitindo substituir o arquivo' })
   @UseInterceptors(FileInterceptor('arquivo', {
     storage: diskStorage({
       destination: './uploads/laudos',
@@ -138,6 +147,7 @@ export class EstudantesController {
   // ==========================================
 
   @Post(':estudanteId/medicamentos')
+  @ApiOperation({ summary: 'Registra um novo medicamento em uso pelo estudante' })
   async addMedicamento(
     @Param('estudanteId') estudanteId: string,
     @Body() dados: any,
@@ -146,6 +156,7 @@ export class EstudantesController {
   }
 
   @Patch(':estudanteId/medicamentos/:medicamentoId')
+  @ApiOperation({ summary: 'Atualiza os dados de um medicamento registrado para o estudante' })
   async updateMedicamento(
     @Param('estudanteId') estudanteId: string,
     @Param('medicamentoId') medicamentoId: string,
@@ -155,6 +166,7 @@ export class EstudantesController {
   }
 
   @Delete(':estudanteId/medicamentos/:medicamentoId')
+  @ApiOperation({ summary: 'Remove um medicamento registrado para o estudante' })
   async removeMedicamento(
     @Param('estudanteId') estudanteId: string,
     @Param('medicamentoId') medicamentoId: string,

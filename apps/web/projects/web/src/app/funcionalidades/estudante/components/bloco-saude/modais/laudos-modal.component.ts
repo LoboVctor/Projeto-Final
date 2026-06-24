@@ -7,7 +7,7 @@ import { EstudantesService } from '../../../../../compartilhado/services/estudan
   selector: 'app-modal-laudos',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './laudos.html'
+  templateUrl: './laudos-modal.component.html'
 })
 export class ModalLaudosComponent implements OnInit {
   @Input() estudanteId!: string;
@@ -58,12 +58,12 @@ export class ModalLaudosComponent implements OnInit {
     if (this.editandoId) {
       this.estudantesService.atualizarLaudo(this.estudanteId, this.editandoId, formData).subscribe({
         next: () => this.finalizarAcao(),
-        error: (err) => this.tratarErro(err)
+        error: (err: unknown) => this.tratarErro(err)
       });
     } else {
       this.estudantesService.uploadLaudo(this.estudanteId, formData).subscribe({
         next: () => this.finalizarAcao(),
-        error: (err) => this.tratarErro(err)
+        error: (err: unknown) => this.tratarErro(err)
       });
     }
   }
@@ -106,7 +106,7 @@ export class ModalLaudosComponent implements OnInit {
         next: () => {
           this.salvo.emit(); 
         },
-        error: (err) => console.error('Erro ao excluir', err)
+        error: (err: unknown) => console.error('Erro ao excluir', err)
       });
     }
   }

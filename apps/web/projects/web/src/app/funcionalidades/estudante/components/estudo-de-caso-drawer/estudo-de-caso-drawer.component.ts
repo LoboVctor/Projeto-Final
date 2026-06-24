@@ -100,7 +100,7 @@ export class EstudoDeCasoDrawerComponent {
     };
 
     this.estudantesService.criarEstudoCaso(payload).subscribe({
-      next: (resposta) => {
+      next: (resposta: { id: string }) => {
         this.loading.set(false);
         this.sucesso.set(true);
         this.salvoComSucesso.emit(resposta.id);

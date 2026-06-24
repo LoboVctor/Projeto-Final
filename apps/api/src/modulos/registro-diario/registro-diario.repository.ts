@@ -111,6 +111,10 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
       where: {
         estudanteId,
         data: { gte: inicio, lte: fim },
+      }
+    });
+  }
+
   async buscarRegistrosPorPeriodo(estudanteId: string, dataLimite: Date): Promise<RegistroDiario[]> {
     return this.prisma.client.registroDiario.findMany({
       where: {

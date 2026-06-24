@@ -7,7 +7,7 @@ import { EstudantesService } from '../../../../../compartilhado/services/estudan
   selector: 'app-modal-medicamentos',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './medicamentos.html'
+  templateUrl: './medicamentos-modal.component.html'
 })
 export class ModalMedicamentosComponent implements OnInit {
   @Input() estudanteId!: string;
@@ -80,7 +80,7 @@ export class ModalMedicamentosComponent implements OnInit {
         this.cancelarEdicao();
         this.emitirFechar();
       },
-      error: (err) => console.error('Erro ao salvar medicamento:', err)
+      error: (err: unknown) => console.error('Erro ao salvar medicamento:', err)
     });
   }
 
@@ -88,7 +88,7 @@ export class ModalMedicamentosComponent implements OnInit {
     if (confirm('Tem certeza que deseja remover este medicamento da ficha do estudante?')) {
       this.estudantesService.deleteMedicamento(this.estudanteId, medicamentoId).subscribe({
         next: () => this.salvo.emit(),
-        error: (err) => console.error('Erro ao excluir medicamento:', err)
+        error: (err: unknown) => console.error('Erro ao excluir medicamento:', err)
       });
     }
   }

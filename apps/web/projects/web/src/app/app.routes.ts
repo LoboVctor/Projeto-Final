@@ -42,7 +42,7 @@ export const routes: Routes = [
       },
       {
         path: 'dashboard-responsavel',
-        loadComponent: () => import('./funcionalidades/dashboard/dashboard-responsavel/dashboard-responsavel').then(m => m.DashboardResponsavel)
+        loadComponent: () => import('./funcionalidades/dashboard/dashboard-responsavel/dashboard-responsavel.component').then(m => m.DashboardResponsavelComponent)
       }
     ]
   }

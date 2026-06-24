@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico, AulaAgenda } from './interfaces/IEstudanteRepositorio.js';
-import { Especificidade, EstudanteEspecificidade, TipoEspecificidade, CategoriaEspecificidade } from '@prisma-client';
-import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico, EstudanteListagemPaginado } from './interfaces/IEstudanteRepositorio.js';
+import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico, EstudanteListagemPaginado, AulaAgenda } from './interfaces/IEstudanteRepositorio.js';
 import { Especificidade, EstudanteEspecificidade, TipoEspecificidade, CategoriaEspecificidade, TipoDiagnostico, UnidadeM } from '@prisma-client';
 import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
 

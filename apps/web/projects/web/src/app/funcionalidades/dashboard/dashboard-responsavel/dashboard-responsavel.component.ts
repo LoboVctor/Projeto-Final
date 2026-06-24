@@ -5,10 +5,10 @@ import { EstudantesService } from '../../../compartilhado/services/estudantes.se
   selector: 'app-dashboard-responsavel',
   standalone: true,
   imports: [],
-  templateUrl: './dashboard-responsavel.html',
-  styleUrl: './dashboard-responsavel.css',
+  templateUrl: './dashboard-responsavel.component.html',
+  styleUrl: './dashboard-responsavel.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush 
 })
-export class DashboardResponsavel {
+export class DashboardResponsavelComponent {
   estudantesService = inject(EstudantesService);
 }

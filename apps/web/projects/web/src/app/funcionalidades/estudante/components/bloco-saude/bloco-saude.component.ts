@@ -11,15 +11,15 @@ import { CommonModule } from '@angular/common';
 import {
   EstudantesService,
   EstudanteSaude } from '../../../../compartilhado/services/estudantes.service';
-import { ModalEspecificidadesComponent } from './modais/restricoes';
-import { ModalMedicamentosComponent } from './modais/medicamentos';
-import { ModalLaudosComponent } from './modais/laudos';
+import { ModalEspecificidadesComponent } from './modais/restricoes-modal.component';
+import { ModalMedicamentosComponent } from './modais/medicamentos-modal.component';
+import { ModalLaudosComponent } from './modais/laudos-modal.component';
 
 @Component({
   selector: 'app-bloco-saude',
   imports: [CommonModule, ModalEspecificidadesComponent, ModalMedicamentosComponent, ModalLaudosComponent],
-  templateUrl: './bloco-saude.html',
-  styleUrls: ['./bloco-saude.css'],
+  templateUrl: './bloco-saude.component.html',
+  styleUrls: ['./bloco-saude.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush })
 export class BlocoSaudeComponent implements OnInit {
   readonly estudanteId = input.required<string>();
@@ -126,6 +126,38 @@ export class BlocoSaudeComponent implements OnInit {
   getDownloadUrl(driveUrl: string): string {
     const fileId = this.extrairFileId(driveUrl);
     return fileId ? `https://drive.google.com/uc?export=download&id=${fileId}` : driveUrl;
+  }
+
+  baixarDocumento(url: string): void {
+    if (!url) return;
+    const downloadUrl = this.getDownloadUrl(url);
+
+    fetch(downloadUrl)
+      .then(response => {
+         if (!response.ok) throw new Error('Falha no download via fetch');
+         return response.blob();
+      })
+      .then(blob => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = blobUrl;
+        a.download = '';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(blobUrl);
+        document.body.removeChild(a);
+      })
+      .catch(err => {
+        console.warn('Erro ao forçar download via blob (CORS), usando fallback:', err);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = '';
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      });
   }
 
   abrirPreview(url: string): void {

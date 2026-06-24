@@ -1,4 +1,8 @@
-<div class="flex-1 bg-gray-50/50 p-6 md:p-8 rounded-r-3xl overflow-y-auto h-full max-h-[90vh] md:max-h-[85vh] relative w-full flex flex-col">
+<!-- Otimização de Performance (Hardware Acceleration): 
+     As classes 'transform-gpu' e 'will-change-scroll' foram adicionadas ao container principal 
+     para forçar a renderização na GPU. Isso resolve o "lag/delay" onde os gráficos do Chart.js
+     parecem descolar do fundo durante o scroll. -->
+<div class="flex-1 bg-gray-50/50 p-6 md:p-8 rounded-r-3xl overflow-y-auto overflow-x-hidden h-full max-h-[90vh] md:max-h-[85vh] relative w-full flex flex-col transform-gpu will-change-scroll">
   
   <div class="flex items-center justify-between mb-8 shrink-0">
     <div class="flex items-center space-x-3 text-blue-700">
@@ -106,10 +110,8 @@
             <p class="text-xs text-gray-500 m-0">Média do período selecionado.</p>
           </div>
           
-          <div class="flex-1 w-full relative">
-            <div class="absolute inset-0">
-              <canvas id="radarCanvas"></canvas>
-            </div>
+          <div class="flex-1 w-full relative" style="min-height: 0;">
+            <canvas id="radarCanvas"></canvas>
           </div>
         </div>
       </div>
@@ -204,8 +206,8 @@
           </div>
         </div>
 
-        <div class="flex-1 w-full relative min-h-[300px]">
-          <div class="absolute inset-0 bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+        <div class="flex-1 w-full relative min-h-[300px] bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex flex-col">
+          <div class="relative flex-1 w-full" style="min-height: 0;">
              <canvas id="historicoCanvas"></canvas>
           </div>
         </div>

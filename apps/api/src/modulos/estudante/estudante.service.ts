@@ -288,6 +288,8 @@ export class EstudanteService {
     }
 
     return agendaDaSemana;
+  }
+
   async adicionarLaudo(estudanteId: string, dados: any, arquivo: Express.Multer.File) {
     if (!arquivo) {
       throw new Error('Nenhum arquivo foi enviado.');

@@ -1,6 +1,4 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../nucleo/config/api.config';
@@ -39,11 +37,7 @@ export interface EstudanteSaude {
     urlArquivo: string;
     dataEmissao: string;
   }>;
-  medicamentos: Array<{
-    nome: string;
-    dosagem: string;
-    createdAt: string;
-  }>;
+
   medicamentos: Array<{
     medicamentoId: number;
     nome: string;
@@ -98,26 +92,26 @@ export class EstudantesService {
       params: { dataBase }
     });
   }
-}
+
   // --- CRUD DE LAUDOS ---
-  uploadLaudo(estudanteId: string, formData: FormData): Observable<any> {
+  uploadLaudo(estudanteId: string, formData: FormData): Observable<unknown> {
     return this.http.post(`${this.baseUrl}/estudantes/${estudanteId}/laudos`, formData);
   }
 
-  atualizarLaudo(estudanteId: string, documentoId: string, formData: FormData): Observable<any> {
+  atualizarLaudo(estudanteId: string, documentoId: string, formData: FormData): Observable<unknown> {
     return this.http.patch(`${this.baseUrl}/estudantes/${estudanteId}/laudos/${documentoId}`, formData);
   }
 
-  excluirLaudo(estudanteId: string, documentoId: string): Observable<any> {
+  excluirLaudo(estudanteId: string, documentoId: string): Observable<unknown> {
     return this.http.delete(`${this.baseUrl}/estudantes/${estudanteId}/laudos/${documentoId}`);
   }
 
   // --- CRUD DE MEDICAMENTOS ---
-  saveMedicamento(estudanteId: string, dados: any) {
+  saveMedicamento(estudanteId: string, dados: unknown) {
     return this.http.post(`${this.baseUrl}/estudantes/${estudanteId}/medicamentos`, dados);
   }
 
-  updateMedicamento(estudanteId: string, medicamentoId: number, dados: any) {
+  updateMedicamento(estudanteId: string, medicamentoId: number, dados: unknown) {
     return this.http.put(`${this.baseUrl}/estudantes/${estudanteId}/medicamentos/${medicamentoId}`, dados);
   }
 
