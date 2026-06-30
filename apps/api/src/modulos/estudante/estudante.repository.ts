@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico, EstudanteListagemPaginado, AulaAgenda } from './interfaces/IEstudanteRepositorio.js';
-import { Especificidade, EstudanteEspecificidade, TipoEspecificidade, CategoriaEspecificidade, TipoDiagnostico, UnidadeM } from '@prisma-client';
-import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
+import { Especificidade, EstudanteEspecificidade, TipoEspecificidade, CategoriaEspecificidade, TipoDiagnostico, UnidadeM, RegistroAula } from '@prisma-client';
+import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.ts';
+import type { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.ts';
 
 
 @Injectable()
@@ -389,5 +390,25 @@ export class EstudanteRepository implements IEstudanteRepositorio {
         estudanteId_medicamentoId: { estudanteId, medicamentoId },
       },
     });
+  }
+
+  async registrarChamadaEmLote(dto: CreateRegistroAulaBatchDto): Promise<RegistroAula[]> {
+    const dataChamada = new Date(dto.dataAula);
+
+    return this.prisma.client.$transaction(
+      dto.estudantes.map((estudante) =>
+        this.prisma.client.registroAula.create({
+          data: {
+            aulaId: dto.aulaId,
+            estudanteId: estudante.estudanteId,
+            data: dataChamada,
+            status_aula: dto.statusAula,
+            presenca: dto.statusAula === 'REALIZADA' ? estudante.presente : false,
+            scoreParticipacao: dto.statusAula === 'REALIZADA' ? estudante.scoreParticipacao : null,
+            scoreSuporte: dto.statusAula === 'REALIZADA' ? estudante.scoreNivelSuporte : null,
+          },
+        })
+      )
+    );
   }
 }
