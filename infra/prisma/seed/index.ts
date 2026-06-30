@@ -382,7 +382,15 @@ async function main() {
   console.log('\nPopulando histórico de registros diários para os gráficos...');
 
   const registrosDiariosMock = [];
-  const hoje = new Date();
+  
+  const dataReferencia = new Date();
+  
+  const hoje = new Date(Date.UTC(
+    dataReferencia.getFullYear(), 
+    dataReferencia.getMonth(), 
+    dataReferencia.getDate(), 
+    12, 0, 0
+  ));
 
   const gerarNotaAleatoria = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -390,9 +398,9 @@ async function main() {
 
   for (let i = 0; i < 90; i++) {
     const dataRegistro = new Date(hoje);
-    dataRegistro.setDate(hoje.getDate() - i);
+    dataRegistro.setUTCDate(hoje.getUTCDate() - i);
 
-    const diaDaSemana = dataRegistro.getDay();
+    const diaDaSemana = dataRegistro.getUTCDay();
     
     if (diaDaSemana === 0 || diaDaSemana === 6) continue;
 
