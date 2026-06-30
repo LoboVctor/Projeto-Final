@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 import { AnalyticsService } from '../../../../compartilhado/services/analytics.service';
 import Chart from 'chart.js/auto';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 
 @Component({
   selector: 'app-bloco-dashboard',
@@ -263,6 +263,8 @@ export class BlocoDashboardComponent {
   @ViewChild('relatorioDashboard') relatorioDashboard!: ElementRef;
 
   exportDropdownAberto = signal(false);
+  gerandoPdf = signal(false);
+  dataGeracao = signal('');
 
   toggleExportDropdown() {
     this.exportDropdownAberto.update(v => !v);
@@ -316,26 +318,46 @@ export class BlocoDashboardComponent {
 
   async exportarPDF() {
     this.exportDropdownAberto.set(false);
-    await new Promise(resolve => setTimeout(resolve, 150)); 
+    
+    await new Promise(resolve => setTimeout(resolve, 100)); 
 
     const elemento = this.relatorioDashboard.nativeElement;
 
+    const filtroOpcoes = (node: HTMLElement) => {
+      if (node.classList?.contains('esconder-no-pdf')) {
+        return false; 
+      }
+      return true;
+    };
+
     try {
-      const canvas = await html2canvas(elemento, {
-        scale: 2, 
-        useCORS: true,
-        backgroundColor: '#f8fafc' 
+      const imgData = await toPng(elemento, {
+        pixelRatio: 2, 
+        backgroundColor: '#f8fafc',
+        width: elemento.scrollWidth,
+        height: elemento.scrollHeight,
+        filter: filtroOpcoes,
+        style: {
+          overflow: 'visible',
+          maxHeight: 'none'
+        }
       });
-
-      const imgData = canvas.toDataURL('image/png');
       
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const larguraPDF = pdf.internal.pageSize.getWidth();
-      const alturaPDF = (canvas.height * larguraPDF) / canvas.width;
+      const pdfFinal = new jsPDF('p', 'mm', 'a4');
+      const larguraPDF = pdfFinal.internal.pageSize.getWidth();
+      const alturaPDF = (elemento.scrollHeight * larguraPDF) / elemento.scrollWidth;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, larguraPDF, Math.min(alturaPDF, pdf.internal.pageSize.getHeight()));
+      const pdfDinamico = new jsPDF('p', 'mm', [larguraPDF, alturaPDF]);
+      pdfDinamico.addImage(imgData, 'PNG', 0, 0, larguraPDF, alturaPDF);
+
+      pdfDinamico.setFont("helvetica", "bold");
+      pdfDinamico.setFontSize(9);
+      pdfDinamico.setTextColor(156, 163, 175); 
+      const dataStr = `Gerado em: ${new Date().toLocaleString('pt-BR')}`;
+      pdfDinamico.text(dataStr, larguraPDF - 15, 15, { align: 'right' });
+
+      pdfDinamico.save(`Relatorio_Dashboard_${this.periodo()}.pdf`);
       
-      pdf.save(`Relatorio_Dashboard_${this.periodo()}.pdf`);
     } catch (erro) {
       console.error('Erro ao gerar PDF:', erro);
       alert('Não foi possível gerar o PDF no momento.');
