@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, BadRequestException } from '@nestjs/common';
 import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico } from './interfaces/IEstudanteRepositorio.js';
 import { EspecificidadeDto } from './dtos/create.especifidades.dto.js';
-import { DiaSemana } from '../../../../../infra/generated/prisma';
+import { DiaSemana, StatusAula } from '../../../../../infra/generated/prisma';
 import { ObterAgendaSemanaDto } from './dtos/obter-agenda-semana.dto.js';
 import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
+import { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
 
 @Injectable()
 export class EstudanteService {
@@ -382,5 +383,22 @@ export class EstudanteService {
 
   async removeMedicamento(estudanteId: string, medicamentoId: number) {
     return this.estudanteRepositorio.removerVinculoMedicamento(estudanteId, medicamentoId);
+  }
+
+  async registrarChamadaLote(dto: CreateRegistroAulaBatchDto) {
+    if (!dto.estudantes || dto.estudantes.length === 0) {
+      throw new BadRequestException('A lista de estudantes para registro não pode estar vazia.');
+    }
+
+    if (dto.statusAula !== StatusAula.REALIZADA) {
+      dto.estudantes = dto.estudantes.map((estudante) => ({
+        ...estudante,
+        presente: false,
+        scoreParticipacao: undefined,
+        scoreNivelSuporte: undefined,
+      }));
+    }
+
+    return this.estudanteRepositorio.registrarChamadaEmLote(dto);
   }
 }

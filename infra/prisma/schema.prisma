@@ -259,8 +259,9 @@ model RegistroAula {
   aulaId            String
   data              DateTime @db.Date
   presenca          Boolean
-  scoreParticipacao Int
-  scoreSuporte      Int
+  status_aula       StatusAula @default(REALIZADA)
+  scoreParticipacao Int?
+  scoreSuporte      Int?
 
   estudante Estudante @relation(fields: [estudanteId], references: [id])
   aula      Aula      @relation(fields: [aulaId], references: [id])
@@ -435,4 +436,11 @@ enum Bimestre {
 enum TipoTurma {
   REGENCIA
   ATENDIMENTO
+}
+
+enum StatusAula {
+  REALIZADA
+  FERIADO
+  FALTA_EDUCADOR
+  SUSPENSA
 }
