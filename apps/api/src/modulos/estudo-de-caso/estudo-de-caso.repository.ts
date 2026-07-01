@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import type { IEstudoCasoRepositorio, EstudoDeCasoComEducadores } from './interfaces/IEstudoCasoRepositorio.js';
+import type {
+  IEstudoCasoRepositorio,
+  EstudoDeCasoComEducadores,
+} from './interfaces/IEstudoCasoRepositorio.js';
 import type { CreateEstudoDeCasoDto } from './dtos/create-estudo-de-caso.dto.js';
 
 @Injectable()

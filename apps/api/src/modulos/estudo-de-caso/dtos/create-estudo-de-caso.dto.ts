@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, IsDateString, IsArray, IsUUID, ArrayMinSize } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsDateString,
+  IsArray,
+  IsUUID,
+  ArrayMinSize,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 /**
@@ -14,7 +21,10 @@ export class CreateEstudoDeCasoDto {
   estudanteId!: string;
 
   /** Data da reunião pedagógica no formato ISO 8601 (ex: "2026-06-18") */
-  @ApiProperty({ description: 'Data da reunião (ISO 8601)', example: '2026-06-18' })
+  @ApiProperty({
+    description: 'Data da reunião (ISO 8601)',
+    example: '2026-06-18',
+  })
   @IsDateString()
   @IsNotEmpty()
   dataReuniao!: string;
@@ -26,7 +36,11 @@ export class CreateEstudoDeCasoDto {
   parecerDecisao!: string;
 
   /** Lista de UUIDs dos educadores participantes (mínimo 1) */
-  @ApiProperty({ description: 'IDs dos educadores participantes', type: [String], format: 'uuid' })
+  @ApiProperty({
+    description: 'IDs dos educadores participantes',
+    type: [String],
+    format: 'uuid',
+  })
   @IsArray()
   @ArrayMinSize(1)
   @IsUUID('all', { each: true })

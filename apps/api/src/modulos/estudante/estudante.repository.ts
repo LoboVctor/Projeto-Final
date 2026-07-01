@@ -1,15 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico, EstudanteListagemPaginado, AulaAgenda } from './interfaces/IEstudanteRepositorio.js';
-import { Especificidade, EstudanteEspecificidade, TipoEspecificidade, CategoriaEspecificidade, TipoDiagnostico, UnidadeM } from '@prisma-client';
+import type {
+  IEstudanteRepositorio,
+  EstudanteVisaoGeral,
+  EstudanteSaude,
+  EstudantePedagogico,
+  EstudanteListagemPaginado,
+  AulaAgenda,
+} from './interfaces/IEstudanteRepositorio.js';
+import {
+  Especificidade,
+  EstudanteEspecificidade,
+  TipoEspecificidade,
+  CategoriaEspecificidade,
+  TipoDiagnostico,
+  UnidadeM,
+} from '@prisma-client';
 import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
-
 
 @Injectable()
 export class EstudanteRepository implements IEstudanteRepositorio {
   constructor(private prisma: PrismaService) {}
 
-  async buscarVisaoGeral(estudanteId: string): Promise<EstudanteVisaoGeral | null> {
+  async buscarVisaoGeral(
+    estudanteId: string,
+  ): Promise<EstudanteVisaoGeral | null> {
     return this.prisma.client.estudante.findUnique({
       where: { id: estudanteId },
       include: {
@@ -75,7 +90,9 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     });
   }
 
-  async buscarPedagogico(estudanteId: string): Promise<EstudantePedagogico | null> {
+  async buscarPedagogico(
+    estudanteId: string,
+  ): Promise<EstudantePedagogico | null> {
     return this.prisma.client.estudante.findUnique({
       where: { id: estudanteId },
       select: {
@@ -117,7 +134,9 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     });
   }
 
-  async buscarComFiltros(query: BuscarEstudantesQueryDto): Promise<EstudanteListagemPaginado> {
+  async buscarComFiltros(
+    query: BuscarEstudantesQueryDto,
+  ): Promise<EstudanteListagemPaginado> {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
@@ -138,6 +157,9 @@ export class EstudanteRepository implements IEstudanteRepositorio {
           },
         },
       }),
+      ...(query.status && {
+        statusMatricula: query.status === 'PENDENTE' ? false : true,
+      }),
     };
 
     const select = {
@@ -157,7 +179,13 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     } as const;
 
     const [data, total] = await this.prisma.client.$transaction([
-      this.prisma.client.estudante.findMany({ where, select, skip, take: limit, orderBy: { nomeCompleto: 'asc' } }),
+      this.prisma.client.estudante.findMany({
+        where,
+        select,
+        skip,
+        take: limit,
+        orderBy: { nomeCompleto: 'asc' },
+      }),
       this.prisma.client.estudante.count({ where }),
     ]);
 
@@ -170,7 +198,11 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     };
   }
 
-  async buscarEspecificidadeExata(tipo: TipoEspecificidade, categoria: CategoriaEspecificidade, descricao: string): Promise<Especificidade | null> {
+  async buscarEspecificidadeExata(
+    tipo: TipoEspecificidade,
+    categoria: CategoriaEspecificidade,
+    descricao: string,
+  ): Promise<Especificidade | null> {
     return this.prisma.client.especificidade.findFirst({
       where: {
         tipo,
@@ -180,13 +212,13 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     });
   }
 
- async buscarAulasDoEstudante(estudanteId: string): Promise<AulaAgenda[]> {
+  async buscarAulasDoEstudante(estudanteId: string): Promise<AulaAgenda[]> {
     return this.prisma.client.aula.findMany({
       where: {
         OR: [
-         { estudanteId: estudanteId }, 
-         { turma: { estudantes: { some: { id: estudanteId } } } }
-        ]
+          { estudanteId: estudanteId },
+          { turma: { estudantes: { some: { id: estudanteId } } } },
+        ],
       },
       include: {
         area: true,
@@ -195,19 +227,32 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     });
   }
 
-  async criarEspecificidade(dados: { tipo: TipoEspecificidade; categoria: CategoriaEspecificidade; descricao: string }): Promise<Especificidade> {
+  async criarEspecificidade(dados: {
+    tipo: TipoEspecificidade;
+    categoria: CategoriaEspecificidade;
+    descricao: string;
+  }): Promise<Especificidade> {
     return this.prisma.client.especificidade.create({
       data: dados,
     });
   }
 
-  async buscarVinculoEspecificidade(estudanteId: string, especificidadeId: number): Promise<EstudanteEspecificidade | null> {
+  async buscarVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeId: number,
+  ): Promise<EstudanteEspecificidade | null> {
     return this.prisma.client.estudanteEspecificidade.findUnique({
-      where: { estudanteId_especificidadeId: { estudanteId, especificidadeId } },
+      where: {
+        estudanteId_especificidadeId: { estudanteId, especificidadeId },
+      },
     });
   }
 
-  async criarVinculoEspecificidade(estudanteId: string, especificidadeId: number, obsReacao: string): Promise<EstudanteEspecificidade> {
+  async criarVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeId: number,
+    obsReacao: string,
+  ): Promise<EstudanteEspecificidade> {
     return this.prisma.client.estudanteEspecificidade.create({
       data: {
         estudanteId,
@@ -217,24 +262,48 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     });
   }
 
-  async atualizarVinculoEspecificidade(estudanteId: string, especificidadeId: number, obsReacao: string): Promise<EstudanteEspecificidade> {
+  async atualizarVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeId: number,
+    obsReacao: string,
+  ): Promise<EstudanteEspecificidade> {
     return this.prisma.client.estudanteEspecificidade.update({
-      where: { estudanteId_especificidadeId: { estudanteId, especificidadeId } },
+      where: {
+        estudanteId_especificidadeId: { estudanteId, especificidadeId },
+      },
       data: { obsReacao },
     });
   }
 
-  async atualizarReferenciaVinculoEspecificidade(estudanteId: string, especificidadeIdAntiga: number, especificidadeIdNova: number, obsReacao: string): Promise<EstudanteEspecificidade> {
+  async atualizarReferenciaVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeIdAntiga: number,
+    especificidadeIdNova: number,
+    obsReacao: string,
+  ): Promise<EstudanteEspecificidade> {
     await this.prisma.client.estudanteEspecificidade.delete({
-      where: { estudanteId_especificidadeId: { estudanteId, especificidadeId: especificidadeIdAntiga } },
+      where: {
+        estudanteId_especificidadeId: {
+          estudanteId,
+          especificidadeId: especificidadeIdAntiga,
+        },
+      },
     });
     return this.prisma.client.estudanteEspecificidade.update({
-      where: { estudanteId_especificidadeId: { estudanteId, especificidadeId: especificidadeIdNova } },
+      where: {
+        estudanteId_especificidadeId: {
+          estudanteId,
+          especificidadeId: especificidadeIdNova,
+        },
+      },
       data: { obsReacao },
     });
   }
 
-  async removerVinculoEspecificidade(estudanteId: string, especificidadeId: number): Promise<EstudanteEspecificidade> {
+  async removerVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeId: number,
+  ): Promise<EstudanteEspecificidade> {
     return this.prisma.client.estudanteEspecificidade.delete({
       where: {
         estudanteId_especificidadeId: { estudanteId, especificidadeId },
@@ -242,7 +311,9 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     });
   }
 
-  async contarVinculosEspecificidade(especificidadeId: number): Promise<number> {
+  async contarVinculosEspecificidade(
+    especificidadeId: number,
+  ): Promise<number> {
     return this.prisma.client.estudanteEspecificidade.count({
       where: { especificidadeId },
     });
@@ -254,24 +325,26 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     });
   }
 
-  async criarLaudoEDocumento(estudanteId: string, dados: {
-    tipoDiagnostico: string;
-    tipoDocumento: string;
-    dataEmissao: string;
-    linkArquivo: string;
-  }) {
-    
+  async criarLaudoEDocumento(
+    estudanteId: string,
+    dados: {
+      tipoDiagnostico: string;
+      tipoDocumento: string;
+      dataEmissao: string;
+      linkArquivo: string;
+    },
+  ) {
     // 1. Busca ou cria o Diagnóstico Base
     let diagnosticoBase = await this.prisma.client.diagnostico.findFirst({
-      where: { tipo: dados.tipoDiagnostico as any }
+      where: { tipo: dados.tipoDiagnostico as any },
     });
 
     if (!diagnosticoBase) {
       diagnosticoBase = await this.prisma.client.diagnostico.create({
         data: {
-          nome: dados.tipoDiagnostico, 
+          nome: dados.tipoDiagnostico,
           descricao: '',
-          tipo: dados.tipoDiagnostico as any, 
+          tipo: dados.tipoDiagnostico as any,
         },
       });
     }
@@ -283,17 +356,17 @@ export class EstudanteRepository implements IEstudanteRepositorio {
         estudanteId_diagnosticoId: {
           estudanteId,
           diagnosticoId: diagnosticoBase.id,
-        }
+        },
       },
       update: {
         // Se o aluno já tem o diagnóstico, apenas joga o arquivo novo lá dentro!
         documentos: {
           create: {
             tipo: dados.tipoDocumento as any,
-            arquivo: dados.linkArquivo, 
-            dataEmissao: new Date(dados.dataEmissao)
-          }
-        }
+            arquivo: dados.linkArquivo,
+            dataEmissao: new Date(dados.dataEmissao),
+          },
+        },
       },
       create: {
         // Se o aluno NÃO tem o diagnóstico, cria a relação e já insere o arquivo!
@@ -302,32 +375,35 @@ export class EstudanteRepository implements IEstudanteRepositorio {
         documentos: {
           create: {
             tipo: dados.tipoDocumento as any,
-            arquivo: dados.linkArquivo, 
-            dataEmissao: new Date(dados.dataEmissao)
-          }
-        }
-      }
+            arquivo: dados.linkArquivo,
+            dataEmissao: new Date(dados.dataEmissao),
+          },
+        },
+      },
     });
   }
 
   async deletarDocumento(documentoId: string) {
     return this.prisma.client.documentoDiagnostico.delete({
-      where: { id: documentoId }
+      where: { id: documentoId },
     });
   }
 
-  async atualizarDocumento(documentoId: string, dados: {
-    tipoDocumento: string;
-    dataEmissao: string;
-    linkArquivo?: string;
-  }) {
+  async atualizarDocumento(
+    documentoId: string,
+    dados: {
+      tipoDocumento: string;
+      dataEmissao: string;
+      linkArquivo?: string;
+    },
+  ) {
     return this.prisma.client.documentoDiagnostico.update({
       where: { id: documentoId },
       data: {
         tipo: dados.tipoDocumento as any,
         dataEmissao: new Date(dados.dataEmissao),
-        ...(dados.linkArquivo && { arquivo: dados.linkArquivo })
-      }
+        ...(dados.linkArquivo && { arquivo: dados.linkArquivo }),
+      },
     });
   }
 
@@ -354,7 +430,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     estudanteId: string;
     medicamentoId: number;
     dosagem: number;
-    unidadeMedida: UnidadeM; 
+    unidadeMedida: UnidadeM;
     administradoEscola: boolean;
     intervaloAdministracao: number;
     horarioAdministrado: Date;
@@ -373,7 +449,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
       administradoEscola: boolean;
       intervaloAdministracao: number;
       horarioAdministrado: Date;
-    }
+    },
   ) {
     return this.prisma.client.estudanteMedicamento.update({
       where: {

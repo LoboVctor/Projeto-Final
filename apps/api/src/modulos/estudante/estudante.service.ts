@@ -1,5 +1,10 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
-import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico } from './interfaces/IEstudanteRepositorio.js';
+import type {
+  IEstudanteRepositorio,
+  EstudanteVisaoGeral,
+  EstudanteSaude,
+  EstudantePedagogico,
+} from './interfaces/IEstudanteRepositorio.js';
 import { EspecificidadeDto } from './dtos/create.especifidades.dto.js';
 import { DiaSemana } from '../../../../../infra/generated/prisma';
 import { ObterAgendaSemanaDto } from './dtos/obter-agenda-semana.dto.js';
@@ -13,7 +18,8 @@ export class EstudanteService {
   ) {}
 
   async getVisaoGeral(estudanteId: string) {
-    const estudante = await this.estudanteRepositorio.buscarVisaoGeral(estudanteId);
+    const estudante =
+      await this.estudanteRepositorio.buscarVisaoGeral(estudanteId);
 
     if (!estudante) {
       throw new NotFoundException('Estudante não encontrado.');
@@ -67,13 +73,14 @@ export class EstudanteService {
           }
         : null,
 
-      especificidades: dados.especificidades?.map((e) => ({
-        especificidadeId: e.especificidadeId,
-        categoria: e.especificidade.categoria,
-        tipo: e.especificidade.tipo,
-        descricao: e.especificidade.descricao,
-        observacao: e.obsReacao,
-      })) || [],
+      especificidades:
+        dados.especificidades?.map((e) => ({
+          especificidadeId: e.especificidadeId,
+          categoria: e.especificidade.categoria,
+          tipo: e.especificidade.tipo,
+          descricao: e.especificidade.descricao,
+          observacao: e.obsReacao,
+        })) || [],
     };
   }
 
@@ -91,7 +98,7 @@ export class EstudanteService {
     return {
       estudanteId: dados.id,
       nomeCompleto: dados.nomeCompleto,
-      
+
       especificidades: dados.especificidades.map((e) => ({
         especificidadeId: e.especificidadeId,
         descricao: e.especificidade.descricao,
@@ -100,7 +107,7 @@ export class EstudanteService {
         observacao: e.obsReacao,
       })),
 
-      laudos: dados.diagnosticos.flatMap((d) => 
+      laudos: dados.diagnosticos.flatMap((d) =>
         d.documentos.map((doc) => ({
           id: doc.id,
           diagnostico: d.diagnostico.nome,
@@ -108,7 +115,7 @@ export class EstudanteService {
           urlArquivo: doc.arquivo,
           dataEmissao: doc.dataEmissao,
           createdAt: doc.createdAt,
-        }))
+        })),
       ),
 
       medicamentos: dados.medicamentos.map((m) => ({
@@ -124,7 +131,8 @@ export class EstudanteService {
   }
 
   async getPedagogico(estudanteId: string) {
-    const estudante = await this.estudanteRepositorio.buscarPedagogico(estudanteId);
+    const estudante =
+      await this.estudanteRepositorio.buscarPedagogico(estudanteId);
 
     if (!estudante) {
       throw new NotFoundException('Estudante não encontrado.');
@@ -164,11 +172,12 @@ export class EstudanteService {
   }
 
   async createEspecificidade(estudanteId: string, dto: EspecificidadeDto) {
-    let especificidade = await this.estudanteRepositorio.buscarEspecificidadeExata(
-      dto.tipo,
-      dto.categoria,
-      dto.descricao,
-    );
+    let especificidade =
+      await this.estudanteRepositorio.buscarEspecificidadeExata(
+        dto.tipo,
+        dto.categoria,
+        dto.descricao,
+      );
 
     if (!especificidade) {
       try {
@@ -178,31 +187,50 @@ export class EstudanteService {
           descricao: dto.descricao,
         });
       } catch {
-        const existente = await this.estudanteRepositorio.buscarEspecificidadeExata(
-          dto.tipo,
-          dto.categoria,
-          dto.descricao,
-        );
-        if (!existente) throw new Error('Falha ao criar ou localizar especificidade.');
+        const existente =
+          await this.estudanteRepositorio.buscarEspecificidadeExata(
+            dto.tipo,
+            dto.categoria,
+            dto.descricao,
+          );
+        if (!existente)
+          throw new Error('Falha ao criar ou localizar especificidade.');
         especificidade = existente;
       }
     }
 
-    const vinculoExistente = await this.estudanteRepositorio.buscarVinculoEspecificidade(estudanteId, especificidade.id);
+    const vinculoExistente =
+      await this.estudanteRepositorio.buscarVinculoEspecificidade(
+        estudanteId,
+        especificidade.id,
+      );
 
     if (vinculoExistente) {
-      return this.estudanteRepositorio.atualizarVinculoEspecificidade(estudanteId, especificidade.id, dto.observacao ?? '');
+      return this.estudanteRepositorio.atualizarVinculoEspecificidade(
+        estudanteId,
+        especificidade.id,
+        dto.observacao ?? '',
+      );
     }
 
-    return this.estudanteRepositorio.criarVinculoEspecificidade(estudanteId, especificidade.id, dto.observacao ?? '');
+    return this.estudanteRepositorio.criarVinculoEspecificidade(
+      estudanteId,
+      especificidade.id,
+      dto.observacao ?? '',
+    );
   }
 
-  async updateEspecificidade(estudanteId: string, especificidadeIdAntiga: number, dto: EspecificidadeDto) {
-    let novaEspecificidade = await this.estudanteRepositorio.buscarEspecificidadeExata(
-      dto.tipo,
-      dto.categoria,
-      dto.descricao
-    );
+  async updateEspecificidade(
+    estudanteId: string,
+    especificidadeIdAntiga: number,
+    dto: EspecificidadeDto,
+  ) {
+    let novaEspecificidade =
+      await this.estudanteRepositorio.buscarEspecificidadeExata(
+        dto.tipo,
+        dto.categoria,
+        dto.descricao,
+      );
 
     if (!novaEspecificidade) {
       novaEspecificidade = await this.estudanteRepositorio.criarEspecificidade({
@@ -213,23 +241,50 @@ export class EstudanteService {
     }
 
     if (novaEspecificidade.id !== especificidadeIdAntiga) {
-      const jaTemNova = await this.estudanteRepositorio.buscarVinculoEspecificidade(estudanteId, novaEspecificidade.id);
+      const jaTemNova =
+        await this.estudanteRepositorio.buscarVinculoEspecificidade(
+          estudanteId,
+          novaEspecificidade.id,
+        );
 
       if (jaTemNova) {
-        await this.estudanteRepositorio.removerVinculoEspecificidade(estudanteId, especificidadeIdAntiga);
-        return this.estudanteRepositorio.atualizarVinculoEspecificidade(estudanteId, novaEspecificidade.id, dto.observacao ?? '');
+        await this.estudanteRepositorio.removerVinculoEspecificidade(
+          estudanteId,
+          especificidadeIdAntiga,
+        );
+        return this.estudanteRepositorio.atualizarVinculoEspecificidade(
+          estudanteId,
+          novaEspecificidade.id,
+          dto.observacao ?? '',
+        );
       } else {
-        return this.estudanteRepositorio.atualizarReferenciaVinculoEspecificidade(estudanteId, especificidadeIdAntiga, novaEspecificidade.id, dto.observacao ?? '');
+        return this.estudanteRepositorio.atualizarReferenciaVinculoEspecificidade(
+          estudanteId,
+          especificidadeIdAntiga,
+          novaEspecificidade.id,
+          dto.observacao ?? '',
+        );
       }
     } else {
-      return this.estudanteRepositorio.atualizarVinculoEspecificidade(estudanteId, especificidadeIdAntiga, dto.observacao ?? '');
+      return this.estudanteRepositorio.atualizarVinculoEspecificidade(
+        estudanteId,
+        especificidadeIdAntiga,
+        dto.observacao ?? '',
+      );
     }
   }
 
   async deleteEspecificidade(estudanteId: string, especificidadeId: number) {
-    const deletedVinculo = await this.estudanteRepositorio.removerVinculoEspecificidade(estudanteId, especificidadeId);
+    const deletedVinculo =
+      await this.estudanteRepositorio.removerVinculoEspecificidade(
+        estudanteId,
+        especificidadeId,
+      );
 
-    const count = await this.estudanteRepositorio.contarVinculosEspecificidade(especificidadeId);
+    const count =
+      await this.estudanteRepositorio.contarVinculosEspecificidade(
+        especificidadeId,
+      );
 
     if (count === 0) {
       await this.estudanteRepositorio.removerEspecificidade(especificidadeId);
@@ -239,58 +294,76 @@ export class EstudanteService {
   }
 
   async obterAgendaSemana(estudanteId: string, dto: ObterAgendaSemanaDto) {
-    const aulasRecorrentes = await this.estudanteRepositorio.buscarAulasDoEstudante(estudanteId);
+    const aulasRecorrentes =
+      await this.estudanteRepositorio.buscarAulasDoEstudante(estudanteId);
 
-    const [ano, mes, dia] = dto.dataBase.split('-').map(Number) as [number, number, number];
+    const [ano, mes, dia] = dto.dataBase.split('-').map(Number) as [
+      number,
+      number,
+      number,
+    ];
     const dataBase = new Date(ano, mes - 1, dia);
 
     const diaSemanaJs = dataBase.getDay();
-    const diffParaSegunda = dataBase.getDate() - diaSemanaJs + (diaSemanaJs === 0 ? -6 : 1);
+    const diffParaSegunda =
+      dataBase.getDate() - diaSemanaJs + (diaSemanaJs === 0 ? -6 : 1);
     const segundaFeira = new Date(ano, mes - 1, diffParaSegunda);
 
-    const nomesDiasUI = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
+    const nomesDiasUI = [
+      'DOMINGO',
+      'SEGUNDA',
+      'TERÇA',
+      'QUARTA',
+      'QUINTA',
+      'SEXTA',
+      'SÁBADO',
+    ];
     const mapaDiasPrisma = [
-      null, 
+      null,
       DiaSemana.SEGUNDA,
       DiaSemana.TERCA,
       DiaSemana.QUARTA,
       DiaSemana.QUINTA,
       DiaSemana.SEXTA,
-      null  
+      null,
     ];
 
     const agendaDaSemana = [];
 
     for (let i = 0; i < 7; i++) {
       const dataAtual = new Date(ano, mes - 1, diffParaSegunda + i);
-      
+
       const diaJs = dataAtual.getDay();
       const diaPrismaAtual = mapaDiasPrisma[diaJs];
 
       const dataFormatada = `${dataAtual.getFullYear()}-${String(dataAtual.getMonth() + 1).padStart(2, '0')}-${String(dataAtual.getDate()).padStart(2, '0')}`;
 
-      const aulasDoDia = diaPrismaAtual 
-        ? aulasRecorrentes.filter(aula => aula.diaSemana === diaPrismaAtual) 
+      const aulasDoDia = diaPrismaAtual
+        ? aulasRecorrentes.filter((aula) => aula.diaSemana === diaPrismaAtual)
         : [];
 
       agendaDaSemana.push({
         data: dataFormatada,
-        diaSemana: nomesDiasUI[diaJs], 
-        eventos: aulasDoDia.map(aula => ({
+        diaSemana: nomesDiasUI[diaJs],
+        eventos: aulasDoDia.map((aula) => ({
           aulaId: aula.id,
           titulo: aula.area?.nome || 'Regência',
           educador: aula.educador?.nome || 'Não definido',
           horarioInicio: aula.horarioInicio,
           horarioFim: aula.horarioFim,
-          tipoVisual: aula.area ? 'especializado' : 'regencia'
-        }))
+          tipoVisual: aula.area ? 'especializado' : 'regencia',
+        })),
       });
     }
 
     return agendaDaSemana;
   }
 
-  async adicionarLaudo(estudanteId: string, dados: any, arquivo: Express.Multer.File) {
+  async adicionarLaudo(
+    estudanteId: string,
+    dados: any,
+    arquivo: Express.Multer.File,
+  ) {
     if (!arquivo) {
       throw new Error('Nenhum arquivo foi enviado.');
     }
@@ -298,8 +371,8 @@ export class EstudanteService {
     const urlLocal = `http://localhost:3000/api/v1/uploads/laudos/${arquivo.filename}`;
 
     return this.estudanteRepositorio.criarLaudoEDocumento(estudanteId, {
-      tipoDiagnostico: dados.tipoDiagnostico, 
-      tipoDocumento: dados.tipoDocumento,    
+      tipoDiagnostico: dados.tipoDiagnostico,
+      tipoDocumento: dados.tipoDocumento,
       dataEmissao: dados.dataEmissao,
       linkArquivo: urlLocal,
     });
@@ -319,7 +392,7 @@ export class EstudanteService {
     return this.estudanteRepositorio.atualizarDocumento(documentoId, {
       tipoDocumento: dados.tipoDocumento,
       dataEmissao: dados.dataEmissao,
-      linkArquivo
+      linkArquivo,
     });
   }
 
@@ -330,10 +403,14 @@ export class EstudanteService {
   }
 
   async addMedicamento(estudanteId: string, dados: any) {
-    let medicamento = await this.estudanteRepositorio.buscarMedicamentoPorNome(dados.nomeMedicamento);
+    let medicamento = await this.estudanteRepositorio.buscarMedicamentoPorNome(
+      dados.nomeMedicamento,
+    );
 
     if (!medicamento) {
-      medicamento = await this.estudanteRepositorio.criarMedicamento(dados.nomeMedicamento);
+      medicamento = await this.estudanteRepositorio.criarMedicamento(
+        dados.nomeMedicamento,
+      );
     }
 
     return this.estudanteRepositorio.criarVinculoMedicamento({
@@ -342,45 +419,71 @@ export class EstudanteService {
       dosagem: Number(dados.dosagem),
       unidadeMedida: dados.unidadeMedida,
       administradoEscola: dados.administradoNaEscola,
-      intervaloAdministracao: dados.administradoNaEscola ? Number(dados.intervaloAdministracao) : 0,
-      horarioAdministrado: (dados.administradoNaEscola && dados.horarioAdministracao)
-        ? this.parseTime(dados.horarioAdministracao)
-        : this.parseTime('00:00'),
+      intervaloAdministracao: dados.administradoNaEscola
+        ? Number(dados.intervaloAdministracao)
+        : 0,
+      horarioAdministrado:
+        dados.administradoNaEscola && dados.horarioAdministracao
+          ? this.parseTime(dados.horarioAdministracao)
+          : this.parseTime('00:00'),
     });
   }
 
-  async updateMedicamento(estudanteId: string, medicamentoId: number, dados: any) {
-    let medicamentoAtual = await this.estudanteRepositorio.buscarMedicamentoPorId(medicamentoId);
+  async updateMedicamento(
+    estudanteId: string,
+    medicamentoId: number,
+    dados: any,
+  ) {
+    const medicamentoAtual =
+      await this.estudanteRepositorio.buscarMedicamentoPorId(medicamentoId);
     let novoMedicamentoId = medicamentoId;
 
     if (medicamentoAtual && medicamentoAtual.nome !== dados.nomeMedicamento) {
-      let medExistente = await this.estudanteRepositorio.buscarMedicamentoPorNome(dados.nomeMedicamento);
+      let medExistente =
+        await this.estudanteRepositorio.buscarMedicamentoPorNome(
+          dados.nomeMedicamento,
+        );
 
       if (!medExistente) {
-        medExistente = await this.estudanteRepositorio.criarMedicamento(dados.nomeMedicamento);
+        medExistente = await this.estudanteRepositorio.criarMedicamento(
+          dados.nomeMedicamento,
+        );
       }
       novoMedicamentoId = medExistente.id;
     }
 
     // Se o nome do remédio mudou, precisamos recriar o vínculo com o ID novo
     if (novoMedicamentoId !== medicamentoId) {
-      await this.estudanteRepositorio.removerVinculoMedicamento(estudanteId, medicamentoId);
-      return this.addMedicamento(estudanteId, dados); 
+      await this.estudanteRepositorio.removerVinculoMedicamento(
+        estudanteId,
+        medicamentoId,
+      );
+      return this.addMedicamento(estudanteId, dados);
     }
 
     // Se é o mesmo remédio, só atualiza os dados da relação
-    return this.estudanteRepositorio.atualizarVinculoMedicamento(estudanteId, medicamentoId, {
-      dosagem: Number(dados.dosagem),
-      unidadeMedida: dados.unidadeMedida,
-      administradoEscola: dados.administradoNaEscola,
-      intervaloAdministracao: dados.administradoNaEscola ? Number(dados.intervaloAdministracao) : 0,
-      horarioAdministrado: dados.administradoNaEscola && dados.horarioAdministracao 
-        ? this.parseTime(dados.horarioAdministracao) 
-        : this.parseTime('00:00'),
-    });
+    return this.estudanteRepositorio.atualizarVinculoMedicamento(
+      estudanteId,
+      medicamentoId,
+      {
+        dosagem: Number(dados.dosagem),
+        unidadeMedida: dados.unidadeMedida,
+        administradoEscola: dados.administradoNaEscola,
+        intervaloAdministracao: dados.administradoNaEscola
+          ? Number(dados.intervaloAdministracao)
+          : 0,
+        horarioAdministrado:
+          dados.administradoNaEscola && dados.horarioAdministracao
+            ? this.parseTime(dados.horarioAdministracao)
+            : this.parseTime('00:00'),
+      },
+    );
   }
 
   async removeMedicamento(estudanteId: string, medicamentoId: number) {
-    return this.estudanteRepositorio.removerVinculoMedicamento(estudanteId, medicamentoId);
+    return this.estudanteRepositorio.removerVinculoMedicamento(
+      estudanteId,
+      medicamentoId,
+    );
   }
 }

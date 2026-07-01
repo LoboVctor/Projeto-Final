@@ -5,9 +5,7 @@ import { Pool } from 'pg';
 import { PrismaClient } from '../../../../infra/generated/prisma/index.js';
 
 @Injectable()
-export class PrismaService
-  implements OnModuleInit 
-{
+export class PrismaService implements OnModuleInit {
   private readonly logger = new Logger(PrismaService.name);
   private readonly prisma: PrismaClient;
 
@@ -19,7 +17,7 @@ export class PrismaService
   }
 
   async onModuleInit(): Promise<void> {
- try {
+    try {
       await this.prisma.$connect();
       this.logger.log('Conexão com o banco de dados estabelecida com sucesso.');
     } catch (error) {
@@ -30,4 +28,3 @@ export class PrismaService
     return this.prisma;
   }
 }
-

@@ -16,6 +16,7 @@ export interface BuscaEstudantesParams {
   diagnosticoTipo?: string;
   page?: number;
   limit?: number;
+  status?: 'PENDENTE' | 'CONCLUIDO';
 }
 
 /** Wrapper de resposta paginada retornado pela API */

@@ -130,6 +130,7 @@ export class EstudantesService {
     if (params.nome) httpParams = httpParams.set('nome', params.nome);
     if (params.matricula) httpParams = httpParams.set('matricula', params.matricula);
     if (params.diagnosticoTipo) httpParams = httpParams.set('diagnosticoTipo', params.diagnosticoTipo);
+    if (params.status) httpParams = httpParams.set('status', params.status);
     if (params.page !== undefined) httpParams = httpParams.set('page', String(params.page));
     if (params.limit !== undefined) httpParams = httpParams.set('limit', String(params.limit));
     return this.http.get<PaginacaoResponse<EstudanteListagemItem>>(`${this.baseUrl}/estudantes`, { params: httpParams });

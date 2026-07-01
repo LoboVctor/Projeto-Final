@@ -31,4 +31,3 @@ export class UsuarioService {
     return this.usuarioRepositorio.buscarPorEmail(email);
   }
 }
-

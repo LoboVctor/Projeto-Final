@@ -14,8 +14,9 @@ export interface EstudanteResumo {
   nomeCompleto: string;
   foto: string;
   matricula: number;
+  dataNascimento: string;
+  turmas: { id: string; nome: string }[];
   diagnosticos: { diagnostico: DiagnosticoResumo }[];
-  dataNascimento?: string;
 }
 
 export interface TurmaResumo {

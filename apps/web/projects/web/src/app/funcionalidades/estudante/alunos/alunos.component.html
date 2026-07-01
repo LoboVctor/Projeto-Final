@@ -66,6 +66,32 @@
         <polyline points="6 9 12 15 18 9" />
       </svg>
     </div>
+
+    <!-- Filtro por status (Dropdown) -->
+    <div class="filtro-select-wrapper">
+      <select
+        class="filtro-select"
+        [value]="filtroStatus() || ''"
+        (change)="onFiltroStatusChange($any($event.target).value)"
+        aria-label="Filtrar por status"
+      >
+        <option value="">Todos os Status</option>
+        <option value="PENDENTE">Apenas Pendentes</option>
+        <option value="CONCLUIDO">Concluídos</option>
+      </select>
+      <svg
+        class="select-chevron"
+        xmlns="http://www.w3.org/2000/svg"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    </div>
   </section>
 
   <!-- ── Contador de resultados ─────────────────────────────────── -->
@@ -135,7 +161,11 @@
               <td class="td-diagnostico">
                 @if (aluno.diagnosticos.length > 0) {
                   @for (d of aluno.diagnosticos; track d.diagnostico.nome) {
-                    <span class="tag-diagnostico">{{ d.diagnostico.tipo }}</span>
+                    <span 
+                      [class]="'px-2 py-0.5 rounded text-[10px] font-nunito font-bold border inline-block m-0.5 ' + getCorDiagnostico(d.diagnostico.tipo)"
+                    >
+                      {{ d.diagnostico.tipo }}
+                    </span>
                   }
                 } @else {
                   <span class="sem-dado">—</span>
@@ -270,8 +300,9 @@
 }
 
 <!-- ── Modal do Aluno (Card do Aluno) ─────────────────────────── -->
-<app-aluno-modal
-  [isVisible]="modalAlunoAberto()"
+<app-aluno-modal 
+  [isVisible]="modalAlunoAberto()" 
   [aluno]="modalAlunoData()"
-  (fecharModal)="fecharModalAluno()"
-></app-aluno-modal>
+  [abaInicial]="abaSolicitada()" 
+  (fecharModal)="fecharModalAluno()">
+</app-aluno-modal>

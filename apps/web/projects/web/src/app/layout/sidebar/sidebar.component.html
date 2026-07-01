@@ -1,7 +1,7 @@
 <nav
-  class="flex flex-col h-full bg-elo-roxo-profundo text-white shadow-xl border-r border-elo-roxo-profundo"
+  class="flex flex-col h-full bg-elo-roxo-profundo text-white shadow-xl border-r border-elo-roxo-profundo overflow-y-auto"
 >
-  <div class="px-6 py-8">
+  <div class="px-6 py-6">
     <h2
       class="text-2xl font-bold text-elo-girassol tracking-tight"
       style="font-family: 'Sora', sans-serif"
@@ -11,7 +11,7 @@
     <p class="text-white mt-1 text-sm font-medium opacity-80 capitalize">{{ currentDate() }}</p>
   </div>
 
-  <ul class="flex-1 space-y-2 px-3">
+  <ul class="flex-1 space-y-1 px-3">
     @for (item of menu(); track item) {
       <li>
         <a
@@ -79,7 +79,7 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"
+                  d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"
                 />
               </svg>
             }

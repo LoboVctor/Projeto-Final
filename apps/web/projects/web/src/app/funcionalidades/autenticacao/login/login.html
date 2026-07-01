@@ -1,59 +1,100 @@
-<div class="min-h-screen bg-gradient-to-br from-elo-roxo-profundo to-elo-roxo-principal flex flex-col items-center justify-center p-4 font-nunito">
+<div class="min-h-screen grid grid-cols-1 lg:grid-cols-[60%_40%] font-nunito bg-white select-none">
   
-  <div class="w-full max-w-[420px] bg-white rounded-[2rem] shadow-2xl p-8 md:p-10 flex flex-col gap-8 transform transition-all">
+  <div class="hidden lg:flex relative flex-col justify-end p-12 bg-elo-roxo-profundo overflow-hidden">
     
-    <div class="flex flex-col items-center text-center gap-3">
-      <div class="w-16 h-16 rounded-full bg-elo-amarelo-suave flex items-center justify-center text-elo-girassol shadow-inner">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+    <div 
+      class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-90 mix-blend-luminosity scale-105 transition-transform duration-700 hover:scale-100"
+      style="background-image: url('https://www.sed.ms.gov.br/wp-content/uploads/2026/06/Centro-Educacional-especializado-em-TEA-celebra-dez-anos-de-inclusao-com-evento-especial-1-Cid-Nogueira-scaled.jpg');"
+    ></div>
+    
+    <div class="absolute inset-0 bg-gradient-to-t from-elo-roxo-profundo via-elo-roxo-profundo/70 to-transparent"></div>
+    <div class="absolute inset-0 bg-elo-roxo-principal/20 mix-blend-multiply"></div>
+
+    <div class="relative z-10 max-w-md">
+      <div class="inline-flex items-center justify-center p-2.5 bg-white/10 backdrop-blur-md rounded-xl mb-4 border border-white/10">
+        <svg class="w-6 h-6 text-elo-amarelo-suave" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
         </svg>
       </div>
-      <div>
-        <h2 class="text-3xl font-bold font-sora text-elo-roxo-profundo tracking-tight">Projeto ELO</h2>
-        <p class="text-sm font-semibold text-elo-texto-secundario mt-1.5">Autonomia, inclusão e evolução.</p>
-      </div>
+      <h2 class="font-sora font-bold text-3xl text-white mb-2 tracking-tight">Projeto ELO</h2>
+      <p class="text-sm text-white/80 leading-relaxed font-medium">
+        Desenvolvido para estruturar a mediação pedagógica e o acompanhamento especializado de forma digna, reativa e centrada na evolução do estudante.
+      </p>
     </div>
+  </div>
 
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+  <div class="flex flex-col items-center justify-between p-6 md:p-12 lg:p-14 min-h-screen bg-white">
+    
+    <div class="hidden lg:block w-full h-8"></div>
+
+    <div class="w-full max-w-[380px] my-auto flex flex-col gap-6 justify-center">
       
-      <div class="flex flex-col gap-1.5">
-        <label class="text-sm font-bold text-elo-texto-principal ml-1">E-mail de acesso</label>
-        <input 
-          type="email" 
-          formControlName="email"
-          placeholder="Digite seu e-mail..." 
-          class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-elo-roxo-principal focus:ring-4 focus:ring-elo-roxo-principal/10 transition-all text-elo-texto-principal placeholder-elo-texto-secundario/50"
-        />
-      </div>
+      <!-- Cabeçalho Centrado: Ícone Hero e Título limpo -->
+<div class="flex flex-col items-center gap-6 mb-10 w-full">
+  
+  <!-- Ícone centralizado e maior -->
+  <div class="w-24 h-24 rounded-3xl bg-elo-amarelo-suave/10 flex items-center justify-center text-elo-girassol shadow-sm ring-1 ring-elo-amarelo-suave/20">
+    <svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+    </svg>
+  </div>
+  
+  <!-- Texto de Título (Sem o span do Projeto ELO) -->
+  <div class="text-center">
+    <h3 class="text-2xl font-black font-sora text-elo-roxo-profundo tracking-tight uppercase">Autonomia e Desenvolvimento</h3>
+    <p class="text-xs font-medium text-gray-400 mt-2">Acesse com suas credenciais corporativas.</p>
+  </div>
+</div>
 
-      <div class="flex flex-col gap-1.5">
-        <label class="text-sm font-bold text-elo-texto-principal ml-1">Senha</label>
-        <input 
-          type="password" 
-          formControlName="password"
-          placeholder="••••••••" 
-          class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-elo-roxo-principal focus:ring-4 focus:ring-elo-roxo-principal/10 transition-all text-elo-texto-principal placeholder-elo-texto-secundario/50"
-        />
-      </div>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-6">
+        
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] font-bold text-elo-roxo-profundo/80 ml-0.5 uppercase tracking-wider">E-mail</label>
+          <input 
+            type="email" 
+            formControlName="email"
+            placeholder="nome.sobrenome@escola.elo" 
+            class="w-full px-4 py-3 bg-gray-50/60 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-elo-roxo-principal focus:ring-4 focus:ring-elo-roxo-principal/5 transition-all text-gray-800 placeholder-gray-400"
+          />
+        </div>
 
-      <button 
-        type="submit" 
-        [disabled]="loginForm.invalid || isLoading()"
-        class="w-full mt-4 py-4 font-sora font-bold text-sm rounded-xl transition-all duration-300 shadow-md hover:shadow-lg disabled:shadow-none flex items-center justify-center gap-2
-               disabled:bg-elo-lavanda disabled:text-white/80 disabled:cursor-not-allowed
-               bg-elo-roxo-principal hover:bg-elo-roxo-profundo text-white"
-      >
-        @if (isLoading()) {
-          <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Autenticando...
-        } @else {
-          Entrar na plataforma
+        <div class="flex flex-col gap-1">
+          <div class="flex justify-between items-center px-0.5">
+            <label class="text-[11px] font-bold text-elo-roxo-profundo/80 uppercase tracking-wider">Senha de Acesso</label>
+          </div>
+          <input 
+            type="password" 
+            formControlName="password"
+            placeholder="••••••••" 
+            class="w-full px-4 py-3 bg-gray-50/60 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-elo-roxo-principal focus:ring-4 focus:ring-elo-roxo-principal/5 transition-all text-gray-800 placeholder-gray-400"
+          />
+        </div>
+
+        @if (errorMessage()) {
+          <div class="p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2 text-xs font-semibold text-red-600 animate-fade-in">
+            <span>⚠️</span>
+            <span>{{ errorMessage() }}</span>
+          </div>
         }
-      </button>
 
-    </form>
+        <button 
+          type="submit" 
+          [disabled]="loginForm.invalid || isLoading()"
+          class="w-full mt-3 py-3.5 bg-elo-roxo-principal hover:bg-elo-roxo-profundo text-white font-sora font-bold text-xs rounded-xl transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+        >
+          @if (isLoading()) {
+            <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Autenticando...
+          } @else {
+            Entrar na Plataforma
+          }
+        </button>
+      </form>
+      
+    </div>
   </div>
 </div>

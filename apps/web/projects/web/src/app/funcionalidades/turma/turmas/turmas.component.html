@@ -230,8 +230,8 @@
           <app-card-aluno
             [nome]="estudante.nomeCompleto"
             [matricula]="estudante.matricula"
-            [idade]="calcularIdade(estudante.dataNascimento)"
             [foto]="estudante.foto"
+            [estudante]="estudante"
             [diagnostico]="
               estudante.diagnosticos.length > 0
                 ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo'

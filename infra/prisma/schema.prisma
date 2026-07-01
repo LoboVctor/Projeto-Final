@@ -246,6 +246,13 @@ model Aula {
   horarioInicio DateTime?  @db.Time
   horarioFim    DateTime?  @db.Time
 
+  // Distingue entre uma aula recorrente e um evento esporádico da escola
+  isEvento   Boolean   @default(false)
+  // Campos preenchidos apenas quando isEvento = true
+  titulo     String?
+  descricao  String?
+  dataEvento DateTime? @db.Date
+
   registroAulas RegistroAula[]
   educador      Educador         @relation(fields: [educadorId], references: [id])
   area          AreaAtendimento? @relation(fields: [areaId], references: [id])

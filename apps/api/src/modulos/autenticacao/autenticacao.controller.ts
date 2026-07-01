@@ -11,7 +11,9 @@ export class AutenticacaoController {
 
   @Public()
   @Post('login')
-  @ApiOperation({ summary: 'Realiza o login de um usuário e retorna o token de acesso' })
+  @ApiOperation({
+    summary: 'Realiza o login de um usuário e retorna o token de acesso',
+  })
   login(@Body() loginDto: LoginDto) {
     return this.autenticacaoService.login(loginDto);
   }

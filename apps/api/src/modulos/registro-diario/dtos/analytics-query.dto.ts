@@ -18,18 +18,27 @@ export class AnalyticsQueryDto {
   @IsEnum(PeriodoAnalytics)
   periodo: PeriodoAnalytics = PeriodoAnalytics.SEMANA;
 
-  @ApiPropertyOptional({ description: 'Categoria de pontuação a filtrar (ex: comportamento, foco)', example: 'comportamento' })
+  @ApiPropertyOptional({
+    description: 'Categoria de pontuação a filtrar (ex: comportamento, foco)',
+    example: 'comportamento',
+  })
   @IsOptional()
   @IsString()
   categoria?: string;
 
-  @ApiPropertyOptional({ description: 'Data de início do filtro personalizado (ISO 8601)', example: '2026-01-01' })
-  @IsOptional() 
-  @IsString() 
+  @ApiPropertyOptional({
+    description: 'Data de início do filtro personalizado (ISO 8601)',
+    example: '2026-01-01',
+  })
+  @IsOptional()
+  @IsString()
   dataInicio?: string;
 
-  @ApiPropertyOptional({ description: 'Data de fim do filtro personalizado (ISO 8601)', example: '2026-06-30' })
-  @IsOptional() 
-  @IsString() 
+  @ApiPropertyOptional({
+    description: 'Data de fim do filtro personalizado (ISO 8601)',
+    example: '2026-06-30',
+  })
+  @IsOptional()
+  @IsString()
   dataFim?: string;
 }

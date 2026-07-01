@@ -12,9 +12,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, debounceTime, switchMap } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
 import { EstudantesService } from '../../../compartilhado/services/estudantes.service';
 import { EstudoDeCasoDrawerComponent } from '../components/estudo-de-caso-drawer/estudo-de-caso-drawer.component';
 import { AlunoModalComponent } from '../../../compartilhado/components/aluno-modal/aluno-modal.component';
+
 import type {
   EstudanteListagemItem,
   PaginacaoResponse,
@@ -33,6 +35,10 @@ export class AlunosComponent implements OnInit {
   private readonly estudantesService = inject(EstudantesService);
   private readonly destroyRef = inject(DestroyRef);
 
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  abaSolicitada = signal<string | null>(null);
   // ─── Estado da listagem ───────────────────────────────────────
   resposta = signal<PaginacaoResponse<EstudanteListagemItem> | null>(null);
   loading = signal(false);
@@ -41,6 +47,7 @@ export class AlunosComponent implements OnInit {
   // ─── Filtros ──────────────────────────────────────────────────
   termoBusca = signal('');
   filtroDiagnostico = signal('');
+  filtroStatus = signal<'PENDENTE' | 'CONCLUIDO' | undefined>(undefined);
   paginaAtual = signal(1);
   readonly limitePorPagina = 20;
 
@@ -71,14 +78,19 @@ export class AlunosComponent implements OnInit {
   readonly tiposDiagnostico = [
     'TEA',
     'TDAH',
-    'SINDROME_DOWN',
-    'PARALISIA_CEREBRAL',
-    'DEFICIENCIA_INTELECTUAL',
-    'DEFICIENCIA_MULTIPLA',
+    'SINDROME DOWN',
+    'PARALISIA CEREBRAL',
+    'DEFICIENCIA INTELECTUAL',
+    'DEFICIENCIA MULTIPLA',
     'OUTRO',
   ];
 
   ngOnInit(): void {
+
+    const statusUrl = this.route.snapshot.queryParams['status'];
+      if (statusUrl) {
+        this.filtroStatus.set(statusUrl);
+      }
     // Configura a stream de busca com debounce de 400ms
     this.busca$
       .pipe(
@@ -94,6 +106,7 @@ export class AlunosComponent implements OnInit {
             nome: !isMatricula && termo ? termo : undefined,
             matricula: isMatricula ? termo : undefined,
             diagnosticoTipo: this.filtroDiagnostico() || undefined,
+            status: this.filtroStatus() || undefined,
             page: this.paginaAtual(),
             limit: this.limitePorPagina,
           });
@@ -113,7 +126,30 @@ export class AlunosComponent implements OnInit {
 
     // Dispara a busca inicial
     this.dispararBusca();
+
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+    const estudanteId = params['estudante'];
+    const aba = params['agenda']; // 'agenda' ou 'registros-diarios'
+
+    if (estudanteId && aba) {
+      // Busca o aluno no signal de estudantes baseado no ID
+      const alunoEncontrado = this.estudantes().find(e => e.id === estudanteId);
+      
+      if (alunoEncontrado) {
+        this.abaSolicitada.set(aba);
+        this.abrirModalAluno(alunoEncontrado);
+      }
+      
+      // Limpa a URL para não reabrir o modal em um F5
+      this.router.navigate([], {
+        queryParams: { estudante: null, agenda: null, data: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true
+      });
+    }
+  });
   }
+  
 
   onTermoBuscaChange(valor: string): void {
     this.termoBusca.set(valor);
@@ -127,9 +163,16 @@ export class AlunosComponent implements OnInit {
     this.dispararBusca();
   }
 
+  onFiltroStatusChange(status: string): void {
+    this.filtroStatus.set(status as 'PENDENTE' | 'CONCLUIDO' | undefined);
+    this.paginaAtual.set(1);
+    this.dispararBusca();
+  }
+
   limparFiltros(): void {
     this.termoBusca.set('');
     this.filtroDiagnostico.set('');
+    this.filtroStatus.set(undefined);
     this.paginaAtual.set(1);
     this.dispararBusca();
   }
@@ -225,7 +268,7 @@ export class AlunosComponent implements OnInit {
     ]);
 
     const csv = [cabecalho, ...linhas]
-      .map((linha) => linha.map((cel) => `"${cel}"`).join(','))
+      .map((linha) => linha.join(','))
       .join('\n');
 
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -260,7 +303,29 @@ export class AlunosComponent implements OnInit {
     );
   }
 
+  // Mapeamento dinâmico de cores para a listagem da tabela
+  getCorDiagnostico(diagnostico: string): string {
+    const mapaCores: Record<string, string> = {
+      'TEA': 'bg-[#F3E8FF] text-[#6C3CC9] border-[#B79CED]/40',
+      'TDAH': 'bg-[#E0F2FE] text-[#0369A1] border-[#7DD3FC]/40',
+      'SINDROME DOWN': 'bg-[#E6F4EA] text-[#137333] border-[#82CBA2]/40',
+      'SINDROME_DOWN': 'bg-[#E6F4EA] text-[#137333] border-[#82CBA2]/40',
+      'PARALISIA CEREBRAL': 'bg-[#FEE2E2] text-[#991B1B] border-[#FCA5A5]/40',
+      'PARALISIA_CEREBRAL': 'bg-[#FEE2E2] text-[#991B1B] border-[#FCA5A5]/40',
+      'DEFICIENCIA INTELECTUAL': 'bg-[#FEF3C7] text-[#92400E] border-[#FCD34D]/40',
+      'DEFICIENCIA_INTELECTUAL': 'bg-[#FEF3C7] text-[#92400E] border-[#FCD34D]/40',
+      'DEFICIENCIA MULTIPLA': 'bg-[#FCE7F3] text-[#9D174D] border-[#FBCFE8]/40',
+      'DEFICIENCIA_MULTIPLA': 'bg-[#FCE7F3] text-[#9D174D] border-[#FBCFE8]/40',
+      'TOD': 'bg-[#FFEDD5] text-[#C2410C] border-[#FDBA74]/40',
+      'OUTRO': 'bg-[#F3F4F6] text-[#374151] border-[#D1D5DB]/40'
+    };
+
+    return mapaCores[diagnostico?.toUpperCase()] || 'bg-[#F3F4F6] text-[#374151] border-[#D1D5DB]/40';
+  }
+
   private dispararBusca(): void {
     this.busca$.next();
   }
+
+  
 }
