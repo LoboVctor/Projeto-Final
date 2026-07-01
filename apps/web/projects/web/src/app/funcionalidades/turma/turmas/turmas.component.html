@@ -224,7 +224,7 @@
 
     <!-- VIEW: CARDS -->
     @if (!loading() && !error() && viewMode() === 'grid') {
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-4 justify-items-start items-start">
         <!-- O Novo Card sendo repetido para cada aluno da turma -->
         @for (estudante of estudantes(); track estudante) {
           <app-card-aluno

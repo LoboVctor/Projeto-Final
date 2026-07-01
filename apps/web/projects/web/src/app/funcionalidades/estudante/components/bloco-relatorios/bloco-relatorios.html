@@ -1,21 +1,11 @@
 <div
-  class="flex-1 bg-gray-50/50 p-6 md:p-8 rounded-r-3xl overflow-y-auto max-h-[90vh] md:max-h-[85vh] relative w-full min-h-full"
->
+  class="flex-1 bg-gray-50/50 p-6 md:p-8 rounded-r-3xl overflow-y-auto max-h-[90vh] md:max-h-[85vh] relative w-full min-h-full modal-scroll-area">
   <!-- ── Cabeçalho ──────────────────────────────────────────────────────── -->
   <div class="flex items-center justify-between mb-8">
     <div class="flex items-center space-x-3 text-purple-700">
       <div class="bg-purple-100 p-2 rounded-full">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
           <polyline points="14 2 14 8 20 8"></polyline>
           <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -32,430 +22,286 @@
     </div>
 
     <div class="flex items-center space-x-3">
-      <button
-        (click)="onRecolher()"
-        class="flex items-center space-x-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <polyline points="15 18 9 12 15 6"></polyline>
+      <button (click)="onRecolher()"
+        class="close-button-centered absolute top-[24px] right-[24px] w-10 h-10 text-gray-400 hover:text-gray-700 hover:bg-gray-200/50 rounded-full transition-colors cursor-pointer"
+        aria-label="Fechar modal">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
-        <span>Recolher</span>
       </button>
     </div>
   </div>
 
   <!-- ── Loading ────────────────────────────────────────────────────────── -->
   @if (isLoading) {
-    <div class="space-y-4">
-      <div
-        class="h-16 bg-gradient-to-r from-gray-100 via-purple-50 to-gray-100 rounded-xl animate-pulse"
-      ></div>
-      <div
-        class="h-16 bg-gradient-to-r from-gray-100 via-purple-50 to-gray-100 rounded-xl animate-pulse"
-      ></div>
-      <div
-        class="h-16 bg-gradient-to-r from-gray-100 via-purple-50 to-gray-100 rounded-xl animate-pulse"
-      ></div>
-    </div>
+  <div class="space-y-4">
+    <div class="h-16 bg-gradient-to-r from-gray-100 via-purple-50 to-gray-100 rounded-xl animate-pulse"></div>
+    <div class="h-16 bg-gradient-to-r from-gray-100 via-purple-50 to-gray-100 rounded-xl animate-pulse"></div>
+    <div class="h-16 bg-gradient-to-r from-gray-100 via-purple-50 to-gray-100 rounded-xl animate-pulse"></div>
+  </div>
   }
 
   <!-- ── Erro ───────────────────────────────────────────────────────────── -->
   @if (!isLoading && erroCarregamento) {
-    <div class="bg-red-50 border border-red-100 rounded-xl p-6 text-center">
-      <p class="text-red-700 font-medium mb-3">
-        Não foi possível carregar os dados pedagógicos. Tente novamente.
-      </p>
-      <button
-        (click)="carregarDados()"
-        class="px-4 py-2 bg-white text-red-600 rounded-lg border border-red-200 font-semibold text-sm hover:bg-red-50 cursor-pointer"
-      >
-        Tentar Novamente
-      </button>
-    </div>
+  <div class="bg-red-50 border border-red-100 rounded-xl p-6 text-center">
+    <p class="text-red-700 font-medium mb-3">
+      Não foi possível carregar os dados pedagógicos. Tente novamente.
+    </p>
+    <button (click)="carregarDados()"
+      class="px-4 py-2 bg-white text-red-600 rounded-lg border border-red-200 font-semibold text-sm hover:bg-red-50 cursor-pointer">
+      Tentar Novamente
+    </button>
+  </div>
   }
 
   <!-- ── Conteúdo ───────────────────────────────────────────────────────── -->
   @if (!isLoading && !erroCarregamento && dados) {
-    <div class="space-y-8">
-      <!-- ── SEÇÃO: Metas Pedagógicas ──────────────────────────────────────── -->
-      <section>
-        <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
-          <div class="flex items-center gap-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="text-purple-600"
-            >
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
+  <div class="space-y-8">
+    <!-- ── SEÇÃO: Metas Pedagógicas ──────────────────────────────────────── -->
+    <section>
+      <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="text-purple-600">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <h4 class="text-base font-bold font-['Sora'] text-purple-700 m-0">Metas</h4>
+          <span class="flex items-center gap-1 text-xs text-gray-400 ml-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
-            <h4 class="text-base font-bold font-['Sora'] text-purple-700 m-0">Metas</h4>
-            <span class="flex items-center gap-1 text-xs text-gray-400 ml-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="11"
-                height="11"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </svg>
-              Informações gerenciadas pelo professor regente
-            </span>
-          </div>
+            Informações gerenciadas pelo professor regente
+          </span>
         </div>
-        <!-- Accordion por relatório semestral -->
-        <div class="space-y-3">
-          @for (relatorio of dados.relatorios; track relatorio; let i = $index) {
-            <div
-              class="border rounded-xl overflow-hidden transition-all duration-200"
-              [class]="relatorioAberto === i ? 'border-purple-300 shadow-sm' : 'border-gray-200'"
-            >
-              <!-- Trigger do relatório -->
-              <button
-                class="w-full flex items-center justify-between p-3.5 text-left transition-colors duration-150"
-                [class]="
+      </div>
+      <!-- Accordion por relatório semestral -->
+      <div class="space-y-3">
+        @for (relatorio of dados.relatorios; track relatorio; let i = $index) {
+        <div class="border rounded-xl overflow-hidden transition-all duration-200"
+          [class]="relatorioAberto === i ? 'border-purple-300 shadow-sm' : 'border-gray-200'">
+          <!-- Trigger do relatório -->
+          <button class="w-full flex items-center justify-between p-3.5 text-left transition-colors duration-150"
+            [class]="
                   relatorioAberto === i
                     ? 'bg-purple-50 border-b border-purple-200'
                     : 'bg-gray-50 hover:bg-gray-100'
-                "
-                (click)="toggleRelatorio(i)"
-                [attr.aria-expanded]="relatorioAberto === i"
-                [attr.id]="'relatorio-trigger-' + relatorio.id"
-              >
-                <div class="flex items-center gap-3">
-                  <div
-                    class="w-9 h-9 rounded-lg bg-white border flex items-center justify-center text-purple-600 shrink-0"
-                    [class]="relatorioAberto === i ? 'border-purple-300' : 'border-gray-200'"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                      <polyline points="14 2 14 8 20 8"></polyline>
-                    </svg>
-                  </div>
-                  <div>
-                    <p class="text-sm font-semibold text-gray-800 m-0">
-                      {{ semestreLabel(relatorio.semestre) }} de {{ relatorio.ano }}
-                    </p>
-                    <p class="text-xs text-gray-400 m-0">{{ relatorio.metas.length }} meta(s)</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <span
-                    [class]="
+                " (click)="toggleRelatorio(i)" [attr.aria-expanded]="relatorioAberto === i"
+            [attr.id]="'relatorio-trigger-' + relatorio.id">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-white border flex items-center justify-center text-purple-600 shrink-0"
+                [class]="relatorioAberto === i ? 'border-purple-300' : 'border-gray-200'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-gray-800 m-0">
+                  {{ semestreLabel(relatorio.semestre) }} de {{ relatorio.ano }}
+                </p>
+                <p class="text-xs text-gray-400 m-0">{{ relatorio.metas.length }} meta(s)</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span [class]="
                       'text-xs font-semibold px-2.5 py-1 rounded-full ' +
                       statusBadgeClass(relatorio.status)
-                    "
-                  >
-                    {{ statusLabel(relatorio.status) }}
-                  </span>
-                  <svg
-                    class="w-4 h-4 text-purple-500 transition-transform duration-300"
-                    [class.rotate-180]="relatorioAberto === i"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
-              </button>
-              <!-- Corpo expandido do relatório -->
-              @if (relatorioAberto === i) {
-                <div class="p-4 bg-white space-y-4">
-                  <!-- Parecer global de desenvolvimento -->
-                  @if (relatorio.parecerGlobalDesenvolvimento) {
-                    <div class="bg-purple-50/60 border border-purple-100 rounded-lg p-3.5">
-                      <p
-                        class="text-xs font-bold uppercase tracking-wider text-purple-600 m-0 mb-1.5"
-                      >
-                        Resumo do acompanhamento
-                      </p>
-                      <p class="text-sm text-gray-700 leading-relaxed m-0">
-                        {{ relatorio.parecerGlobalDesenvolvimento }}
-                      </p>
-                    </div>
-                  }
-                  <!-- Estado sem metas -->
-                  @if (relatorio.metas.length === 0) {
-                    <p class="text-gray-400 italic text-sm m-0 text-center py-3">
-                      Nenhuma meta cadastrada neste relatório.
-                    </p>
-                  }
-                  <!-- Lista de metas (accordion interno) -->
-                  @if (relatorio.metas.length > 0) {
-                    <div class="space-y-2">
-                      @for (meta of relatorio.metas; track meta) {
-                        <div
-                          class="border rounded-lg overflow-hidden transition-all duration-150"
-                          [class]="isMetaAberta(meta.id) ? 'border-purple-200' : 'border-gray-200'"
-                        >
-                          <!-- Header da meta -->
-                          <button
-                            class="w-full flex items-start justify-between p-3 text-left transition-colors duration-150 gap-3"
-                            [class]="
+                    ">
+                {{ statusLabel(relatorio.status) }}
+              </span>
+              <svg class="w-4 h-4 text-purple-500 transition-transform duration-300"
+                [class.rotate-180]="relatorioAberto === i" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </button>
+          <!-- Corpo expandido do relatório -->
+          @if (relatorioAberto === i) {
+          <div class="p-4 bg-white space-y-4">
+            <!-- Parecer global de desenvolvimento -->
+            @if (relatorio.parecerGlobalDesenvolvimento) {
+            <div class="bg-purple-50/60 border border-purple-100 rounded-lg p-3.5">
+              <p class="text-xs font-bold uppercase tracking-wider text-purple-600 m-0 mb-1.5">
+                Resumo do acompanhamento
+              </p>
+              <p class="text-sm text-gray-700 leading-relaxed m-0">
+                {{ relatorio.parecerGlobalDesenvolvimento }}
+              </p>
+            </div>
+            }
+            <!-- Estado sem metas -->
+            @if (relatorio.metas.length === 0) {
+            <p class="text-gray-400 italic text-sm m-0 text-center py-3">
+              Nenhuma meta cadastrada neste relatório.
+            </p>
+            }
+            <!-- Lista de metas (accordion interno) -->
+            @if (relatorio.metas.length > 0) {
+            <div class="space-y-2">
+              @for (meta of relatorio.metas; track meta) {
+              <div class="border rounded-lg overflow-hidden transition-all duration-150"
+                [class]="isMetaAberta(meta.id) ? 'border-purple-200' : 'border-gray-200'">
+                <!-- Header da meta -->
+                <button
+                  class="w-full flex items-start justify-between p-3 text-left transition-colors duration-150 gap-3"
+                  [class]="
                               isMetaAberta(meta.id)
                                 ? 'bg-purple-50/50 border-b border-purple-100'
                                 : 'bg-white hover:bg-gray-50'
-                            "
-                            (click)="toggleMeta(meta.id)"
-                            [attr.aria-expanded]="isMetaAberta(meta.id)"
-                          >
-                            <div class="flex flex-col gap-1 flex-1 min-w-0">
-                              <span
-                                [class]="
+                            " (click)="toggleMeta(meta.id)" [attr.aria-expanded]="isMetaAberta(meta.id)">
+                  <div class="flex flex-col gap-1 flex-1 min-w-0">
+                    <span [class]="
                                   'text-xs font-bold px-2 py-0.5 rounded-full w-fit ' +
                                   eixoChipClass(meta.eixoDesenvolvimento)
-                                "
-                              >
-                                {{ eixoLabel(meta.eixoDesenvolvimento) }}
-                              </span>
-                              <p class="text-sm font-medium text-gray-800 m-0 leading-snug">
-                                {{ meta.descricao }}
-                              </p>
-                            </div>
-                            <div class="flex items-center gap-2 shrink-0 mt-0.5">
-                              <span
-                                [class]="
+                                ">
+                      {{ eixoLabel(meta.eixoDesenvolvimento) }}
+                    </span>
+                    <p class="text-sm font-medium text-gray-800 m-0 leading-snug">
+                      {{ meta.descricao }}
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0 mt-0.5">
+                    <span [class]="
                                   'text-xs font-bold px-2 py-1 rounded-full border ' +
                                   scoreBadgeClass(meta.scoreFinal)
-                                "
-                              >
-                                {{ meta.scoreFinal }}/5
-                              </span>
-                              <svg
-                                class="w-3.5 h-3.5 text-purple-400 transition-transform duration-300 shrink-0"
-                                [class.rotate-180]="isMetaAberta(meta.id)"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M19 9l-7 7-7-7"
-                                />
-                              </svg>
-                            </div>
-                          </button>
-                          <!-- Corpo da meta (PIBI + parecer) -->
-                          @if (isMetaAberta(meta.id)) {
-                            <div class="p-3 bg-white space-y-3">
-                              <!-- Parecer do professor sobre a meta -->
-                              @if (meta.parecer) {
-                                <div class="text-sm text-gray-600 italic leading-relaxed">
-                                  <span
-                                    class="text-xs font-bold uppercase tracking-wider text-gray-400 not-italic block mb-1"
-                                  >
-                                    Parecer do professor
-                                  </span>
-                                  {{ meta.parecer }}
-                                </div>
-                              }
-                              <!-- PIBI: Plano Interventivo Individual Bimestral -->
-                              @if (meta.pibis.length > 0) {
-                                <div>
-                                  <div
-                                    class="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-dashed border-purple-100"
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="12"
-                                      height="12"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      stroke-width="2"
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      class="text-purple-500"
-                                    >
-                                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                                    </svg>
-                                    <span
-                                      class="text-xs font-bold uppercase tracking-wider text-purple-700"
-                                    >
-                                      PIBI — Plano Bimestral
-                                    </span>
-                                  </div>
-                                  <div class="space-y-2.5">
-                                    @for (pibi of meta.pibis; track pibi) {
-                                      <div
-                                        class="bg-gray-50 border border-gray-100 rounded-lg p-3 space-y-2"
-                                      >
-                                        <!-- Header do bimestre -->
-                                        <div class="flex items-center justify-between gap-2">
-                                          <span class="text-xs font-semibold text-gray-700">
-                                            {{
-                                              pibi.bimestre === 'PRIMEIRO' ? '1º' : '2º'
-                                            }}
-                                            Bimestre
-                                          </span>
-                                          <span
-                                            [class]="
+                                ">
+                      {{ meta.scoreFinal }}/5
+                    </span>
+                    <svg class="w-3.5 h-3.5 text-purple-400 transition-transform duration-300 shrink-0"
+                      [class.rotate-180]="isMetaAberta(meta.id)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </button>
+                <!-- Corpo da meta (PIBI + parecer) -->
+                @if (isMetaAberta(meta.id)) {
+                <div class="p-3 bg-white space-y-3">
+                  <!-- Parecer do professor sobre a meta -->
+                  @if (meta.parecer) {
+                  <div class="text-sm text-gray-600 italic leading-relaxed">
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-400 not-italic block mb-1">
+                      Parecer do professor
+                    </span>
+                    {{ meta.parecer }}
+                  </div>
+                  }
+                  <!-- PIBI: Plano Interventivo Individual Bimestral -->
+                  @if (meta.pibis.length > 0) {
+                  <div>
+                    <div class="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-dashed border-purple-100">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="text-purple-500">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                      </svg>
+                      <span class="text-xs font-bold uppercase tracking-wider text-purple-700">
+                        PIBI — Plano Bimestral
+                      </span>
+                    </div>
+                    <div class="space-y-2.5">
+                      @for (pibi of meta.pibis; track pibi) {
+                      <div class="bg-gray-50 border border-gray-100 rounded-lg p-3 space-y-2">
+                        <!-- Header do bimestre -->
+                        <div class="flex items-center justify-between gap-2">
+                          <span class="text-xs font-semibold text-gray-700">
+                            {{
+                            pibi.bimestre === 'PRIMEIRO' ? '1º' : '2º'
+                            }}
+                            Bimestre
+                          </span>
+                          <span [class]="
                                               'text-xs font-semibold px-2 py-0.5 rounded-full ' +
                                               statusBadgeClass(pibi.status)
-                                            "
-                                          >
-                                            {{ statusLabel(pibi.status) }}
-                                          </span>
-                                        </div>
-                                        <!-- Barra de progresso de atingibilidade -->
-                                        <div class="flex items-center gap-2">
-                                          <div
-                                            class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden"
-                                          >
-                                            <div
-                                              class="h-full rounded-full transition-all duration-500"
-                                              [class]="progressoBarraClass(pibi.status)"
-                                              [style.width.%]="
-                                                progressoPibi(pibi.scoreAtingibilidade)
-                                              "
-                                            ></div>
-                                          </div>
-                                          <span
-                                            class="text-xs font-bold text-gray-500 min-w-[36px] text-right"
-                                          >
-                                            {{ progressoPibi(pibi.scoreAtingibilidade) }}%
-                                          </span>
-                                        </div>
-                                        <!-- Parecer evolutivo -->
-                                        @if (pibi.parecerEvolutivo) {
-                                          <p
-                                            class="text-xs text-gray-500 italic leading-relaxed m-0"
-                                          >
-                                            {{ pibi.parecerEvolutivo }}
-                                          </p>
-                                        }
-                                      </div>
-                                    }
-                                  </div>
-                                </div>
-                              }
-                              <!-- Sem PIBI -->
-                              @if (meta.pibis.length === 0) {
-                                <p class="text-xs text-gray-400 italic text-center m-0 py-2">
-                                  Nenhum plano bimestral registrado para esta meta.
-                                </p>
-                              }
-                            </div>
-                          }
+                                            ">
+                            {{ statusLabel(pibi.status) }}
+                          </span>
                         </div>
+                        <!-- Barra de progresso de atingibilidade -->
+                        <div class="flex items-center gap-2">
+                          <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500"
+                              [class]="progressoBarraClass(pibi.status)" [style.width.%]="
+                                                progressoPibi(pibi.scoreAtingibilidade)
+                                              "></div>
+                          </div>
+                          <span class="text-xs font-bold text-gray-500 min-w-[36px] text-right">
+                            {{ progressoPibi(pibi.scoreAtingibilidade) }}%
+                          </span>
+                        </div>
+                        <!-- Parecer evolutivo -->
+                        @if (pibi.parecerEvolutivo) {
+                        <p class="text-xs text-gray-500 italic leading-relaxed m-0">
+                          {{ pibi.parecerEvolutivo }}
+                        </p>
+                        }
+                      </div>
                       }
                     </div>
+                  </div>
                   }
-                  <!-- Data de fechamento -->
-                  @if (relatorio.dataFechamento) {
-                    <div
-                      class="flex items-center gap-1.5 text-xs text-gray-400 pt-2 border-t border-gray-100"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="11"
-                        height="11"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                      </svg>
-                      Fechado em {{ relatorio.dataFechamento | date: 'dd/MM/yyyy' }}
-                    </div>
+                  <!-- Sem PIBI -->
+                  @if (meta.pibis.length === 0) {
+                  <p class="text-xs text-gray-400 italic text-center m-0 py-2">
+                    Nenhum plano bimestral registrado para esta meta.
+                  </p>
                   }
                 </div>
+                }
+              </div>
               }
             </div>
+            }
+            <!-- Data de fechamento -->
+            @if (relatorio.dataFechamento) {
+            <div class="flex items-center gap-1.5 text-xs text-gray-400 pt-2 border-t border-gray-100">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              Fechado em {{ relatorio.dataFechamento | date: 'dd/MM/yyyy' }}
+            </div>
+            }
+          </div>
           }
         </div>
-        <!-- Estado vazio de relatórios -->
-        @if (dados.relatorios.length === 0) {
-          <div class="text-center py-10 text-gray-400">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="40"
-              height="40"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="mx-auto mb-3 opacity-40"
-            >
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-            </svg>
-            <p class="text-sm italic">Nenhum relatório semestral registrado.</p>
-          </div>
         }
-      </section>
-      <!-- ── Nota informativa ──────────────────────────────────────────────── -->
-      <div
-        class="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-600 leading-relaxed"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="text-blue-500 shrink-0 mt-0.5"
-        >
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        Os relatórios e planos são instrumentos de acompanhamento contínuo do desenvolvimento do
-        aluno e devem ser revisados periodicamente pela equipe pedagógica.
       </div>
+      <!-- Estado vazio de relatórios -->
+      @if (dados.relatorios.length === 0) {
+      <div class="text-center py-10 text-gray-400">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+          class="mx-auto mb-3 opacity-40">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        <p class="text-sm italic">Nenhum relatório semestral registrado.</p>
+      </div>
+      }
+    </section>
+    <!-- ── Nota informativa ──────────────────────────────────────────────── -->
+    <div
+      class="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-600 leading-relaxed">
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="text-blue-500 shrink-0 mt-0.5">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      Os relatórios e planos são instrumentos de acompanhamento contínuo do desenvolvimento do
+      aluno e devem ser revisados periodicamente pela equipe pedagógica.
     </div>
+  </div>
   }
 </div>

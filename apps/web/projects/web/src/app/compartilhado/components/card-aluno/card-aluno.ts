@@ -4,6 +4,7 @@ import { Component, input, output , ChangeDetectionStrategy } from '@angular/cor
   selector: 'app-card-aluno',
   imports: [],
   templateUrl: './card-aluno.html',
+  styleUrl: './card-aluno.css',
   changeDetection: ChangeDetectionStrategy.OnPush })
 export class CardAlunoComponent {
   nome = input.required<string>();
