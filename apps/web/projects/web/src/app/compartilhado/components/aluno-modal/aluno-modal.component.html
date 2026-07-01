@@ -262,6 +262,7 @@
         }
       </div>
       @if (isVisaoGeralExpanded() || isSaudeExpanded() || isRelatoriosExpanded() || isAgendaExpanded() || isDashboardExpanded()) {
+        <div class="flex-1 min-h-[500px] flex flex-col">
         @if (isVisaoGeralExpanded()) {
           <app-bloco-visao-geral
             [visaoGeralData]="visaoGeralData()"
@@ -278,7 +279,7 @@
           </app-bloco-saude>
         }
         @if (isRelatoriosExpanded()) {
-          <app-bloco-relatorios [estudanteId]="aluno!.id" (recolher)="recolherPaineis()">
+          <app-bloco-relatorios [estudanteId]="aluno!.id" [estudanteNome]="aluno!.nome" (recolher)="recolherPaineis()">
           </app-bloco-relatorios>
         }
         @if (isAgendaExpanded()) {
@@ -300,6 +301,7 @@
             </div>
           }
         }
+        </div>
       }
     </div>
   </div>
