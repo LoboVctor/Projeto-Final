@@ -130,10 +130,17 @@ export class EstudantesService {
     if (params.nome) httpParams = httpParams.set('nome', params.nome);
     if (params.matricula) httpParams = httpParams.set('matricula', params.matricula);
     if (params.diagnosticoTipo) httpParams = httpParams.set('diagnosticoTipo', params.diagnosticoTipo);
+    if (params.sexo) httpParams = httpParams.set('sexo', params.sexo);
+    if (params.turmaId) httpParams = httpParams.set('turmaId', params.turmaId);
+    if (params.formaComunicacao) httpParams = httpParams.set('formaComunicacao', params.formaComunicacao);
+    if (params.categoriaEspecificidade) httpParams = httpParams.set('categoriaEspecificidade', params.categoriaEspecificidade);
+    if (params.idadeMin !== undefined) httpParams = httpParams.set('idadeMin', String(params.idadeMin));
+    if (params.idadeMax !== undefined) httpParams = httpParams.set('idadeMax', String(params.idadeMax));
     if (params.page !== undefined) httpParams = httpParams.set('page', String(params.page));
     if (params.limit !== undefined) httpParams = httpParams.set('limit', String(params.limit));
     return this.http.get<PaginacaoResponse<EstudanteListagemItem>>(`${this.baseUrl}/estudantes`, { params: httpParams });
   }
+
 
   // --- ESTUDO DE CASO ---
 

@@ -3,7 +3,7 @@
   <!-- ── Cabeçalho da Tela ─────────────────────────────────────── -->
   <header class="page-header">
     <div class="page-header-texto">
-      <h1 class="page-titulo">Gerenciamento de Alunos</h1>
+      <h1 class="page-titulo">Alunos</h1>
       <p class="page-subtitulo">Consulte, filtre e gerencie todos os estudantes da escola.</p>
     </div>
     <button class="btn-exportar" (click)="exportarCSV()" [disabled]="!temResultados()">
@@ -19,6 +19,7 @@
 
   <!-- ── Barra de filtros ───────────────────────────────────────── -->
   <section class="filtros-bar" aria-label="Filtros de busca">
+    <!-- Busca por nome/matrícula -->
     <div class="busca-wrapper">
       <svg class="busca-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -40,7 +41,7 @@
       }
     </div>
 
-    <!-- Filtro por diagnóstico (Dropdown) -->
+    <!-- Filtro: Diagnóstico -->
     <div class="filtro-select-wrapper">
       <select
         class="filtro-select"
@@ -53,19 +54,119 @@
           <option [value]="tipo">{{ tipo }}</option>
         }
       </select>
-      <svg
-        class="select-chevron"
-        xmlns="http://www.w3.org/2000/svg"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.5"
-      >
+      <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <polyline points="6 9 12 15 18 9" />
       </svg>
     </div>
+
+    <!-- Filtro: Sexo -->
+    <div class="filtro-select-wrapper">
+      <select
+        class="filtro-select"
+        [value]="filtroSexo()"
+        (change)="onFiltroSexoChange($any($event.target).value)"
+        aria-label="Filtrar por sexo"
+      >
+        <option value="">Todos os Sexos</option>
+        <option value="MASCULINO">Masculino</option>
+        <option value="FEMININO">Feminino</option>
+        <option value="OUTRO">Outro</option>
+      </select>
+      <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    </div>
+
+    <!-- Filtro: Turma -->
+    <div class="filtro-select-wrapper">
+      <select
+        class="filtro-select"
+        [value]="filtroTurmaId()"
+        (change)="onFiltroTurmaChange($any($event.target).value)"
+        aria-label="Filtrar por turma"
+      >
+        <option value="">Todas as Turmas</option>
+        @for (turma of turmasDisponiveis(); track turma.id) {
+          <option [value]="turma.id">{{ turma.nome }}</option>
+        }
+      </select>
+      <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    </div>
+
+    <!-- Filtro: Forma de Comunicação -->
+    <div class="filtro-select-wrapper">
+      <select
+        class="filtro-select"
+        [value]="filtroFormaComunicacao()"
+        (change)="onFiltroFormaComunicacaoChange($any($event.target).value)"
+        aria-label="Filtrar por forma de comunicação"
+      >
+        <option value="">Todas as Comunicações</option>
+        <option value="VERBAL">Verbal</option>
+        <option value="NAO_VERBAL">Não Verbal</option>
+      </select>
+      <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    </div>
+
+    <!-- Filtro: Categoria de Especificidade -->
+    <div class="filtro-select-wrapper">
+      <select
+        class="filtro-select"
+        [value]="filtroCategoria()"
+        (change)="onFiltroCategoriaChange($any($event.target).value)"
+        aria-label="Filtrar por categoria de especificidade"
+      >
+        <option value="">Todas as Especificidades</option>
+        <option value="ALIMENTAR">Alimentar</option>
+        <option value="SENSORIAL">Sensorial</option>
+        <option value="MOTORA">Motora</option>
+        <option value="COMPORTAMENTAL">Comportamental</option>
+      </select>
+      <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    </div>
+
+    <!-- Filtro: Intervalo de Idade -->
+    <div class="filtro-idade-wrapper">
+      <span class="filtro-idade-label">Idade:</span>
+      <input
+        id="filtro-idade-min"
+        type="number"
+        class="filtro-idade-input"
+        placeholder="Min"
+        min="0"
+        max="120"
+        [value]="filtroIdadeMin() ?? ''"
+        (change)="onFiltroIdadeMinChange($any($event.target).value)"
+        aria-label="Idade mínima"
+      />
+      <span class="filtro-idade-sep">–</span>
+      <input
+        id="filtro-idade-max"
+        type="number"
+        class="filtro-idade-input"
+        placeholder="Max"
+        min="0"
+        max="120"
+        [value]="filtroIdadeMax() ?? ''"
+        (change)="onFiltroIdadeMaxChange($any($event.target).value)"
+        aria-label="Idade máxima"
+      />
+    </div>
+
+    <!-- Botão limpar todos os filtros -->
+    <button class="btn-limpar-todos" (click)="limparFiltros()" title="Limpar todos os filtros">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+      Limpar Filtros
+    </button>
   </section>
 
   <!-- ── Contador de resultados ─────────────────────────────────── -->
@@ -107,12 +208,19 @@
             <th class="th-turma">Turma</th>
             <th class="th-diagnostico">Diagnóstico</th>
             <th class="th-status">Status</th>
-            <th class="th-acoes">Ações</th>
           </tr>
         </thead>
         <tbody>
           @for (aluno of estudantes(); track aluno.id) {
-            <tr class="tabela-linha">
+            <tr
+              class="tabela-linha tabela-linha--clicavel"
+              (click)="abrirModalAluno(aluno)"
+              [attr.aria-label]="'Ver perfil de ' + aluno.nomeCompleto"
+              role="button"
+              tabindex="0"
+              (keydown.enter)="abrirModalAluno(aluno)"
+              (keydown.space)="abrirModalAluno(aluno)"
+            >
               <!-- Aluno -->
               <td class="td-aluno">
                 <div class="aluno-info">
@@ -146,74 +254,6 @@
                 <span class="tag-status" [class.tag-status--ativo]="aluno.statusMatricula">
                   {{ getStatusLabel(aluno) }}
                 </span>
-              </td>
-              <!-- Ações: Menu Sanduíche -->
-              <td class="td-acoes">
-                <div class="menu-wrapper">
-                  <!-- Botão disparador (3 pontos) -->
-                  <button
-                    class="btn-menu-sandwich"
-                    (click)="$event.stopPropagation(); toggleMenu(aluno.id, $event)"
-                    [attr.aria-label]="'Opções para ' + aluno.nomeCompleto"
-                    [attr.aria-expanded]="menuAbertoId() === aluno.id"
-                    title="Mais opções"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                      fill="currentColor" aria-hidden="true">
-                      <circle cx="12" cy="5" r="1.5"/>
-                      <circle cx="12" cy="12" r="1.5"/>
-                      <circle cx="12" cy="19" r="1.5"/>
-                    </svg>
-                  </button>
-
-                  <!-- Dropdown do menu -->
-                  @if (menuAbertoId() === aluno.id) {
-                    <!-- Overlay para fechar ao clicar fora -->
-                    <div class="menu-overlay" (click)="fecharMenu()"></div>
-
-                    <div
-                      class="menu-dropdown"
-                      role="menu"
-                      [style.top.px]="menuPosicao()?.top"
-                      [style.left.px]="menuPosicao()?.left"
-                    >
-                      <!-- Card do Aluno -->
-                      <button
-                        class="menu-item"
-                        role="menuitem"
-                        (click)="abrirModalAluno(aluno)"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-                          fill="none" stroke="currentColor" stroke-width="2"
-                          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                          <rect x="2" y="5" width="20" height="14" rx="2"/>
-                          <path d="M8 10h8M8 14h5"/>
-                        </svg>
-                        Card do Aluno
-                      </button>
-
-                      <!-- Divisor -->
-                      <div class="menu-divider"></div>
-
-                      <!-- Ocorrência -->
-                      <button
-                        class="menu-item menu-item--ocorrencia"
-                        role="menuitem"
-                        (click)="abrirDrawerOcorrencia(aluno)"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-                          fill="none" stroke="currentColor" stroke-width="2"
-                          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
-                          <path d="M9 14h6"/>
-                          <path d="M9 10h6"/>
-                        </svg>
-                        Ocorrência
-                      </button>
-                    </div>
-                  }
-                </div>
               </td>
             </tr>
           }
@@ -259,19 +299,10 @@
 
 </div>
 
-<!-- ── Drawer de Estudo de Caso ────────────────────────────────── -->
-@if (drawerAberto() && alunoParaOcorrencia()) {
-  <app-estudo-de-caso-drawer
-    [estudanteId]="alunoParaOcorrencia()!.id"
-    [estudanteNome]="alunoParaOcorrencia()!.nomeCompleto"
-    (fechar)="fecharDrawer()"
-    (salvoComSucesso)="onOcorrenciaSalva($event)"
-  ></app-estudo-de-caso-drawer>
-}
-
 <!-- ── Modal do Aluno (Card do Aluno) ─────────────────────────── -->
 <app-aluno-modal
   [isVisible]="modalAlunoAberto()"
   [aluno]="modalAlunoData()"
   (fecharModal)="fecharModalAluno()"
-></app-aluno-modal>
+>
+</app-aluno-modal>

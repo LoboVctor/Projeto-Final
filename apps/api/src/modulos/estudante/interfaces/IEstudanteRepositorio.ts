@@ -10,6 +10,9 @@ export type EstudanteListagem = Prisma.EstudanteGetPayload<{
     matricula: true;
     foto: true;
     statusMatricula: true;
+    dataNascimento: true;
+    sexo: true;
+    formaComunicacao: true;
     turmas: {
       select: {
         id: true;
@@ -34,6 +37,7 @@ export interface EstudanteListagemPaginado {
   limit: number;
   totalPaginas: number;
 }
+
 
 export type EstudanteVisaoGeral = Prisma.EstudanteGetPayload<{
   include: {

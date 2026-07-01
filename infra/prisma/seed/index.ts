@@ -263,7 +263,7 @@ async function main() {
       dataNascimento: new Date('2016-04-15'),
       cpf: '222.222.222-22',
       sexo: Sexo.MASCULINO,
-      foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Lucas',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=spiky,flatTop,parting,shortCurls,plain&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=lucas',
       formaComunicacao: Fcom.VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -283,7 +283,7 @@ async function main() {
       dataNascimento: new Date('2019-05-15'),
       cpf: '123.456.789-01',
       sexo: Sexo.FEMININO,
-      foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Ana',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=longCurls,buns,roundBob,wavy,bangs,fluffy&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=ana',
       formaComunicacao: Fcom.VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -303,7 +303,7 @@ async function main() {
       dataNascimento: new Date('2018-08-22'),
       cpf: '234.567.890-12',
       sexo: Sexo.MASCULINO,
-      foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Bruno',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=spiky,flatTop,parting,shortCurls,plain&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=bruno',
       formaComunicacao: Fcom.NAO_VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -323,7 +323,7 @@ async function main() {
       dataNascimento: new Date('2018-03-10'),
       cpf: '345.678.901-23',
       sexo: Sexo.MASCULINO,
-      foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Carlos',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=spiky,flatTop,parting,shortCurls,plain&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=carlos',
       formaComunicacao: Fcom.VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -343,7 +343,7 @@ async function main() {
       dataNascimento: new Date('2020-11-05'),
       cpf: '456.789.012-34',
       sexo: Sexo.FEMININO,
-      foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Daniela',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=longCurls,buns,roundBob,wavy,bangs,fluffy&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=daniela',
       formaComunicacao: Fcom.NAO_VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -361,7 +361,7 @@ async function main() {
   for (const est of estudantesData) {
     await prisma.estudante.upsert({
       where: { matricula: est.matricula },
-      update: {},
+      update: { foto: est.foto },
       create: est,
     });
   }
