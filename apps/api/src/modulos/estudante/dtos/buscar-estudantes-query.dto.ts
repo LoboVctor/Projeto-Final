@@ -1,6 +1,7 @@
-import { IsOptional, IsString, IsInt, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsInt, Min, Max, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Sexo, Fcom, CategoriaEspecificidade } from '@prisma-client';
 
 /**
  * Query params para o endpoint GET /estudantes.
@@ -26,6 +27,46 @@ export class BuscarEstudantesQueryDto {
   @IsOptional()
   @IsString()
   diagnosticoTipo?: string;
+
+  /** Filtra por sexo do estudante */
+  @ApiPropertyOptional({ enum: Sexo, description: 'Filtra por sexo (MASCULINO, FEMININO, OUTRO)' })
+  @IsOptional()
+  @IsEnum(Sexo)
+  sexo?: Sexo;
+
+  /** Filtra por ID da turma */
+  @ApiPropertyOptional({ description: 'Filtra por ID da turma' })
+  @IsOptional()
+  @IsString()
+  turmaId?: string;
+
+  /** Filtra por forma de comunicação */
+  @ApiPropertyOptional({ enum: Fcom, description: 'Filtra por forma de comunicação (VERBAL, NAO_VERBAL)' })
+  @IsOptional()
+  @IsEnum(Fcom)
+  formaComunicacao?: Fcom;
+
+  /** Filtra por categoria de especificidade */
+  @ApiPropertyOptional({ enum: CategoriaEspecificidade, description: 'Filtra por categoria de especificidade' })
+  @IsOptional()
+  @IsEnum(CategoriaEspecificidade)
+  categoriaEspecificidade?: CategoriaEspecificidade;
+
+  /** Idade mínima do estudante (inclusive) */
+  @ApiPropertyOptional({ description: 'Idade mínima do estudante' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  idadeMin?: number;
+
+  /** Idade máxima do estudante (inclusive) */
+  @ApiPropertyOptional({ description: 'Idade máxima do estudante' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Max(120)
+  idadeMax?: number;
 
   /** Número da página (1-based). Padrão: 1 */
   @ApiPropertyOptional({

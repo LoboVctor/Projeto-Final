@@ -45,6 +45,39 @@ export type TurmaParaGrafico = Prisma.TurmaGetPayload<{
   };
 }>;
 
+/** Tipo para o cálculo de métricas da turma (Big Numbers + Gráficos) */
+export type TurmaParaMetricas = Prisma.TurmaGetPayload<{
+  include: {
+    estudantes: {
+      select: {
+        id: true;
+        dataNascimento: true;
+        sexo: true;
+        formaComunicacao: true;
+        diagnosticos: {
+          select: {
+            diagnostico: {
+              select: { tipo: true };
+            };
+          };
+        };
+      };
+    };
+  };
+}>;
+
+/** Resultado do endpoint GET /turmas/:id/metricas */
+export interface MetricasTurma {
+  totalAlunos: number;
+  idadeMedia: number | null;
+  diagnosticoPrincipal: string | null;
+  comunicacaoPrincipal: string | null;
+  distribuicaoSexo: { sexo: string; quantidade: number }[];
+  distribuicaoIdade: { idade: number; quantidade: number }[];
+  distribuicaoDiagnostico: { tipo: string; quantidade: number }[];
+  distribuicaoComunicacao: { forma: string; quantidade: number }[];
+}
+
 export interface ITurmaRepositorio {
   buscarTodas(educadorId?: string): Promise<TurmaLista[]>;
   buscarEstudantesPorTurma(turmaId: string): Promise<TurmaComEstudantes | null>;
@@ -52,4 +85,6 @@ export interface ITurmaRepositorio {
     turma: TurmaParaGrafico | null;
     assiduidade: { presenca: boolean | null; _count: { presenca: number } }[];
   }>;
+  buscarDadosGraficos(turmaId: string): Promise<{ turma: TurmaParaGrafico | null; assiduidade: { presenca: boolean | null; _count: { presenca: number } }[] }>;
+  buscarMetricasTurma(turmaId: string): Promise<TurmaParaMetricas | null>;
 }

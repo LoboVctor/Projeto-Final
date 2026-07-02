@@ -4,250 +4,8 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  background: #f8f9fa;
+  background: #f7f4fa;
 }
-
-/* ── Top bar de turmas ───────────────────────────────── */
-.turmas-topbar {
-  background: #ffffff;
-  border-bottom: 1px solid #e1e4e8;
-  flex-shrink: 0;
-}
-
-.topbar-inner {
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  height: 52px;
-  overflow: visible;
-}
-
-.topbar-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #57606a;
-  flex-shrink: 0;
-  padding-right: 16px;
-}
-
-.topbar-divider {
-  width: 1px;
-  height: 22px;
-  background: #e1e4e8;
-  flex-shrink: 0;
-  margin-right: 12px;
-}
-
-.topbar-empty {
-  font-size: 12.5px;
-  color: #8c95a0;
-  padding: 0 8px;
-}
-
-/* ── Dropdown wrapper ────────────────────────────────── */
-.turma-dropdown-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-/* ── Trigger (botão principal do dropdown) ───────────── */
-.turma-dropdown-trigger {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 12px 5px 10px;
-  background: #f3f5f8;
-  border: 1px solid #d0d7de;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.14s, border-color 0.14s, box-shadow 0.14s;
-  white-space: nowrap;
-  font-family: inherit;
-}
-
-.turma-dropdown-trigger:hover {
-  background: #eaedf1;
-  border-color: #b0b7c2;
-}
-
-.turma-dropdown-trigger.open {
-  background: #eef4ff;
-  border-color: #3c5f94;
-  box-shadow: 0 0 0 3px rgba(60, 95, 148, 0.12);
-}
-
-.trigger-icon {
-  display: flex;
-  align-items: center;
-  color: #57606a;
-  flex-shrink: 0;
-}
-
-.turma-dropdown-trigger.open .trigger-icon {
-  color: #3c5f94;
-}
-
-.trigger-nome {
-  font-size: 13px;
-  font-weight: 600;
-  color: #1f2328;
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.trigger-placeholder {
-  color: #8c95a0;
-  font-weight: 400;
-}
-
-.trigger-badge {
-  font-size: 10px;
-  font-weight: 600;
-  color: #57606a;
-  background: #e1e4e8;
-  border-radius: 99px;
-  padding: 1px 7px;
-}
-
-.trigger-chevron {
-  color: #57606a;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-  margin-left: 2px;
-}
-
-.trigger-chevron.rotated {
-  transform: rotate(180deg);
-}
-
-/* ── Overlay para fechar ao clicar fora ──────────────── */
-.dropdown-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 49;
-  background: transparent;
-}
-
-/* ── Menu dropdown ───────────────────────────────────── */
-.turma-dropdown-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 50;
-  min-width: 240px;
-  background: #ffffff;
-  border: 1px solid #d0d7de;
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-  animation: dropdownIn 0.15s ease;
-}
-
-@keyframes dropdownIn {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dropdown-menu-header {
-  padding: 8px 14px 6px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: #8c95a0;
-  border-bottom: 1px solid #f0f2f4;
-}
-
-/* ── Opção do dropdown ───────────────────────────────── */
-.dropdown-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 9px 14px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: background 0.1s;
-  text-align: left;
-  font-family: inherit;
-}
-
-.dropdown-option:hover {
-  background: #f6f8fa;
-}
-
-.dropdown-option.selected {
-  background: #eef4ff;
-}
-
-.option-indicator {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  border: 2px solid #d0d7de;
-  flex-shrink: 0;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.option-indicator.active {
-  background: #3c5f94;
-  border-color: #3c5f94;
-}
-
-.option-nome {
-  flex: 1;
-  font-size: 13px;
-  font-weight: 600;
-  color: #1f2328;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.dropdown-option.selected .option-nome {
-  color: #3c5f94;
-}
-
-.option-badges {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.badge-turno,
-.badge-count {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-
-.badge-turno {
-  background: #ddf4ff;
-  color: #0969da;
-}
-
-.badge-count {
-  background: #f3f5f8;
-  color: #57606a;
-}
-
 
 /* ── Conteúdo principal ──────────────────────────────── */
 .turmas-main {
@@ -293,6 +51,37 @@
   padding: 3px 10px;
   border-radius: 999px;
   border: 1px solid #d0d7de;
+}
+
+/* ── Seletor de Turmas (botões horizontais) ──────────── */
+.turma-selector {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.turma-selector-btn {
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #57606a;
+  background: #f3f5f8;
+  border: 1px solid #d0d7de;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.turma-selector-btn:hover {
+  background: #e8eaed;
+  color: #1f2328;
+}
+
+.turma-selector-btn.active {
+  background: #6C3CC9;
+  color: #ffffff;
+  border-color: #6C3CC9;
 }
 
 /* ── Toggle de visualização ──────────────────────────── */
@@ -365,19 +154,114 @@
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
-  100% {
-    background-position: -200% 0;
-  }
+/* ── Big Numbers ─────────────────────────────────────── */
+.big-numbers-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.big-number-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transition: box-shadow 0.15s;
+}
+
+.big-number-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+}
+
+.big-number-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.big-number-icon--purple {
+  background: #EDE9FE;
+  color: #6C3CC9;
+}
+
+.big-number-icon--blue {
+  background: #DBEAFE;
+  color: #2563EB;
+}
+
+.big-number-icon--amber {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.big-number-icon--green {
+  background: #D1FAE5;
+  color: #059669;
+}
+
+.big-number-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.big-number-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.big-number-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.1;
+  white-space: nowrap;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.big-number-value--sm {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: normal;
+  line-height: 1.2;
+}
+
+.big-number-value.is-loading {
+  opacity: 0.3;
+  filter: blur(3px);
+}
+
+.students-container-transition {
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.students-container-transition.is-loading-students {
+  opacity: 0.4;
+  filter: blur(4px);
+  pointer-events: none;
 }
 
 /* ── Grid de cards ───────────────────────────────────── */
 .students-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 16px;
 }
 
@@ -393,7 +277,7 @@
 }
 
 .list-table thead tr {
-  background: #f6f8fa;
+  background: #f7f4fa;
   border-bottom: 2px solid #d0d7de;
 }
 
@@ -420,7 +304,6 @@
 .list-row:hover .list-cell-nome span {
   color: #3c5f94;
 }
-
 
 .list-row td {
   padding: 10px 14px;
@@ -482,4 +365,20 @@
 .no-diag {
   color: #aaa;
   font-size: 12px;
+}
+
+/* ── Responsividade ──────────────────────────────────── */
+@media (max-width: 900px) {
+  .big-numbers-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .big-numbers-row {
+    grid-template-columns: 1fr;
+  }
+  .turmas-main {
+    padding: 16px;
+  }
 }

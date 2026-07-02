@@ -54,4 +54,14 @@ export class TurmaController {
   getGraficos(@Param('id', ParseUUIDPipe) id: string) {
     return this.turmaService.obterDadosGraficos(id);
   }
+
+  /**
+   * GET /turmas/:id/metricas
+   * Retorna Big Numbers e distribuições para gráficos da turma.
+   */
+  @Get(':id/metricas')
+  @ApiOperation({ summary: 'Retorna métricas agregadas da turma (Big Numbers + distribuições para gráficos)' })
+  getMetricas(@Param('id', ParseUUIDPipe) id: string) {
+    return this.turmaService.obterMetricasTurma(id);
+  }
 }

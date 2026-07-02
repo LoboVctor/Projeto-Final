@@ -6,6 +6,7 @@ import type {
   TurmaComEstudantes,
   TurmaParaGrafico,
 } from './interfaces/ITurmaRepositorio.js';
+import type { ITurmaRepositorio, TurmaLista, TurmaComEstudantes, TurmaParaGrafico, TurmaParaMetricas } from './interfaces/ITurmaRepositorio.js';
 
 @Injectable()
 export class TurmaRepository implements ITurmaRepositorio {
@@ -89,5 +90,32 @@ export class TurmaRepository implements ITurmaRepositorio {
     ]);
 
     return { turma, assiduidade };
+  }
+
+  /**
+   * Busca todos os dados dos estudantes de uma turma necessários para
+   * calcular Big Numbers e gráficos (sexo, idade, diagnóstico, comunicação).
+   */
+  async buscarMetricasTurma(turmaId: string): Promise<TurmaParaMetricas | null> {
+    return this.prisma.client.turma.findUnique({
+      where: { id: turmaId },
+      include: {
+        estudantes: {
+          select: {
+            id: true,
+            dataNascimento: true,
+            sexo: true,
+            formaComunicacao: true,
+            diagnosticos: {
+              select: {
+                diagnostico: {
+                  select: { tipo: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
   }
 }

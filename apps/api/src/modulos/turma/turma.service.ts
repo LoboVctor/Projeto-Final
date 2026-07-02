@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
-import type { ITurmaRepositorio } from './interfaces/ITurmaRepositorio.js';
+import type { ITurmaRepositorio, MetricasTurma } from './interfaces/ITurmaRepositorio.js';
 
 @Injectable()
 export class TurmaService {
@@ -77,5 +77,93 @@ export class TurmaService {
       );
       throw error;
     }
+  }
+
+  /**
+   * Calcula as métricas agregadas de uma turma:
+   * Big Numbers (total de alunos, idade média, diagnóstico e comunicação principal)
+   * e distribuições para gráficos (sexo, idade, diagnóstico, comunicação).
+   */
+  async obterMetricasTurma(turmaId: string): Promise<MetricasTurma> {
+    const turma = await this.turmaRepositorio.buscarMetricasTurma(turmaId);
+
+    if (!turma) {
+      throw new NotFoundException(`Turma com id "${turmaId}" não encontrada.`);
+    }
+
+    const estudantes = turma.estudantes;
+    const totalAlunos = estudantes.length;
+    const agora = new Date();
+
+    // ── Cálculo de Idade ──────────────────────────────────────────
+    const idades = estudantes
+      .map((e) => {
+        const nasc = new Date(e.dataNascimento);
+        let idade = agora.getFullYear() - nasc.getFullYear();
+        const mes = agora.getMonth() - nasc.getMonth();
+        if (mes < 0 || (mes === 0 && agora.getDate() < nasc.getDate())) {
+          idade--;
+        }
+        return idade;
+      })
+      .filter((i) => i >= 0);
+
+    const idadeMedia = idades.length > 0
+      ? Math.round(idades.reduce((acc, i) => acc + i, 0) / idades.length * 10) / 10
+      : null;
+
+    // ── Distribuição por Sexo ─────────────────────────────────────
+    const sexoMap = new Map<string, number>();
+    for (const e of estudantes) {
+      sexoMap.set(e.sexo, (sexoMap.get(e.sexo) ?? 0) + 1);
+    }
+    const distribuicaoSexo = Array.from(sexoMap.entries())
+      .map(([sexo, quantidade]) => ({ sexo, quantidade }))
+      .sort((a, b) => b.quantidade - a.quantidade);
+
+    // ── Distribuição por Diagnóstico ──────────────────────────────
+    const diagMap = new Map<string, number>();
+    for (const e of estudantes) {
+      for (const d of e.diagnosticos) {
+        const tipo = d.diagnostico.tipo;
+        diagMap.set(tipo, (diagMap.get(tipo) ?? 0) + 1);
+      }
+    }
+    const distribuicaoDiagnostico = Array.from(diagMap.entries())
+      .map(([tipo, quantidade]) => ({ tipo, quantidade }))
+      .sort((a, b) => b.quantidade - a.quantidade);
+
+    const diagnosticoPrincipal = distribuicaoDiagnostico[0]?.tipo ?? null;
+
+    // ── Distribuição por Comunicação ──────────────────────────────
+    const comMap = new Map<string, number>();
+    for (const e of estudantes) {
+      comMap.set(e.formaComunicacao, (comMap.get(e.formaComunicacao) ?? 0) + 1);
+    }
+    const distribuicaoComunicacao = Array.from(comMap.entries())
+      .map(([forma, quantidade]) => ({ forma, quantidade }))
+      .sort((a, b) => b.quantidade - a.quantidade);
+
+    const comunicacaoPrincipal = distribuicaoComunicacao[0]?.forma ?? null;
+
+    // ── Distribuição por Faixa de Idade ───────────────────────────
+    const idadeFreqMap = new Map<number, number>();
+    for (const i of idades) {
+      idadeFreqMap.set(i, (idadeFreqMap.get(i) ?? 0) + 1);
+    }
+    const distribuicaoIdade = Array.from(idadeFreqMap.entries())
+      .map(([idade, quantidade]) => ({ idade, quantidade }))
+      .sort((a, b) => a.idade - b.idade);
+
+    return {
+      totalAlunos,
+      idadeMedia,
+      diagnosticoPrincipal,
+      comunicacaoPrincipal,
+      distribuicaoSexo,
+      distribuicaoIdade,
+      distribuicaoDiagnostico,
+      distribuicaoComunicacao,
+    };
   }
 }

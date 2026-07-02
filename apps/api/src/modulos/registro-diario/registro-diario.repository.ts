@@ -118,10 +118,17 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
     dataInicio: Date,
     dataFim: Date,
   ): Promise<RegistroDiario[]> {
+  async buscarPorPeriodo(estudanteId: string, dataInicio: Date, dataFim: Date): Promise<RegistroDiario[]> {
+    const inicio = new Date(dataInicio);
+    inicio.setUTCHours(0, 0, 0, 0);
+    
+    const fim = new Date(dataFim);
+    fim.setUTCHours(23, 59, 59, 999);
+
     return this.prisma.client.registroDiario.findMany({
       where: {
         estudanteId,
-        data: { gte: dataInicio, lte: dataFim },
+        data: { gte: inicio, lte: fim },
       },
       orderBy: { data: 'asc' },
     });
@@ -167,12 +174,19 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
     dataInicio: Date,
     dataFim: Date,
   ): Promise<RegistroDiario[]> {
+  async buscarRegistrosPorIntervalo(estudanteId: string, dataInicio: Date, dataFim: Date): Promise<RegistroDiario[]> {
+    const inicio = new Date(dataInicio);
+    inicio.setUTCHours(0, 0, 0, 0);
+    
+    const fim = new Date(dataFim);
+    fim.setUTCHours(23, 59, 59, 999);
+
     return this.prisma.client.registroDiario.findMany({
       where: {
         estudanteId: estudanteId,
         data: {
-          gte: dataInicio,
-          lte: dataFim,
+          gte: inicio,
+          lte: fim,
         },
         preenchido: true,
       },

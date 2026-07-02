@@ -8,6 +8,8 @@ import {
   ChangeDetectionStrategy,
   input,
   effect
+  OnChanges,
+  SimpleChanges
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AlunoModalData } from '../../models/aluno-modal.model';
@@ -33,7 +35,7 @@ import { BlocoDashboardComponent } from '../../../funcionalidades/estudante/comp
   styleUrls: ['./aluno-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AlunoModalComponent {
+export class AlunoModalComponent implements OnChanges {
   private estudantesService = inject(EstudantesService);
 
   readonly isVisible = input<boolean>(false);
@@ -77,6 +79,11 @@ export class AlunoModalComponent {
       }
     }, { allowSignalWrites: true }); 
     // allowSignalWrites é necessário pois estamos alterando outros signals dentro do effect
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['aluno'] && this.aluno) {
+      this.isInfoGeraisOpen.set(true);
+      this.abrirVisaoGeral();
+    }
   }
 
   onClose(): void {

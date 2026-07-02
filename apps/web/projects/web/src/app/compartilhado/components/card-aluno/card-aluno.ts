@@ -14,6 +14,8 @@ export interface EstudanteCardInput {
   templateUrl: './card-aluno.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
+  styleUrl: './card-aluno.css',
+  changeDetection: ChangeDetectionStrategy.OnPush })
 export class CardAlunoComponent {
   nome = input.required<string>();
   foto = input<string | null>();

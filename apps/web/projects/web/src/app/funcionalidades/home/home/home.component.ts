@@ -24,6 +24,10 @@ import {
 import { RegistrosDiariosService } from '../../../compartilhado/services/registros-diarios.service';
 import { AuthService } from '../../../nucleo/services/auth';
 import { RegistroDiarioPendente } from '../../../compartilhado/models/registros-diarios.models';
+import { TurmasService, TurmaResumo, EstudanteResumo } from '../../../nucleo/services/turmas.service';
+import { CardAlunoComponent } from '../../../compartilhado/components/card-aluno/card-aluno';
+import { AlunoModalComponent } from '../../../compartilhado/components/aluno-modal/aluno-modal.component';
+import { AlunoModalData } from '../../../compartilhado/models/aluno-modal.model';
 
 export type ChartOptions = {
   series: ApexNonAxisChartSeries;
@@ -35,6 +39,7 @@ export type ChartOptions = {
 @Component({
   selector: 'app-home',
   imports: [NgApexchartsModule, RouterModule, DatePipe], 
+  imports: [NgApexchartsModule, CardAlunoComponent, AlunoModalComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -44,6 +49,7 @@ export class HomeComponent implements OnInit {
   public chartOptions: ChartOptions;
 
   private readonly registrosService = inject(RegistrosDiariosService);
+  private readonly turmasService = inject(TurmasService);
   private readonly authService = inject(AuthService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
@@ -53,6 +59,12 @@ export class HomeComponent implements OnInit {
   totalEsperado = signal<number>(0);
   totalPreenchidos = signal<number>(0);
   loadingMetricas = signal<boolean>(true);
+
+  turmaAtual = signal<TurmaResumo | null>(null);
+  estudantes = signal<EstudanteResumo[]>([]);
+  loadingEstudantes = signal(false);
+  erroEstudantes = signal<string | null>(null);
+  alunoEmDestaque = signal<AlunoModalData | null>(null);
 
   totalPendentes = computed(() => this.registrosPendentes().length);
 
@@ -134,6 +146,72 @@ export class HomeComponent implements OnInit {
 
   fecharModal() {
     this.isModalPendenciasAberto.set(false);
+        error: () => {} });
+
+    this.carregarTurmaEEstudantes(educadorIdAtual);
+  }
+
+  carregarTurmaEEstudantes(educadorId: string): void {
+    this.loadingEstudantes.set(true);
+    this.erroEstudantes.set(null);
+
+    this.turmasService.getTurmas(educadorId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (turmas) => {
+        if (turmas.length > 0 && turmas[0]) {
+          this.turmaAtual.set(turmas[0]);
+          this.turmasService.getEstudantesDaTurma(turmas[0].id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+            next: (res) => {
+              this.estudantes.set(res.estudantes);
+              this.loadingEstudantes.set(false);
+            },
+            error: () => {
+              this.erroEstudantes.set('Erro ao carregar os alunos da turma.');
+              this.loadingEstudantes.set(false);
+            }
+          });
+        } else {
+          this.loadingEstudantes.set(false);
+        }
+      },
+      error: () => {
+        this.erroEstudantes.set('Erro ao carregar as turmas.');
+        this.loadingEstudantes.set(false);
+      }
+    });
+  }
+
+  abrirDetalhesAluno(estudante: EstudanteResumo): void {
+    const nomeDaTurma = this.turmaAtual()?.nome || 'Turma Indefinida';
+    const diagnosticoPrincipal = estudante.diagnosticos.length > 0 
+      ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo'
+      : 'Sem Laudo';
+
+    const dadosParaModal: AlunoModalData = {
+      id: estudante.id,
+      nome: estudante.nomeCompleto,
+      turma: nomeDaTurma,
+      diagnostico: diagnosticoPrincipal,
+      nivelSuporte: 'Nível 1 de Suporte',
+      foto: estudante.foto || `https://ui-avatars.com/api/?name=${estudante.nomeCompleto}&background=F0E6FF&color=4A148C`
+    };
+
+    this.alunoEmDestaque.set(dadosParaModal);
+  }
+
+  calcularIdade(dataNascimento: string | Date | undefined): number | undefined {
+    if (!dataNascimento) return undefined;
+    
+    const hoje = new Date();
+    const nascimento = new Date(dataNascimento);
+    
+    let idade = hoje.getFullYear() - nascimento.getFullYear();
+    const mes = hoje.getMonth() - nascimento.getMonth();
+    
+    if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
+      idade--;
+    }
+    
+    return idade;
   }
 
 }

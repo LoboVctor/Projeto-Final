@@ -3,7 +3,8 @@ import type { IRegistroDiarioRepositorio } from './interfaces/IRegistroDiarioRep
 import { CreateRegistrosDiarioDto } from './dtos/create-registros-diario.dto.js';
 import { UpdateRegistrosDiarioDto } from './dtos/update-registros-diario.dto.js';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { RegistroDiario } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service.js'; // Ajuste o caminho se necessário
+import { StatusAula } from '../../../../../infra/generated/prisma/index.js';
 
 @Injectable()
 export class RegistroDiarioService {
@@ -12,6 +13,7 @@ export class RegistroDiarioService {
   constructor(
     @Inject('IRegistroDiarioRepositorio')
     private readonly registroDiarioRepositorio: IRegistroDiarioRepositorio,
+    private readonly prisma: PrismaService
   ) {}
 
   async create(dto: CreateRegistrosDiarioDto) {
@@ -243,7 +245,6 @@ export class RegistroDiarioService {
     let fimBusca: Date;
 
     if (dataInicio && dataFim) {
-      // Força a criação das datas cravadas no fuso UTC neutro
       inicioBusca = new Date(`${dataInicio.split('T')[0]}T00:00:00.000Z`);
       fimBusca = new Date(`${dataFim.split('T')[0]}T23:59:59.999Z`);
     } else {
@@ -427,7 +428,47 @@ export class RegistroDiarioService {
 
     const mediasAtuais = this.calcularMedias(registrosAtuais);
 
+    const { atualInicio, atualFim, anteriorInicio, anteriorFim } = this.getIntervalosDeComparacao(periodo);
+    
+    // Disparamos as consultas paralelamente para otimização de I/O no Postgres
+    const [
+      registrosAtuais, 
+      registrosAnteriores,
+      aulasAtuais,
+      aulasAnteriores
+    ] = await Promise.all([
+      this.registroDiarioRepositorio.buscarRegistrosPorIntervalo(studentId, atualInicio, atualFim),
+      this.registroDiarioRepositorio.buscarRegistrosPorIntervalo(studentId, anteriorInicio, anteriorFim),
+      this.prisma.client.registroAula.findMany({
+        where: {
+          estudanteId: studentId,
+          data: { gte: atualInicio, lte: atualFim },
+          status_aula: StatusAula.REALIZADA 
+        },
+        select: { presenca: true }
+      }),
+      this.prisma.client.registroAula.findMany({
+        where: {
+          estudanteId: studentId,
+          data: { gte: anteriorInicio, lte: anteriorFim },
+          status_aula: StatusAula.REALIZADA
+        },
+        select: { presenca: true }
+      })
+    ]);
+
+    const mediasAtuais = this.calcularMedias(registrosAtuais);
     const mediasAnteriores = this.calcularMedias(registrosAnteriores);
+
+    const calcularMetricasFrequencia = (aulas: { presenca: boolean }[]) => {
+      if (aulas.length === 0) return 0;
+      const totaisPresencas = aulas.filter(a => a.presenca).length;
+      return (totaisPresencas / aulas.length) * 100;
+    };
+
+    const frequenciaAtual = calcularMetricasFrequencia(aulasAtuais);
+    const frequenciaAnterior = calcularMetricasFrequencia(aulasAnteriores);
+    const variacaoFrequencia = frequenciaAtual - frequenciaAnterior;
 
     return {
       mediaGeral: {
@@ -485,8 +526,12 @@ export class RegistroDiarioService {
         valor: 92,
         variacao: 0.3,
       },
+        valor: parseFloat(frequenciaAtual.toFixed(1)), 
+        variacao: parseFloat(variacaoFrequencia.toFixed(1))
+      }
     };
   }
+
   private calcularMedias(registros: any[]) {
     if (registros.length === 0) {
       return {

@@ -19,6 +19,8 @@ import {
   ApiBearerAuth,
   ApiQuery,
 } from '@nestjs/swagger';
+import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards, Query, UseInterceptors, UploadedFile, HttpCode, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { EstudanteService } from './estudante.service.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { EspecificidadeDto } from './dtos/create.especifidades.dto.js';
@@ -28,6 +30,7 @@ import { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js'
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
 
 @ApiTags('Estudantes')
 @ApiBearerAuth()
@@ -243,4 +246,15 @@ export class EstudantesController {
       Number(medicamentoId),
     );
   }
+}
+
+  @Post('registros-aula/batch')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Registrar chamada e desempenho da turma em lote' })
+  @ApiResponse({ status: 201, description: 'Chamada registrada em lote com sucesso.' })
+  @ApiResponse({ status: 400, description: 'Requisição inválida ou DTO malformado.' })
+  async registrarChamadaLote(@Body() createBatchDto: CreateRegistroAulaBatchDto) {
+    return this.estudanteService.registrarChamadaLote(createBatchDto);
+  }
+
 }

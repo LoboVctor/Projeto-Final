@@ -1,67 +1,82 @@
 @if (isVisible()) {
+<div
+  class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto animate-overlay-enter"
+  (click)="onClose()">
   <div
-    class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto"
-    (click)="onClose()"
-  >
+    class="bg-white rounded-3xl shadow-xl relative overflow-hidden my-auto flex flex-col md:flex-row w-full max-w-5xl md:max-w-6xl animate-modal-enter"
+    (click)="$event.stopPropagation()">
     <div
-      class="bg-white rounded-3xl shadow-xl relative transition-all duration-300 ease-in-out my-auto flex flex-col md:flex-row"
-      [class]="
-        isVisaoGeralExpanded() || isSaudeExpanded() || isRelatoriosExpanded() || isAgendaExpanded() || isDashboardExpanded()
-          ? 'w-full max-w-5xl md:max-w-6xl'
-          : 'w-full max-w-sm md:max-w-md'
-      "
-      (click)="$event.stopPropagation()"
-    >
-      <div
-        class="relative p-6 md:p-8 flex-shrink-0"
-        [class]="
-          isVisaoGeralExpanded() || isSaudeExpanded() || isRelatoriosExpanded() || isAgendaExpanded() || isDashboardExpanded()
-            ? 'w-full md:w-[350px] border-b md:border-b-0 md:border-r border-elo-borda'
-            : 'w-full'
-        "
-      >
-        <button
-          (click)="onClose()"
-          class="absolute top-4 right-4 text-elo-texto-secundario hover:text-elo-texto-principal transition-colors p-2 rounded-full hover:bg-elo-borda/50 z-10 cursor-pointer"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
+      class="relative p-6 md:p-8 flex-shrink-0 w-full md:w-[350px] border-b md:border-b-0 md:border-r border-elo-borda">
+
+      @if (aluno) {
+      <div class="flex flex-col items-center mt-2">
+        <div
+          class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-elo-borda mb-4 overflow-hidden border-4 border-white shadow-sm flex items-center justify-center">
+          @if (aluno.foto) {
+          <img [src]="aluno.foto" [alt]="aluno.nome" class="w-full h-full object-cover" />
+          } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+            class="text-elo-texto-secundario/50">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
           </svg>
-        </button>
-        @if (aluno) {
-          <div class="flex flex-col items-center mt-2">
-            <div
-              class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-elo-borda mb-4 overflow-hidden border-4 border-white shadow-sm flex items-center justify-center"
-            >
-              @if (aluno.foto) {
-                <img [src]="aluno.foto" [alt]="aluno.nome" class="w-full h-full object-cover" />
-              } @else {
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="48"
-                  height="48"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="text-elo-texto-secundario/50"
-                >
+          }
+        </div>
+        <h2 class="text-2xl font-bold text-elo-texto-principal font-sora text-center">
+          {{ aluno.nome }}
+        </h2>
+        <p class="text-elo-texto-secundario text-sm md:text-base mt-1">
+          Turma {{ aluno.turma }}
+        </p>
+        <div class="w-full bg-[#F3EEFC] border border-elo-lavanda/30 rounded-2xl p-4 mt-6 flex items-start space-x-3">
+          <div class="text-elo-roxo-principal mt-0.5 flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+              <path d="M9 14h6"></path>
+              <path d="M9 10h6"></path>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-sm font-semibold text-elo-roxo-profundo">Diagnóstico Clínico</h3>
+            <p class="text-elo-roxo-principal text-sm mt-1 leading-snug">
+              {{ aluno.diagnostico }}
+            </p>
+            <p class="text-elo-roxo-principal text-sm font-medium">{{ aluno.nivelSuporte }}</p>
+          </div>
+        </div>
+        <div class="w-full mt-6 space-y-3">
+          <div class="rounded-xl overflow-hidden" [class.bg-blue-50]="!isInfoGeraisOpen()"
+            [class.bg-blue-100]="isInfoGeraisOpen()">
+            <button (click)="toggleInfoGerais()"
+              class="w-full flex items-center justify-between text-blue-700 p-4 transition-colors group hover:bg-blue-100 cursor-pointer">
+              <div class="flex items-center space-x-3 font-semibold">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
+                <span>Informações Gerais</span>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="transition-transform duration-200" [class.rotate-180]="isInfoGeraisOpen()">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            @if (isInfoGeraisOpen()) {
+            <div class="flex flex-col bg-blue-50/50 pb-2 px-4 space-y-1">
+              <button (click)="abrirVisaoGeral()" [class.font-bold]="isVisaoGeralExpanded()"
+                class="flex items-center space-x-2 text-sm text-blue-800 p-2 rounded hover:bg-blue-100/80 transition-colors text-left cursor-pointer">
+                <div class="w-1.5 h-1.5 rounded-full"
+                  [ngClass]="isVisaoGeralExpanded() ? 'bg-blue-600' : 'bg-blue-400'"></div>
+                <span>Visão Geral</span>
+              </button>
+              <button (click)="abrirSaude()" [class.font-bold]="isSaudeExpanded()"
+                class="flex items-center space-x-2 text-sm text-blue-800 p-2 rounded hover:bg-blue-100/80 transition-colors text-left cursor-pointer">
+                <div class="w-1.5 h-1.5 rounded-full" [ngClass]="isSaudeExpanded() ? 'bg-blue-600' : 'bg-blue-400'">
               }
             </div>
             <h2 class="text-2xl font-bold text-elo-texto-principal font-sora text-center">
@@ -166,7 +181,7 @@
                         class="w-1.5 h-1.5 rounded-full"
                         [ngClass]="isSaudeExpanded() ? 'bg-blue-600' : 'bg-blue-400'"
                       ></div>
-                      <span>Saúde e Especificidades</span>
+                      <span>Saúde</span>
                     </button>
                     <button
                       (click)="abrirRelatorios()"
@@ -184,7 +199,7 @@
               </div>
               <button
                 (click)="onAgenda()"
-                class="w-full flex items-center justify-between bg-green-50 hover:bg-green-100 text-green-700 p-4 rounded-xl transition-colors group cursor-pointer"
+                class="w-full flex items-center justify-between bg-amber-50 hover:bg-amber-100 text-amber-700 p-4 rounded-xl transition-colors group cursor-pointer"
               >
                 <div class="flex items-center space-x-3 font-semibold">
                   <svg
@@ -222,7 +237,7 @@
               </button>
               <button
                 (click)="onDashboard()"
-                class="w-full flex items-center justify-between bg-amber-50 hover:bg-amber-100 text-amber-700 p-4 rounded-xl transition-colors group cursor-pointer"
+                class="w-full flex items-center justify-between bg-green-50 hover:bg-green-100 text-green-700 p-4 rounded-xl transition-colors group cursor-pointer"
               >
                 <div class="flex items-center space-x-3 font-semibold">
                   <svg
@@ -242,65 +257,92 @@
                   </svg>
                   <span>Dashboard</span>
                 </div>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="group-hover:translate-x-1 transition-transform"
-                >
-                  <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
+                <span>Saúde e Especificidades</span>
+              </button>
+              <button (click)="abrirRelatorios()" [class.font-bold]="isRelatoriosExpanded()"
+                class="flex items-center space-x-2 text-sm text-blue-800 p-2 rounded hover:bg-blue-100/80 transition-colors text-left cursor-pointer">
+                <div class="w-1.5 h-1.5 rounded-full"
+                  [ngClass]="isRelatoriosExpanded() ? 'bg-blue-600' : 'bg-blue-400'"></div>
+                <span>Relatórios</span>
               </button>
             </div>
+            }
           </div>
-        }
-      </div>
-      @if (isVisaoGeralExpanded() || isSaudeExpanded() || isRelatoriosExpanded() || isAgendaExpanded() || isDashboardExpanded()) {
-        @if (isVisaoGeralExpanded()) {
-          <app-bloco-visao-geral
-            [visaoGeralData]="visaoGeralData()"
-            [loading]="loadingVisaoGeral()"
-            [error]="errorVisaoGeral()"
-            (recolher)="recolherPaineis()"
-            (fechar)="onClose()"
-            (tentarNovamente)="forceReloadVisaoGeral()"
-          >
-          </app-bloco-visao-geral>
-        }
-        @if (isSaudeExpanded()) {
-          <app-bloco-saude [estudanteId]="aluno!.id" (recolher)="recolherPaineis()">
-          </app-bloco-saude>
-        }
-        @if (isRelatoriosExpanded()) {
-          <app-bloco-relatorios [estudanteId]="aluno!.id" (recolher)="recolherPaineis()">
-          </app-bloco-relatorios>
-        }
-        @if (isAgendaExpanded()) {
-
-          <app-bloco-agenda [estudanteId]="aluno!.id" (recolher)="recolherPaineis()">
-          </app-bloco-agenda>
-        }
-        @if (isDashboardExpanded()) {
-          @defer {
-            <app-bloco-dashboard [estudanteId]="aluno!.id" (recolher)="recolherPaineis()">
-            </app-bloco-dashboard>
-          } @loading {
-            <div class="flex-1 flex items-center justify-center p-10 bg-gray-50 rounded-r-3xl text-blue-600 font-medium">
-               <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-               </svg>
-               Baixando painel de métricas analíticas...
+          <button (click)="onAgenda()"
+            class="w-full flex items-center justify-between bg-green-50 hover:bg-green-100 text-green-700 p-4 rounded-xl transition-colors group cursor-pointer">
+            <div class="flex items-center space-x-3 font-semibold">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>Agenda</span>
             </div>
-          }
-        }
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="group-hover:translate-x-1 transition-transform">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+          <button (click)="onDashboard()"
+            class="w-full flex items-center justify-between bg-amber-50 hover:bg-amber-100 text-amber-700 p-4 rounded-xl transition-colors group cursor-pointer">
+            <div class="flex items-center space-x-3 font-semibold">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <span>Dashboard</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="group-hover:translate-x-1 transition-transform">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
       }
     </div>
+    @if (isVisaoGeralExpanded()) {
+    <app-bloco-visao-geral [visaoGeralData]="visaoGeralData()" [loading]="loadingVisaoGeral()"
+      [error]="errorVisaoGeral()" (recolher)="onClose()" (fechar)="onClose()"
+      (tentarNovamente)="forceReloadVisaoGeral()">
+    </app-bloco-visao-geral>
+    }
+    @if (isSaudeExpanded()) {
+    <app-bloco-saude [estudanteId]="aluno!.id" (recolher)="onClose()">
+    </app-bloco-saude>
+    }
+    @if (isRelatoriosExpanded()) {
+    <app-bloco-relatorios [estudanteId]="aluno!.id" (recolher)="onClose()">
+    </app-bloco-relatorios>
+    }
+    @if (isAgendaExpanded()) {
+
+    <app-bloco-agenda [estudanteId]="aluno!.id" (recolher)="onClose()">
+    </app-bloco-agenda>
+    }
+    @if (isDashboardExpanded()) {
+    @defer {
+    <app-bloco-dashboard [estudanteId]="aluno!.id" (recolher)="onClose()">
+    </app-bloco-dashboard>
+    } @loading {
+    <div class="flex-1 flex items-center justify-center p-10 bg-gray-50 rounded-r-3xl text-blue-600 font-medium">
+      <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+        </path>
+      </svg>
+      Baixando painel de métricas analíticas...
+    </div>
+    }
+    }
   </div>
+</div>
 }

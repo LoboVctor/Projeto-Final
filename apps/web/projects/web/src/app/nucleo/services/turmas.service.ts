@@ -39,6 +39,18 @@ export interface DadosGraficoTurma {
   assiduidade: { presentes: number; ausentes: number };
 }
 
+/** Métricas calculadas para Big Numbers e gráficos da turma */
+export interface MetricasTurma {
+  totalAlunos: number;
+  idadeMedia: number | null;
+  diagnosticoPrincipal: string | null;
+  comunicacaoPrincipal: string | null;
+  distribuicaoSexo: { sexo: string; quantidade: number }[];
+  distribuicaoIdade: { idade: number; quantidade: number }[];
+  distribuicaoDiagnostico: { tipo: string; quantidade: number }[];
+  distribuicaoComunicacao: { forma: string; quantidade: number }[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class TurmasService {
   private readonly http = inject(HttpClient);
@@ -63,5 +75,10 @@ export class TurmasService {
   /** GET /turmas/:id/graficos */
   obterGraficosTurma(turmaId: string): Observable<DadosGraficoTurma> {
     return this.http.get<DadosGraficoTurma>(`${this.API}/${turmaId}/graficos`);
+  }
+
+  /** GET /turmas/:id/metricas — Big Numbers e distribuições para gráficos */
+  obterMetricasTurma(turmaId: string): Observable<MetricasTurma> {
+    return this.http.get<MetricasTurma>(`${this.API}/${turmaId}/metricas`);
   }
 }
