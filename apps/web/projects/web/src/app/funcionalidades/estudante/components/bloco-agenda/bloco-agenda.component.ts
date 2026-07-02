@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { RegistrosDiariosService } from '../../../../compartilhado/services/registros-diarios.service';
 import { AuthService } from '../../../../nucleo/services/auth';
 import {
@@ -52,6 +53,8 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
   private readonly registrosService = inject(RegistrosDiariosService);
   private readonly authService = inject(AuthService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   dataSelecionada = signal<Date>(new Date());
 
@@ -70,7 +73,6 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     this.carregarSemana(this.dataSelecionada());
   }
-
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['estudanteId'] && !changes['estudanteId'].isFirstChange()) {
       this.carregarSemana(this.dataSelecionada());

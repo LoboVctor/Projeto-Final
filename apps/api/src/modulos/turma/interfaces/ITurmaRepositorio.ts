@@ -20,6 +20,7 @@ export type TurmaComEstudantes = Prisma.TurmaGetPayload<{
         nomeCompleto: true;
         foto: true;
         matricula: true;
+        dataNascimento: true;
         diagnosticos: {
           select: {
             diagnostico: {
@@ -80,6 +81,10 @@ export interface MetricasTurma {
 export interface ITurmaRepositorio {
   buscarTodas(educadorId?: string): Promise<TurmaLista[]>;
   buscarEstudantesPorTurma(turmaId: string): Promise<TurmaComEstudantes | null>;
+  buscarDadosGraficos(turmaId: string): Promise<{
+    turma: TurmaParaGrafico | null;
+    assiduidade: { presenca: boolean | null; _count: { presenca: number } }[];
+  }>;
   buscarDadosGraficos(turmaId: string): Promise<{ turma: TurmaParaGrafico | null; assiduidade: { presenca: boolean | null; _count: { presenca: number } }[] }>;
   buscarMetricasTurma(turmaId: string): Promise<TurmaParaMetricas | null>;
 }

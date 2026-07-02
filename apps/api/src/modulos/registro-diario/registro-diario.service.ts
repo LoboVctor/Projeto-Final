@@ -17,7 +17,9 @@ export class RegistroDiarioService {
   ) {}
 
   async create(dto: CreateRegistrosDiarioDto) {
-    const dataSegura = dto.data ? this.parseDateOnlyToSafeDate(dto.data) : new Date();
+    const dataSegura = dto.data
+      ? this.parseDateOnlyToSafeDate(dto.data)
+      : new Date();
 
     return this.registroDiarioRepositorio.criar({
       estudanteId: dto.estudanteId,
@@ -39,7 +41,9 @@ export class RegistroDiarioService {
   }
 
   async findAlertasDiasAnteriores(educadorId: string) {
-    return this.registroDiarioRepositorio.buscarAlertasDiasAnteriores(educadorId);
+    return this.registroDiarioRepositorio.buscarAlertasDiasAnteriores(
+      educadorId,
+    );
   }
 
   async getResumoMensal(educadorId: string) {
@@ -47,8 +51,16 @@ export class RegistroDiarioService {
     const primeiroDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
     const [totalPreenchidos, totalEsperado] = await Promise.all([
-      this.registroDiarioRepositorio.contarRegistrosPreenchidos(educadorId, primeiroDiaDoMes, hoje),
-      this.registroDiarioRepositorio.contarRegistrosEsperados(educadorId, primeiroDiaDoMes, hoje),
+      this.registroDiarioRepositorio.contarRegistrosPreenchidos(
+        educadorId,
+        primeiroDiaDoMes,
+        hoje,
+      ),
+      this.registroDiarioRepositorio.contarRegistrosEsperados(
+        educadorId,
+        primeiroDiaDoMes,
+        hoje,
+      ),
     ]);
 
     return { totalEsperado, totalPreenchidos };
@@ -57,7 +69,10 @@ export class RegistroDiarioService {
   async findOne(id: string) {
     const registro = await this.registroDiarioRepositorio.buscarPorId(id);
 
-    if (!registro) throw new NotFoundException(`Registo diário com ID ${id} não encontrado.`);
+    if (!registro)
+      throw new NotFoundException(
+        `Registo diário com ID ${id} não encontrado.`,
+      );
     return registro;
   }
 
@@ -74,12 +89,11 @@ export class RegistroDiarioService {
       dateString = dateString.split('T')[0]!;
     }
     const [year, month, day] = dateString.split('-').map(Number);
-    return new Date(Date.UTC(year!, month! - 1, day!, 12, 0, 0));
+    return new Date(Date.UTC(year!, month! - 1, day, 12, 0, 0));
   }
 
   async getSemana(estudanteId: string, dataBaseStr: string) {
     const dataBase = this.parseDateOnlyToSafeDate(dataBaseStr);
-    
 
     const diaDaSemana = dataBase.getUTCDay();
     const domingo = new Date(dataBase);
@@ -90,20 +104,25 @@ export class RegistroDiarioService {
     sabado.setUTCDate(domingo.getUTCDate() + 6);
     sabado.setUTCHours(23, 59, 59, 999);
 
-    const registros = await this.registroDiarioRepositorio.buscarPorPeriodo(estudanteId, domingo, sabado);
-
+    const registros = await this.registroDiarioRepositorio.buscarPorPeriodo(
+      estudanteId,
+      domingo,
+      sabado,
+    );
 
     const semana = [];
     for (let i = 0; i < 7; i++) {
       const dataAtual = new Date(domingo);
       dataAtual.setUTCDate(domingo.getUTCDate() + i);
-      dataAtual.setUTCHours(12, 0, 0, 0); 
-      
-      const registroDoDia = registros.find(r => {
+      dataAtual.setUTCHours(12, 0, 0, 0);
+
+      const registroDoDia = registros.find((r) => {
         const d = new Date(r.data);
-        return d.getUTCDate() === dataAtual.getUTCDate() && 
-               d.getUTCMonth() === dataAtual.getUTCMonth() && 
-               d.getUTCFullYear() === dataAtual.getUTCFullYear();
+        return (
+          d.getUTCDate() === dataAtual.getUTCDate() &&
+          d.getUTCMonth() === dataAtual.getUTCMonth() &&
+          d.getUTCFullYear() === dataAtual.getUTCFullYear()
+        );
       });
 
       semana.push({
@@ -118,13 +137,16 @@ export class RegistroDiarioService {
   async upsertRegistro(dto: CreateRegistrosDiarioDto) {
     const dataOperacao = this.parseDateOnlyToSafeDate(dto.data);
 
-
     const inicioDia = new Date(dataOperacao);
     inicioDia.setUTCHours(0, 0, 0, 0);
     const fimDia = new Date(dataOperacao);
     fimDia.setUTCHours(23, 59, 59, 999);
 
-    const existente = await this.registroDiarioRepositorio.buscarPorEstudanteEData(dto.estudanteId, dataOperacao);
+    const existente =
+      await this.registroDiarioRepositorio.buscarPorEstudanteEData(
+        dto.estudanteId,
+        dataOperacao,
+      );
 
     const dados = {
       scoreComportamento: dto.scoreComportamento,
@@ -144,7 +166,7 @@ export class RegistroDiarioService {
         ...dados,
         estudanteId: dto.estudanteId,
         educadorId: dto.educadorId,
-        data: dataOperacao, 
+        data: dataOperacao,
       });
     }
   }
@@ -159,7 +181,8 @@ export class RegistroDiarioService {
     this.logger.log('Iniciando rotina de geração de Registos Diários...');
 
     try {
-      const estudantesAtivos = await this.registroDiarioRepositorio.buscarEstudantesParaGeracaoAutomatica();
+      const estudantesAtivos =
+        await this.registroDiarioRepositorio.buscarEstudantesParaGeracaoAutomatica();
 
       const registrosParaCriar: {
         estudanteId: string;
@@ -173,12 +196,12 @@ export class RegistroDiarioService {
         statusAlimentacao: number;
         usoBanheiro: number;
       }[] = [];
-      
+
       const dataDeHoje = new Date();
 
       for (const estudante of estudantesAtivos) {
         const turmaRegencia = estudante.turmas[0];
-        
+
         if (turmaRegencia && turmaRegencia.educadorId) {
           registrosParaCriar.push({
             estudanteId: estudante.id,
@@ -194,19 +217,30 @@ export class RegistroDiarioService {
           });
         }
       }
-      
+
       if (registrosParaCriar.length > 0) {
-        const resultado = await this.registroDiarioRepositorio.criarVarios(registrosParaCriar);
-        this.logger.log(`${resultado.count} cartões em branco gerados com sucesso.`);
+        const resultado =
+          await this.registroDiarioRepositorio.criarVarios(registrosParaCriar);
+        this.logger.log(
+          `${resultado.count} cartões em branco gerados com sucesso.`,
+        );
       } else {
-        this.logger.log('Nenhum estudante/turma apto para gerar registos hoje.');
+        this.logger.log(
+          'Nenhum estudante/turma apto para gerar registos hoje.',
+        );
       }
     } catch (error) {
       this.logger.error('Erro ao gerar registos diários:', error);
     }
   }
 
-  async getStudentAnalytics(studentId: string, periodo: string, categoria?: string, dataInicio?: string, dataFim?: string) {
+  async getStudentAnalytics(
+    studentId: string,
+    periodo: string,
+    categoria?: string,
+    dataInicio?: string,
+    dataFim?: string,
+  ) {
     let inicioBusca: Date;
     let fimBusca: Date;
 
@@ -219,11 +253,17 @@ export class RegistroDiarioService {
       fimBusca = new Date();
     }
 
-    const registros = await this.registroDiarioRepositorio.buscarRegistrosPorIntervalo(studentId, inicioBusca, fimBusca);
+    const registros =
+      await this.registroDiarioRepositorio.buscarRegistrosPorIntervalo(
+        studentId,
+        inicioBusca,
+        fimBusca,
+      );
 
-    const labels = (dataInicio && dataFim) 
-      ? ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'] 
-      : this.generateLabels(periodo);
+    const labels =
+      dataInicio && dataFim
+        ? ['Seg', 'Ter', 'Qua', 'Qui', 'Sex']
+        : this.generateLabels(periodo);
 
     const numLabels = labels.length;
 
@@ -240,13 +280,12 @@ export class RegistroDiarioService {
       let index = -1;
 
       if (dataInicio && dataFim) {
-        const diaDaSemana = registro.data.getUTCDay(); 
-        
+        const diaDaSemana = registro.data.getUTCDay();
+
         if (diaDaSemana >= 1 && diaDaSemana <= 5) {
-          index = diaDaSemana - 1; 
+          index = diaDaSemana - 1;
         }
-      } 
-      else {
+      } else {
         const timeDiff = registro.data.getTime() - inicioBusca.getTime();
         const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
 
@@ -255,8 +294,10 @@ export class RegistroDiarioService {
         } else if (periodo === 'mes') {
           index = Math.floor(daysDiff / 7);
         } else if (periodo === 'semestre') {
-          const monthDiff = (registro.data.getUTCFullYear() - inicioBusca.getUTCFullYear()) * 12 + 
-                            (registro.data.getUTCMonth() - inicioBusca.getUTCMonth());
+          const monthDiff =
+            (registro.data.getUTCFullYear() - inicioBusca.getUTCFullYear()) *
+              12 +
+            (registro.data.getUTCMonth() - inicioBusca.getUTCMonth());
           index = monthDiff;
         }
 
@@ -276,7 +317,8 @@ export class RegistroDiarioService {
     });
 
     let datasets = Object.keys(agrupamento).map((indicador) => {
-      const valoresAgrupados = agrupamento[indicador as keyof typeof agrupamento];
+      const valoresAgrupados =
+        agrupamento[indicador as keyof typeof agrupamento];
       const medias = valoresAgrupados.map((valores) => {
         if (valores.length === 0) return 0;
         const soma = valores.reduce((acc, val) => acc + Number(val || 0), 0);
@@ -286,7 +328,7 @@ export class RegistroDiarioService {
     });
 
     if (categoria) {
-      datasets = datasets.filter(d => categoria.includes(d.label));
+      datasets = datasets.filter((d) => categoria.includes(d.label));
     }
 
     return { labels, datasets };
@@ -294,16 +336,16 @@ export class RegistroDiarioService {
 
   private getDateLimitByPeriod(periodo: string): Date {
     const now = new Date();
-    now.setHours(0, 0, 0, 0); 
-    
+    now.setHours(0, 0, 0, 0);
+
     if (periodo === 'semestre') {
       now.setMonth(now.getMonth() - 6);
     } else if (periodo === 'mes') {
-      now.setDate(now.getDate() - 30); 
+      now.setDate(now.getDate() - 30);
     } else {
-      now.setDate(now.getDate() - 7); 
+      now.setDate(now.getDate() - 7);
     }
-    
+
     return now;
   }
 
@@ -313,32 +355,44 @@ export class RegistroDiarioService {
       const hoje = new Date();
       for (let i = 5; i >= 0; i--) {
         const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
-        labels.push(d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''));
+        labels.push(
+          d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''),
+        );
       }
       return labels;
     }
     if (periodo === 'mes') return ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5'];
-    
+
     const labels = [];
     const hoje = new Date();
     for (let i = 6; i >= 0; i--) {
       const d = new Date(hoje);
       d.setDate(hoje.getDate() - i);
-      labels.push(d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''));
+      labels.push(
+        d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''),
+      );
     }
     return labels;
   }
 
-  private getLabelIndexForDate(dataRegistro: Date, dataLimite: Date, periodo: string): number {
+  private getLabelIndexForDate(
+    dataRegistro: Date,
+    dataLimite: Date,
+    periodo: string,
+  ): number {
     const msPorDia = 1000 * 60 * 60 * 24;
-    const diferencaDias = Math.floor((dataRegistro.getTime() - dataLimite.getTime()) / msPorDia);
+    const diferencaDias = Math.floor(
+      (dataRegistro.getTime() - dataLimite.getTime()) / msPorDia,
+    );
 
     if (periodo === 'semana') {
-      return diferencaDias; 
+      return diferencaDias;
     } else if (periodo === 'mes') {
-      return Math.floor(diferencaDias / 7); 
+      return Math.floor(diferencaDias / 7);
     } else {
-      const diferencaMeses = (dataRegistro.getFullYear() - dataLimite.getFullYear()) * 12 + (dataRegistro.getMonth() - dataLimite.getMonth());
+      const diferencaMeses =
+        (dataRegistro.getFullYear() - dataLimite.getFullYear()) * 12 +
+        (dataRegistro.getMonth() - dataLimite.getMonth());
       return diferencaMeses;
     }
   }
@@ -356,6 +410,24 @@ export class RegistroDiarioService {
   }
 
   async getDashboardSummary(studentId: string, periodo: string) {
+    const { atualInicio, atualFim, anteriorInicio, anteriorFim } =
+      this.getIntervalosDeComparacao(periodo);
+
+    const [registrosAtuais, registrosAnteriores] = await Promise.all([
+      this.registroDiarioRepositorio.buscarRegistrosPorIntervalo(
+        studentId,
+        atualInicio,
+        atualFim,
+      ),
+      this.registroDiarioRepositorio.buscarRegistrosPorIntervalo(
+        studentId,
+        anteriorInicio,
+        anteriorFim,
+      ),
+    ]);
+
+    const mediasAtuais = this.calcularMedias(registrosAtuais);
+
     const { atualInicio, atualFim, anteriorInicio, anteriorFim } = this.getIntervalosDeComparacao(periodo);
     
     // Disparamos as consultas paralelamente para otimização de I/O no Postgres
@@ -401,35 +473,59 @@ export class RegistroDiarioService {
     return {
       mediaGeral: {
         valor: this.calcularMediaGlobal(mediasAtuais),
-        variacao: this.calcularVariacao(this.calcularMediaGlobal(mediasAtuais), this.calcularMediaGlobal(mediasAnteriores))
+        variacao: this.calcularVariacao(
+          this.calcularMediaGlobal(mediasAtuais),
+          this.calcularMediaGlobal(mediasAnteriores),
+        ),
       },
       categorias: {
         Alimentacao: {
           valor: mediasAtuais.statusAlimentacao,
-          variacao: this.calcularVariacao(mediasAtuais.statusAlimentacao, mediasAnteriores.statusAlimentacao)
+          variacao: this.calcularVariacao(
+            mediasAtuais.statusAlimentacao,
+            mediasAnteriores.statusAlimentacao,
+          ),
         },
         Banheiro: {
           valor: mediasAtuais.usoBanheiro,
-          variacao: this.calcularVariacao(mediasAtuais.usoBanheiro, mediasAnteriores.usoBanheiro)
+          variacao: this.calcularVariacao(
+            mediasAtuais.usoBanheiro,
+            mediasAnteriores.usoBanheiro,
+          ),
         },
         Autonomia: {
           valor: mediasAtuais.scoreAutonomia,
-          variacao: this.calcularVariacao(mediasAtuais.scoreAutonomia, mediasAnteriores.scoreAutonomia)
+          variacao: this.calcularVariacao(
+            mediasAtuais.scoreAutonomia,
+            mediasAnteriores.scoreAutonomia,
+          ),
         },
         Comportamento: {
           valor: mediasAtuais.scoreComportamento,
-          variacao: this.calcularVariacao(mediasAtuais.scoreComportamento, mediasAnteriores.scoreComportamento)
+          variacao: this.calcularVariacao(
+            mediasAtuais.scoreComportamento,
+            mediasAnteriores.scoreComportamento,
+          ),
         },
         Interacao: {
           valor: mediasAtuais.scoreInteracao,
-          variacao: this.calcularVariacao(mediasAtuais.scoreInteracao, mediasAnteriores.scoreInteracao)
+          variacao: this.calcularVariacao(
+            mediasAtuais.scoreInteracao,
+            mediasAnteriores.scoreInteracao,
+          ),
         },
         Foco: {
           valor: mediasAtuais.scoreFoco,
-          variacao: this.calcularVariacao(mediasAtuais.scoreFoco, mediasAnteriores.scoreFoco)
-        }
+          variacao: this.calcularVariacao(
+            mediasAtuais.scoreFoco,
+            mediasAnteriores.scoreFoco,
+          ),
+        },
       },
       frequencia: {
+        valor: 92,
+        variacao: 0.3,
+      },
         valor: parseFloat(frequenciaAtual.toFixed(1)), 
         variacao: parseFloat(variacaoFrequencia.toFixed(1))
       }
@@ -438,25 +534,46 @@ export class RegistroDiarioService {
 
   private calcularMedias(registros: any[]) {
     if (registros.length === 0) {
-      return { scoreComportamento: 0, scoreInteracao: 0, scoreFoco: 0, scoreAutonomia: 0, statusAlimentacao: 0, usoBanheiro: 0 };
+      return {
+        scoreComportamento: 0,
+        scoreInteracao: 0,
+        scoreFoco: 0,
+        scoreAutonomia: 0,
+        statusAlimentacao: 0,
+        usoBanheiro: 0,
+      };
     }
 
-    const soma = registros.reduce((acc, r) => ({
-      scoreComportamento: acc.scoreComportamento + r.scoreComportamento,
-      scoreInteracao: acc.scoreInteracao + r.scoreInteracao,
-      scoreFoco: acc.scoreFoco + r.scoreFoco,
-      scoreAutonomia: acc.scoreAutonomia + r.scoreAutonomia,
-      statusAlimentacao: acc.statusAlimentacao + r.statusAlimentacao,
-      usoBanheiro: acc.usoBanheiro + r.usoBanheiro,
-    }), { scoreComportamento: 0, scoreInteracao: 0, scoreFoco: 0, scoreAutonomia: 0, statusAlimentacao: 0, usoBanheiro: 0 });
+    const soma = registros.reduce(
+      (acc, r) => ({
+        scoreComportamento: acc.scoreComportamento + r.scoreComportamento,
+        scoreInteracao: acc.scoreInteracao + r.scoreInteracao,
+        scoreFoco: acc.scoreFoco + r.scoreFoco,
+        scoreAutonomia: acc.scoreAutonomia + r.scoreAutonomia,
+        statusAlimentacao: acc.statusAlimentacao + r.statusAlimentacao,
+        usoBanheiro: acc.usoBanheiro + r.usoBanheiro,
+      }),
+      {
+        scoreComportamento: 0,
+        scoreInteracao: 0,
+        scoreFoco: 0,
+        scoreAutonomia: 0,
+        statusAlimentacao: 0,
+        usoBanheiro: 0,
+      },
+    );
 
     const total = registros.length;
     return {
-      scoreComportamento: parseFloat((soma.scoreComportamento / total).toFixed(1)),
+      scoreComportamento: parseFloat(
+        (soma.scoreComportamento / total).toFixed(1),
+      ),
       scoreInteracao: parseFloat((soma.scoreInteracao / total).toFixed(1)),
       scoreFoco: parseFloat((soma.scoreFoco / total).toFixed(1)),
       scoreAutonomia: parseFloat((soma.scoreAutonomia / total).toFixed(1)),
-      statusAlimentacao: parseFloat((soma.statusAlimentacao / total).toFixed(1)),
+      statusAlimentacao: parseFloat(
+        (soma.statusAlimentacao / total).toFixed(1),
+      ),
       usoBanheiro: parseFloat((soma.usoBanheiro / total).toFixed(1)),
     };
   }
@@ -468,8 +585,8 @@ export class RegistroDiarioService {
   }
 
   private calcularVariacao(atual: number, anterior: number): number {
-    if (anterior === 0) return atual > 0 ? atual : 0; 
-    return parseFloat((atual - anterior).toFixed(1)); 
+    if (anterior === 0) return atual > 0 ? atual : 0;
+    return parseFloat((atual - anterior).toFixed(1));
   }
 
   private getIntervalosDeComparacao(periodo: string) {
@@ -487,6 +604,7 @@ export class RegistroDiarioService {
       anteriorFim.setDate(anteriorFim.getDate() - 30);
       anteriorInicio.setDate(anteriorInicio.getDate() - 60);
     } else {
+      // 'semana'
       atualInicio.setDate(atualInicio.getDate() - 7);
       anteriorFim.setDate(anteriorFim.getDate() - 7);
       anteriorInicio.setDate(anteriorInicio.getDate() - 14);

@@ -17,6 +17,7 @@ export interface UsuarioLogado {
   id: string;
   email: string;
   role: string;
+  escolaId?: string; // Incluindo o escolaId que vem no JWT
   educadorId?: string | null;
   responsavelId?: string | null;
   educador?: PerfilResumido | null;
@@ -109,6 +110,11 @@ export class AuthService {
     if (user.responsavel?.id) return user.responsavel.id;
 
     return user.id ?? null;
+  }
+
+  getEscolaId(): string | null {
+    const user = this.usuarioSubject.value;
+    return user?.escolaId ?? (user?.educador as any)?.escolaId ?? null;
   }
 
   getLoggedUserName(): string {

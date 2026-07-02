@@ -499,10 +499,118 @@ async function main() {
   });
   console.log(` ${registrosDiariosMock.length} registros diários (Segunda a Sexta) criados para o Lucas.`);
 
-  await prisma.registroAula.createMany({
-    data: registrosAulasMock,
+  // ==========================================
+  // POPULANDO REGISTROS PENDENTES PARA O DASHBOARD
+  // ==========================================
+  console.log('\nPopulando registros pendentes para testes do modal e dashboard...');
+
+  const dataOntem = new Date();
+  dataOntem.setDate(hoje.getDate() - 1); // Pendências de ontem
+
+  // Vamos gerar pendências para Ana, Bruno e Carlos
+  const estudantesPendentes = [
+    '123e4567-e89b-42d3-8456-426614174001', // Ana
+    '123e4567-e89b-42d3-8456-426614174002', // Bruno
+    '123e4567-e89b-42d3-8456-426614174003', // Carlos
+  ];
+
+  const registrosPendentesMock = estudantesPendentes.map(estudanteId => ({
+    estudanteId: estudanteId,
+    educadorId: educador.id, // Vinculado ao Cláudio Xavier para aparecer na tela dele
+    data: dataOntem,
+    // Scores zerados pois a rotina ainda não foi preenchida
+    scoreComportamento: 0,  
+    scoreInteracao: 0,      
+    scoreFoco: 0,           
+    scoreAutonomia: 0,      
+    statusAlimentacao: 0,   
+    usoBanheiro: 0,         
+    preenchido: false,      // O gatilho principal para ser considerado pendente
+  }));
+
+  await prisma.registroDiario.createMany({
+    data: registrosPendentesMock,
   });
-  console.log(` ${registrosAulasMock.length} registros de chamada históricos acoplados à rotina de aulas do estudante.`);
+
+  console.log(` ${registrosPendentesMock.length} registros pendentes criados com sucesso.`);
+
+  // ==========================================
+  // POPULANDO REGISTROS DO MÊS ATUAL PARA TODOS OS ESTUDANTES
+  // (para garantir que as métricas do dashboard funcionem)
+  // ==========================================
+  console.log('\nPopulando registros do mês atual para todos os estudantes...');
+
+  const outrosEstudantes = [
+    '123e4567-e89b-42d3-8456-426614174001', // Ana
+    '123e4567-e89b-42d3-8456-426614174002', // Bruno
+    '123e4567-e89b-42d3-8456-426614174003', // Carlos
+    '123e4567-e89b-42d3-8456-426614174004', // Daniela
+  ];
+
+  const anoMesAtual = hoje.getFullYear();
+  const mesAtualNum = hoje.getMonth(); // 0-indexed
+  const diaAtual = hoje.getDate();
+  const registrosMesAtual: any[] = [];
+
+  for (const estudanteId of outrosEstudantes) {
+    // Dias do mês atual (até hoje - 1, todos preenchidos)
+    for (let dia = 1; dia <= diaAtual; dia++) {
+      const dataReg = new Date(Date.UTC(anoMesAtual, mesAtualNum, dia, 12, 0, 0));
+      const diaSemana = dataReg.getUTCDay();
+      if (diaSemana === 0 || diaSemana === 6) continue; // pula fim de semana
+
+      const isHoje = dia === diaAtual;
+      const preenchido = isHoje ? false : Math.random() > 0.2; // hoje pendente, anteriores 80% preenchidos
+      registrosMesAtual.push({
+        estudanteId,
+        educadorId: educador.id,
+        data: dataReg,
+        scoreComportamento: preenchido ? gerarNotaAleatoria(3, 5) : 0,
+        scoreInteracao: preenchido ? gerarNotaAleatoria(2, 5) : 0,
+        scoreFoco: preenchido ? gerarNotaAleatoria(3, 5) : 0,
+        scoreAutonomia: preenchido ? gerarNotaAleatoria(2, 5) : 0,
+        statusAlimentacao: preenchido ? gerarNotaAleatoria(4, 5) : 0,
+        usoBanheiro: preenchido ? gerarNotaAleatoria(3, 5) : 0,
+        preenchido,
+      });
+    }
+
+    // Se for o primeiro dia do mês, popula os 30 dias anteriores também
+    if (diaAtual <= 5) {
+      const mesPasMes = mesAtualNum - 1;
+      const anoMesPasMes = mesPasMes < 0 ? anoMesAtual - 1 : anoMesAtual;
+      const mesPasReal = mesPasMes < 0 ? 11 : mesPasMes;
+      const ultimoDiaMesPas = new Date(anoMesAtual, mesAtualNum, 0).getDate();
+
+      for (let dia = Math.max(1, ultimoDiaMesPas - 20); dia <= ultimoDiaMesPas; dia++) {
+        const dataReg = new Date(Date.UTC(anoMesPasMes, mesPasReal, dia, 12, 0, 0));
+        const diaSemana = dataReg.getUTCDay();
+        if (diaSemana === 0 || diaSemana === 6) continue;
+
+        const preenchido = Math.random() > 0.2;
+        registrosMesAtual.push({
+          estudanteId,
+          educadorId: educador.id,
+          data: dataReg,
+          scoreComportamento: preenchido ? gerarNotaAleatoria(3, 5) : 0,
+          scoreInteracao: preenchido ? gerarNotaAleatoria(2, 5) : 0,
+          scoreFoco: preenchido ? gerarNotaAleatoria(3, 5) : 0,
+          scoreAutonomia: preenchido ? gerarNotaAleatoria(2, 5) : 0,
+          statusAlimentacao: preenchido ? gerarNotaAleatoria(4, 5) : 0,
+          usoBanheiro: preenchido ? gerarNotaAleatoria(3, 5) : 0,
+          preenchido,
+        });
+      }
+    }
+  }
+
+  if (registrosMesAtual.length > 0) {
+    await prisma.registroDiario.createMany({
+      data: registrosMesAtual,
+      skipDuplicates: true,
+    });
+    console.log(` ${registrosMesAtual.length} registros do mês atual criados (${registrosMesAtual.filter(r => r.preenchido).length} preenchidos, ${registrosMesAtual.filter(r => !r.preenchido).length} pendentes).`);
+  }
 
   console.log('Estudantes criados e vinculados às turmas.');
 

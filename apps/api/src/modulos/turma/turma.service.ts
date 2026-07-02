@@ -7,8 +7,8 @@ export class TurmaService {
 
   constructor(
     @Inject('ITurmaRepositorio')
-    private readonly turmaRepositorio: ITurmaRepositorio
-  ) { }
+    private readonly turmaRepositorio: ITurmaRepositorio,
+  ) {}
 
   /**
    * Lista as turmas cujo educador possui pelo menos uma Aula associada.
@@ -31,7 +31,7 @@ export class TurmaService {
 
     return {
       turma: { id: turma.id, nome: turma.nome },
-      estudantes: turma.estudantes
+      estudantes: turma.estudantes,
     };
   }
 
@@ -41,7 +41,8 @@ export class TurmaService {
    */
   async obterDadosGraficos(turmaId: string) {
     try {
-      const { turma, assiduidade } = await this.turmaRepositorio.buscarDadosGraficos(turmaId);
+      const { turma, assiduidade } =
+        await this.turmaRepositorio.buscarDadosGraficos(turmaId);
 
       if (!turma) {
         throw new NotFoundException('Turma não encontrada');
@@ -60,15 +61,20 @@ export class TurmaService {
         .map(([tipo, quantidade]) => ({ tipo, quantidade }))
         .sort((a, b) => b.quantidade - a.quantidade);
 
-      const presentes = assiduidade.find(a => a.presenca === true)?._count.presenca || 0;
-      const ausentes = assiduidade.find(a => a.presenca === false)?._count.presenca || 0;
+      const presentes =
+        assiduidade.find((a) => a.presenca === true)?._count.presenca || 0;
+      const ausentes =
+        assiduidade.find((a) => a.presenca === false)?._count.presenca || 0;
 
       return {
         diagnosticos: formatacaoDiagnosticos,
-        assiduidade: { presentes, ausentes }
+        assiduidade: { presentes, ausentes },
       };
     } catch (error) {
-      this.logger.error(`Erro ao processar gráficos da turma ${turmaId}`, error);
+      this.logger.error(
+        `Erro ao processar gráficos da turma ${turmaId}`,
+        error,
+      );
       throw error;
     }
   }

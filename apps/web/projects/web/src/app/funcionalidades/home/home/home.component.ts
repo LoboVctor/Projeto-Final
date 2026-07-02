@@ -7,16 +7,20 @@ import {
   OnInit,
   signal,
   effect,
-  DestroyRef, ChangeDetectionStrategy } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+  DestroyRef,
+  ChangeDetectionStrategy
+} from '@angular/core';
+import { isPlatformBrowser, DatePipe } from '@angular/common'; 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterModule, Router } from '@angular/router';
 import {
   NgApexchartsModule,
   ChartComponent,
   ApexNonAxisChartSeries,
   ApexPlotOptions,
   ApexChart,
-  ApexFill } from 'ng-apexcharts';
+  ApexFill
+} from 'ng-apexcharts';
 import { RegistrosDiariosService } from '../../../compartilhado/services/registros-diarios.service';
 import { AuthService } from '../../../nucleo/services/auth';
 import { RegistroDiarioPendente } from '../../../compartilhado/models/registros-diarios.models';
@@ -34,10 +38,12 @@ export type ChartOptions = {
 
 @Component({
   selector: 'app-home',
+  imports: [NgApexchartsModule, RouterModule, DatePipe], 
   imports: [NgApexchartsModule, CardAlunoComponent, AlunoModalComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush })
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
 export class HomeComponent implements OnInit {
   @ViewChild('chart') chart!: ChartComponent;
   public chartOptions: ChartOptions;
@@ -46,12 +52,13 @@ export class HomeComponent implements OnInit {
   private readonly turmasService = inject(TurmasService);
   private readonly authService = inject(AuthService);
   private readonly platformId = inject(PLATFORM_ID);
-
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   registrosPendentes = signal<RegistroDiarioPendente[]>([]);
   totalEsperado = signal<number>(0);
   totalPreenchidos = signal<number>(0);
+  loadingMetricas = signal<boolean>(true);
 
   turmaAtual = signal<TurmaResumo | null>(null);
   estudantes = signal<EstudanteResumo[]>([]);
@@ -60,6 +67,9 @@ export class HomeComponent implements OnInit {
   alunoEmDestaque = signal<AlunoModalData | null>(null);
 
   totalPendentes = computed(() => this.registrosPendentes().length);
+
+  // --- CONTROLE DO MODAL ---
+  isModalPendenciasAberto = signal(false);
 
   constructor() {
     this.chartOptions = {
@@ -72,15 +82,19 @@ export class HomeComponent implements OnInit {
           track: { background: '#E8E3EF', strokeWidth: '85%' },
           dataLabels: {
             name: { show: false },
-            value: { offsetY: 0, fontSize: '28px', fontWeight: '700', color: '#2D1E40' } } } },
-      fill: { colors: ['#4CAF50'], type: 'solid', opacity: 1 } };
+            value: { offsetY: 0, fontSize: '28px', fontWeight: '700', color: '#2D1E40' }
+          }
+        }
+      },
+      fill: { colors: ['#4CAF50'], type: 'solid', opacity: 1 }
+    };
 
     effect(() => {
       const preenchidos = this.totalPreenchidos();
       const esperado = this.totalEsperado();
 
       const taxaPreenchimento =
-        esperado > 0 ? Math.min(100, Math.round((preenchidos / esperado) * 100)) : 100;
+        esperado > 0 ? Math.min(100, Math.round((preenchidos / esperado) * 100)) : 0;
 
       this.chartOptions = {
         ...this.chartOptions,
@@ -88,7 +102,9 @@ export class HomeComponent implements OnInit {
         fill: {
           colors: [taxaPreenchimento < 80 ? '#F44336' : '#4CAF50'],
           type: 'solid',
-          opacity: 1 } };
+          opacity: 1
+        }
+      };
     });
   }
 
@@ -97,7 +113,6 @@ export class HomeComponent implements OnInit {
 
     const educadorIdAtual = this.authService.getLoggedUserId();
     if (!educadorIdAtual) {
-
       return;
     }
 
@@ -106,7 +121,8 @@ export class HomeComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (dados) => this.registrosPendentes.set(dados),
-        error: () => {} });
+        error: () => {}
+      });
 
     this.registrosService
       .getResumoMensal(educadorIdAtual)
@@ -115,7 +131,21 @@ export class HomeComponent implements OnInit {
         next: (resumo) => {
           this.totalEsperado.set(resumo?.totalEsperado ?? 0);
           this.totalPreenchidos.set(resumo?.totalPreenchidos ?? 0);
+          this.loadingMetricas.set(false);
         },
+        error: () => {
+          this.loadingMetricas.set(false);
+        }
+      });
+  }
+
+  // --- FUNÇÕES DO MODAL ---
+  abrirModal() {
+    this.isModalPendenciasAberto.set(true);
+  }
+
+  fecharModal() {
+    this.isModalPendenciasAberto.set(false);
         error: () => {} });
 
     this.carregarTurmaEEstudantes(educadorIdAtual);
@@ -183,4 +213,5 @@ export class HomeComponent implements OnInit {
     
     return idade;
   }
+
 }

@@ -10,7 +10,9 @@ export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Cria um novo usuário (Educador ou Responsável) no sistema' })
+  @ApiOperation({
+    summary: 'Cria um novo usuário (Educador ou Responsável) no sistema',
+  })
   criar(@Body() criarUsuarioDto: CriarUsuarioDto) {
     return this.usuarioService.criar(criarUsuarioDto);
   }

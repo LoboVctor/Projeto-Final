@@ -1,4 +1,11 @@
-import { Sexo, Fcom, Turno, Etapa, CategoriaEspecificidade, TipoEspecificidade } from '@prisma-client';
+import {
+  Sexo,
+  Fcom,
+  Turno,
+  Etapa,
+  CategoriaEspecificidade,
+  TipoEspecificidade,
+} from '@prisma-client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class TurmaVisaoGeralDto {

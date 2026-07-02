@@ -1,5 +1,17 @@
-import { Controller, Post, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiCreatedResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiCreatedResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { EstudoCasoService } from './estudo-de-caso.service.js';
 import { CreateEstudoDeCasoDto } from './dtos/create-estudo-de-caso.dto.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
@@ -17,7 +29,9 @@ export class EstudoCasoController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Registra um novo Estudo de Caso / Ocorrência Pedagógica' })
+  @ApiOperation({
+    summary: 'Registra um novo Estudo de Caso / Ocorrência Pedagógica',
+  })
   @ApiCreatedResponse({ description: 'Estudo de Caso criado com sucesso.' })
   async criar(@Body() dto: CreateEstudoDeCasoDto) {
     return this.estudoCasoService.criar(dto);

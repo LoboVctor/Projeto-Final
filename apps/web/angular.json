@@ -22,7 +22,8 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/web/public"
+                "input": "projects/web/public",
+                "output": "/"
               }
             ],
             "styles": [

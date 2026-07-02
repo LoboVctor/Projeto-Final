@@ -7,6 +7,7 @@ import {
   signal,
   ChangeDetectionStrategy,
   input,
+  effect
   OnChanges,
   SimpleChanges
 } from '@angular/core';
@@ -22,7 +23,14 @@ import { BlocoDashboardComponent } from '../../../funcionalidades/estudante/comp
 
 @Component({
   selector: 'app-aluno-modal',
-  imports: [CommonModule, BlocoVisaoGeralComponent, BlocoSaudeComponent, BlocoRelatoriosComponent, BlocoAgendaComponent, BlocoDashboardComponent],
+  imports: [
+    CommonModule,
+    BlocoVisaoGeralComponent,
+    BlocoSaudeComponent,
+    BlocoRelatoriosComponent,
+    BlocoAgendaComponent,
+    BlocoDashboardComponent
+  ],
   templateUrl: './aluno-modal.component.html',
   styleUrls: ['./aluno-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -31,6 +39,10 @@ export class AlunoModalComponent implements OnChanges {
   private estudantesService = inject(EstudantesService);
 
   readonly isVisible = input<boolean>(false);
+  
+  // Novo input para receber a instrução de qual aba abrir (ex: 'registros')
+  readonly abaInicial = input<string | null>(null); 
+  
   @Input() aluno: AlunoModalData | null = null;
 
   @Output() fecharModal = new EventEmitter<void>();
@@ -49,6 +61,24 @@ export class AlunoModalComponent implements OnChanges {
   loadingVisaoGeral = signal(false);
   errorVisaoGeral = signal<string | null>(null);
 
+  constructor() {
+    // Efeito reativo: Observa quando o modal abre para focar na aba correta
+    effect(() => {
+      if (this.isVisible() && this.aluno) {
+        const aba = this.abaInicial();
+        
+        if (aba === 'registros' || aba === 'agenda') {
+          this.onAgenda();
+        } else if (aba === 'saude') {
+          this.abrirSaude();
+        } else if (aba === 'relatorios') {
+          this.abrirRelatorios();
+        } else if (aba === 'visao-geral') {
+          this.abrirVisaoGeral();
+        }
+      }
+    }, { allowSignalWrites: true }); 
+    // allowSignalWrites é necessário pois estamos alterando outros signals dentro do effect
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['aluno'] && this.aluno) {
       this.isInfoGeraisOpen.set(true);
@@ -151,6 +181,4 @@ export class AlunoModalComponent implements OnChanges {
     this.isAgendaExpanded.set(true);
     this.agendaClick.emit();
   }
-
-
 }

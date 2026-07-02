@@ -13,6 +13,7 @@ import { RegistroDiarioModule } from './modulos/registro-diario/registro-diario.
 import { ScheduleModule } from '@nestjs/schedule';
 import { EstudanteModule } from './modulos/estudante/estudante.module.js';
 import { EstudoCasoModule } from './modulos/estudo-de-caso/estudo-de-caso.module.js';
+import { EventoModule } from './modulos/evento/evento.module.js';
 import * as Joi from 'joi';
 
 @Module({
@@ -35,6 +36,7 @@ import * as Joi from 'joi';
     RegistroDiarioModule,
     EstudanteModule,
     EstudoCasoModule,
+    EventoModule,
   ],
   controllers: [],
 
@@ -59,4 +61,4 @@ import * as Joi from 'joi';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

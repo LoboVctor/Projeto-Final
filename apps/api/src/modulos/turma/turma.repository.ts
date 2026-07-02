@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import type {
+  ITurmaRepositorio,
+  TurmaLista,
+  TurmaComEstudantes,
+  TurmaParaGrafico,
+} from './interfaces/ITurmaRepositorio.js';
 import type { ITurmaRepositorio, TurmaLista, TurmaComEstudantes, TurmaParaGrafico, TurmaParaMetricas } from './interfaces/ITurmaRepositorio.js';
 
 @Injectable()
@@ -29,7 +35,9 @@ export class TurmaRepository implements ITurmaRepositorio {
     });
   }
 
-  async buscarEstudantesPorTurma(turmaId: string): Promise<TurmaComEstudantes | null> {
+  async buscarEstudantesPorTurma(
+    turmaId: string,
+  ): Promise<TurmaComEstudantes | null> {
     return this.prisma.client.turma.findUnique({
       where: { id: turmaId },
       include: {
@@ -39,6 +47,10 @@ export class TurmaRepository implements ITurmaRepositorio {
             nomeCompleto: true,
             foto: true,
             matricula: true,
+            dataNascimento: true,
+            turmas: {
+              select: { id: true, nome: true },
+            },
             diagnosticos: {
               select: {
                 diagnostico: {
@@ -53,7 +65,10 @@ export class TurmaRepository implements ITurmaRepositorio {
     });
   }
 
-  async buscarDadosGraficos(turmaId: string): Promise<{ turma: TurmaParaGrafico | null; assiduidade: { presenca: boolean | null; _count: { presenca: number } }[] }> {
+  async buscarDadosGraficos(turmaId: string): Promise<{
+    turma: TurmaParaGrafico | null;
+    assiduidade: { presenca: boolean | null; _count: { presenca: number } }[];
+  }> {
     const [turma, assiduidade] = await Promise.all([
       this.prisma.client.turma.findUnique({
         where: { id: turmaId },

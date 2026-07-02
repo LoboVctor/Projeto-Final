@@ -130,6 +130,7 @@ export class EstudantesService {
     if (params.nome) httpParams = httpParams.set('nome', params.nome);
     if (params.matricula) httpParams = httpParams.set('matricula', params.matricula);
     if (params.diagnosticoTipo) httpParams = httpParams.set('diagnosticoTipo', params.diagnosticoTipo);
+    if (params.status) httpParams = httpParams.set('status', params.status);
     if (params.sexo) httpParams = httpParams.set('sexo', params.sexo);
     if (params.turmaId) httpParams = httpParams.set('turmaId', params.turmaId);
     if (params.formaComunicacao) httpParams = httpParams.set('formaComunicacao', params.formaComunicacao);

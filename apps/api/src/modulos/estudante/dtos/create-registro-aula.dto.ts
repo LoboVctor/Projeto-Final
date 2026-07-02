@@ -1,3 +1,16 @@
+import {
+  IsUUID,
+  IsBoolean,
+  IsInt,
+  Min,
+  Max,
+  IsEnum,
+  IsNotEmpty,
+  IsDateString,
+  IsOptional,
+} from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { DiaSemana } from '../../../../../../infra/generated/prisma';
 import { 
   IsUUID, 
   IsBoolean, 
@@ -21,6 +34,10 @@ export class CreateRegistroAulaDto {
   @IsUUID('4', { message: 'O ID da aula deve ser um UUID válido' })
   aulaId!: string;
 
+  @ApiProperty({
+    description: 'Data da aula no formato ISO 8601',
+    example: '2026-06-23',
+  })
   @ApiProperty({ description: 'ID do estudante', format: 'uuid' })
   @IsNotEmpty({ message: 'O ID do estudante é obrigatório' })
   @IsUUID('4', { message: 'O ID do estudante deve ser um UUID válido' })
@@ -28,7 +45,10 @@ export class CreateRegistroAulaDto {
 
   @ApiProperty({ description: 'Data da aula no formato ISO 8601', example: '2026-06-23' })
   @IsNotEmpty({ message: 'A data da aula é obrigatória' })
-  @IsDateString({}, { message: 'A data deve estar no formato ISO8601 (YYYY-MM-DD)' })
+  @IsDateString(
+    {},
+    { message: 'A data deve estar no formato ISO8601 (YYYY-MM-DD)' },
+  )
   dataAula!: string;
 
   @ApiProperty({ description: 'Dia da semana da aula', enum: DiaSemana })
@@ -41,6 +61,11 @@ export class CreateRegistroAulaDto {
   @IsBoolean({ message: 'Presença deve ser um valor booleano' })
   presente!: boolean;
 
+  @ApiPropertyOptional({
+    description: 'Score de participação (de 1 a 5)',
+    minimum: 1,
+    maximum: 5,
+  })
   @ApiProperty({ description: 'Status de ocorrência da aula', enum: StatusAula, default: StatusAula.REALIZADA })
   @IsOptional()
   @IsEnum(StatusAula, { message: 'Status da aula inválido' })
@@ -52,6 +77,7 @@ export class CreateRegistroAulaDto {
   @Min(1, { message: 'O score mínimo é 1' })
   @Max(5, { message: 'O score máximo é 5' })
   scoreParticipacao?: number;
+}
 
   @ApiPropertyOptional({ description: 'Score do nível de suporte (de 1 a 5)', minimum: 1, maximum: 5 })
   @IsOptional()

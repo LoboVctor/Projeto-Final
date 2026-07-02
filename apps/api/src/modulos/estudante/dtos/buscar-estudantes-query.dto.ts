@@ -21,7 +21,9 @@ export class BuscarEstudantesQueryDto {
   matricula?: string;
 
   /** Filtra por tipo de diagnóstico (ex: "TEA", "TDAH") */
-  @ApiPropertyOptional({ description: 'Filtra por tipo de diagnóstico (ex: TEA, TDAH)' })
+  @ApiPropertyOptional({
+    description: 'Filtra por tipo de diagnóstico (ex: TEA, TDAH)',
+  })
   @IsOptional()
   @IsString()
   diagnosticoTipo?: string;
@@ -67,7 +69,10 @@ export class BuscarEstudantesQueryDto {
   idadeMax?: number;
 
   /** Número da página (1-based). Padrão: 1 */
-  @ApiPropertyOptional({ description: 'Número da página (começa em 1)', default: 1 })
+  @ApiPropertyOptional({
+    description: 'Número da página (começa em 1)',
+    default: 1,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -75,11 +80,21 @@ export class BuscarEstudantesQueryDto {
   page?: number = 1;
 
   /** Quantidade de registros por página. Padrão: 20, máximo: 100 */
-  @ApiPropertyOptional({ description: 'Registros por página (máximo: 100)', default: 20 })
+  @ApiPropertyOptional({
+    description: 'Registros por página (máximo: 100)',
+    default: 20,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(100)
   limit?: number = 20;
+
+  /** Filtra por status do estudante (ex: "PENDENTE", "CONCLUIDO") */
+  @ApiPropertyOptional({
+    description: 'Filtra por status do estudante (ex: PENDENTE, CONCLUIDO)',
+  })
+  @IsOptional()
+  status?: 'PENDENTE' | 'CONCLUIDO';
 }

@@ -1,3 +1,13 @@
+import {
+  Prisma,
+  EstudanteEspecificidade,
+  Especificidade,
+  TipoEspecificidade,
+  CategoriaEspecificidade,
+  Medicamento,
+  EstudanteMedicamento,
+  UnidadeM,
+} from '@prisma-client';
 import { Prisma, EstudanteEspecificidade, Especificidade, TipoEspecificidade, CategoriaEspecificidade, Medicamento, EstudanteMedicamento, UnidadeM, RegistroAula } from '@prisma-client';
 import { BuscarEstudantesQueryDto } from '../dtos/buscar-estudantes-query.dto.js';
 import { CreateRegistroAulaBatchDto } from '../dtos/create-registro-aula.dto.js';
@@ -87,10 +97,10 @@ export type EstudanteSaude = Prisma.EstudanteGetPayload<{
     };
     medicamentos: {
       select: {
-        medicamentoId: true,
+        medicamentoId: true;
         dosagem: true;
         unidadeMedida: true;
-        intervaloAdministracao: true,
+        intervaloAdministracao: true;
         horarioAdministrado: true;
         administradoEscola: true;
         medicamento: { select: { nome: true } };
@@ -139,25 +149,54 @@ export type AulaAgenda = Prisma.AulaGetPayload<{
   include: {
     area: true;
     educador: true;
-  }
+  };
 }>;
 
 export interface IEstudanteRepositorio {
   buscarVisaoGeral(estudanteId: string): Promise<EstudanteVisaoGeral | null>;
   buscarSaude(estudanteId: string): Promise<EstudanteSaude | null>;
   buscarPedagogico(estudanteId: string): Promise<EstudantePedagogico | null>;
-  buscarComFiltros(query: BuscarEstudantesQueryDto): Promise<EstudanteListagemPaginado>;
-  buscarEspecificidadeExata(tipo: TipoEspecificidade, categoria: CategoriaEspecificidade, descricao: string): Promise<Especificidade | null>;
-  criarEspecificidade(dados: { tipo: TipoEspecificidade; categoria: CategoriaEspecificidade; descricao: string }): Promise<Especificidade>;
-  buscarVinculoEspecificidade(estudanteId: string, especificidadeId: number): Promise<EstudanteEspecificidade | null>;
-  criarVinculoEspecificidade(estudanteId: string, especificidadeId: number, obsReacao: string): Promise<EstudanteEspecificidade>;
-  atualizarVinculoEspecificidade(estudanteId: string, especificidadeId: number, obsReacao: string): Promise<EstudanteEspecificidade>;
-  atualizarReferenciaVinculoEspecificidade(estudanteId: string, especificidadeIdAntiga: number, especificidadeIdNova: number, obsReacao: string): Promise<EstudanteEspecificidade>;
-  removerVinculoEspecificidade(estudanteId: string, especificidadeId: number): Promise<EstudanteEspecificidade>;
+  buscarComFiltros(
+    query: BuscarEstudantesQueryDto,
+  ): Promise<EstudanteListagemPaginado>;
+  buscarEspecificidadeExata(
+    tipo: TipoEspecificidade,
+    categoria: CategoriaEspecificidade,
+    descricao: string,
+  ): Promise<Especificidade | null>;
+  criarEspecificidade(dados: {
+    tipo: TipoEspecificidade;
+    categoria: CategoriaEspecificidade;
+    descricao: string;
+  }): Promise<Especificidade>;
+  buscarVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeId: number,
+  ): Promise<EstudanteEspecificidade | null>;
+  criarVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeId: number,
+    obsReacao: string,
+  ): Promise<EstudanteEspecificidade>;
+  atualizarVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeId: number,
+    obsReacao: string,
+  ): Promise<EstudanteEspecificidade>;
+  atualizarReferenciaVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeIdAntiga: number,
+    especificidadeIdNova: number,
+    obsReacao: string,
+  ): Promise<EstudanteEspecificidade>;
+  removerVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeId: number,
+  ): Promise<EstudanteEspecificidade>;
   contarVinculosEspecificidade(especificidadeId: number): Promise<number>;
   removerEspecificidade(especificidadeId: number): Promise<void>;
   buscarAulasDoEstudante(estudanteId: string): Promise<AulaAgenda[]>;
-   
+
   buscarMedicamentoPorNome(nome: string): Promise<Medicamento | null>;
   buscarMedicamentoPorId(id: number): Promise<Medicamento | null>;
   criarMedicamento(nome: string): Promise<Medicamento>;
@@ -179,16 +218,30 @@ export interface IEstudanteRepositorio {
       administradoEscola: boolean;
       intervaloAdministracao: number;
       horarioAdministrado: Date;
-    }
+    },
   ): Promise<EstudanteMedicamento>;
-  removerVinculoMedicamento(estudanteId: string, medicamentoId: number): Promise<EstudanteMedicamento>;
-  criarLaudoEDocumento(estudanteId: string, dados: {
-    tipoDiagnostico: string;
-    tipoDocumento: string;
-    dataEmissao: string;
-    linkArquivo: string;
-  }): Promise<any>;
+  removerVinculoMedicamento(
+    estudanteId: string,
+    medicamentoId: number,
+  ): Promise<EstudanteMedicamento>;
+  criarLaudoEDocumento(
+    estudanteId: string,
+    dados: {
+      tipoDiagnostico: string;
+      tipoDocumento: string;
+      dataEmissao: string;
+      linkArquivo: string;
+    },
+  ): Promise<any>;
   deletarDocumento(documentoId: string): Promise<any>;
+  atualizarDocumento(
+    documentoId: string,
+    dados: {
+      tipoDocumento: string;
+      dataEmissao: string;
+      linkArquivo?: string;
+    },
+  ): Promise<any>;
   atualizarDocumento(documentoId: string, dados: {
     tipoDocumento: string;
     dataEmissao: string;
@@ -196,4 +249,3 @@ export interface IEstudanteRepositorio {
   }): Promise<any>;
   registrarChamadaEmLote(dto: CreateRegistroAulaBatchDto): Promise<RegistroAula[]>;
 }
-

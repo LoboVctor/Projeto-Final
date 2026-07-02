@@ -25,6 +25,7 @@ export interface BuscaEstudantesParams {
   idadeMax?: number;
   page?: number;
   limit?: number;
+  status?: 'PENDENTE' | 'CONCLUIDO';
 }
 
 /** Wrapper de resposta paginada retornado pela API */
