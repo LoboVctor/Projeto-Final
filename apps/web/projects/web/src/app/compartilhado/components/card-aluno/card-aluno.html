@@ -1,64 +1,36 @@
-<div
-  (click)="abrirPerfil.emit()"
-  class="group relative bg-white hover:bg-[#F7F5FA] border border-[#E8E3EF] rounded-2xl p-3 flex flex-col items-center cursor-pointer transition-all duration-300 hover:shadow-md w-full max-w-[180px]"
->
-  <button
-    (click)="$event.stopPropagation()"
-    class="absolute top-2 right-2 p-1.5 rounded-full text-gray-400 hover:text-[#6C3CC9] hover:bg-[#E8E3EF] transition-colors z-10"
-    title="Mais opções"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="3"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <circle cx="12" cy="12" r="1.5"></circle>
-      <circle cx="19" cy="12" r="1.5"></circle>
-      <circle cx="5" cy="12" r="1.5"></circle>
-    </svg>
-  </button>
-
-  <div
-    class="w-full aspect-square mb-3 mt-5 rounded-xl overflow-hidden bg-[#F7F5FA] flex items-center justify-center border border-[#E8E3EF]"
-  >
-    @if (foto()) {
+<div (click)="abrirPerfil.emit()"
+  class="card-aluno group bg-white border border-[#E8E3EF] rounded-2xl cursor-pointer w-full max-w-[180px]">
+  <div class="card-aluno__conteudo flex flex-col items-center p-3 w-full h-full">
+    <div
+      class="w-full aspect-square mb-3 mt-5 rounded-xl overflow-hidden bg-[#F7F5FA] flex items-center justify-center border border-[#E8E3EF]">
+      @if (foto()) {
       <img [src]="foto()" [alt]="nome()" class="w-full h-full object-cover" />
-    }
+      }
 
-    @if (!foto()) {
+      @if (!foto()) {
       <svg class="w-12 h-12 text-[#B79CED]/50" fill="currentColor" viewBox="0 0 24 24">
         <path
-          d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-        />
+          d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
       </svg>
-    }
-  </div>
-
-  <div class="flex flex-col items-center text-center w-full">
-    <span class="text-[10px] text-gray-500 font-nunito font-bold mb-1">
-      {{ matricula() || 'Sem matrícula' }}
-    </span>
-
-    <h3
-      class="text-sm font-sora font-bold text-[#4A248A] mb-2 truncate w-full px-1"
-      [title]="nome()"
-    >
-      {{ nome() }}
-      @if (idade()) {
-        , {{ idade() }} anos
       }
-    </h3>
+    </div>
 
-    <span
-      class="px-2 py-0.5 bg-[#E8E3EF] text-[#4A248A] rounded text-[10px] font-nunito font-bold border border-[#B79CED]/30"
-    >
-      {{ diagnostico() }}
-    </span>
+    <div class="flex flex-col items-center text-center w-full">
+      <span class="text-[10px] text-gray-500 font-nunito font-bold mb-1">
+        {{ matricula() || 'Sem matrícula' }}
+      </span>
+
+      <h3 class="text-sm font-sora font-bold text-[#4A248A] mb-2 truncate w-full px-1" [title]="nome()">
+        {{ nome() }}
+        @if (idade()) {
+        , {{ idade() }} anos
+        }
+      </h3>
+
+      <span
+        class="px-2 py-0.5 bg-[#E8E3EF] text-[#4A248A] rounded text-[10px] font-nunito font-bold border border-[#B79CED]/30">
+        {{ diagnostico() }}
+      </span>
+    </div>
   </div>
 </div>

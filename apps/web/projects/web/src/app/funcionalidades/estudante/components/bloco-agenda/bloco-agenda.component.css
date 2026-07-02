@@ -10,13 +10,11 @@
   background-image:
     linear-gradient(to right, transparent 50px, rgba(239, 68, 68, 0.4) 50px, rgba(239, 68, 68, 0.4) 51px, transparent 51px),
     /* Linhas horizontais de caderno */
-    repeating-linear-gradient(
-      to bottom,
+    repeating-linear-gradient(to bottom,
       transparent,
       transparent 31px,
       rgba(180, 130, 0, 0.12) 31px,
-      rgba(180, 130, 0, 0.12) 32px
-    );
+      rgba(180, 130, 0, 0.12) 32px);
   background-attachment: local;
 }
 

@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap');
 /* Importação obrigatória do motor do Tailwind v4 */
 @import "tailwindcss";
+
 /* Configuração do Tema ELO (Substitui o antigo tailwind.config.js) */
 @theme {
   /* Cores Principais e Neutras */
@@ -9,12 +10,12 @@
   --color-elo-lavanda: #B79CED;
   --color-elo-girassol: #F4C542;
   --color-elo-amarelo-suave: #FFE58A;
-  
+
   --color-elo-texto-principal: #2D1E40;
   --color-elo-texto-secundario: #6B6177;
   --color-elo-fundo: #f7f4fa;
   --color-elo-borda: #E8E3EF;
-  
+
   /* Cores de Status */
   --color-elo-verde-progresso: #5FA777;
   --color-elo-vermelho-alerta: #D95C5C;
@@ -23,4 +24,15 @@
   --font-sora: "Sora", sans-serif;
   --font-nunito: "Nunito", sans-serif;
   --font-outfit: "Outfit", sans-serif;
+}
+
+/* ── Centralização Real do Botão X ── */
+.close-button-centered {
+  padding: 0 !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  outline: none !important;
 }
