@@ -10,7 +10,7 @@ export interface MenuItem {
 export const DEFAULT_MENU: MenuItem[] = [
   { label: 'Home', route: '/home', icon: 'home' },
   { label: 'Turmas', route: '/turmas', icon: 'users' },
-  { label: 'Gerenciamento de Alunos', route: '/alunos', icon: 'graduation-cap' },
+  { label: 'Alunos', route: '/alunos', icon: 'graduation-cap' },
   { label: 'Calendário', route: '/calendario', icon: 'calendar' },
 ];
 

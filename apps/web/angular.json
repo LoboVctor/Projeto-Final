@@ -1,5 +1,5 @@
 {
-  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "$schema": "../../node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
     "packageManager": "npm",
@@ -25,7 +25,9 @@
                 "input": "projects/web/public"
               }
             ],
-            "styles": ["projects/web/src/styles.css"],
+            "styles": [
+              "projects/web/src/styles.css"
+            ],
             "server": "projects/web/src/main.server.ts",
             "outputMode": "server",
             "security": {
@@ -45,8 +47,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "10kB",
+                  "maximumError": "15kB"
                 }
               ],
               "outputHashing": "all"

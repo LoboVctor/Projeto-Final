@@ -8,7 +8,8 @@ import {
   inject,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  input
+  input,
+  signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EstudantesService } from '../../../../compartilhado/services/estudantes.service';
@@ -17,6 +18,7 @@ import {
   StatusRelatorio,
   Semestre,
   Eixo } from '../../../../compartilhado/models/estudante-pedagogico.model';
+import { EstudoDeCasoDrawerComponent } from '../estudo-de-caso-drawer/estudo-de-caso-drawer.component';
 
 
 
@@ -38,16 +40,21 @@ const STATUS_LABEL: Record<StatusRelatorio, string> = {
 
 @Component({
   selector: 'app-bloco-relatorios',
-  imports: [CommonModule],
+  imports: [CommonModule, EstudoDeCasoDrawerComponent],
   templateUrl: './bloco-relatorios.html',
   styleUrls: ['./bloco-relatorios.css'],
   changeDetection: ChangeDetectionStrategy.OnPush })
 export class BlocoRelatoriosComponent implements OnInit, OnChanges {
   readonly estudanteId = input.required<string>();
+  /** Nome do estudante para exibir no drawer de estudo de caso */
+  readonly estudanteNome = input<string>('');
   @Output() recolher = new EventEmitter<void>();
 
   private readonly estudantesService = inject(EstudantesService);
   private readonly cdr = inject(ChangeDetectorRef);
+
+  /** Controla abertura do drawer de Estudo de Caso */
+  drawerEstudoCasoAberto = signal(false);
 
 
   dados: EstudantePedagogico | null = null;

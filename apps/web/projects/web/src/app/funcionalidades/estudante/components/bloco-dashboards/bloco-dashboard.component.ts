@@ -5,6 +5,8 @@ import { switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { AnalyticsService } from '../../../../compartilhado/services/analytics.service';
 import Chart from 'chart.js/auto';
+import { jsPDF } from 'jspdf';
+import { toPng } from 'html-to-image';
 
 @Component({
   selector: 'app-bloco-dashboard',
@@ -41,7 +43,6 @@ export class BlocoDashboardComponent {
   // --- Instâncias dos Gráficos ---
   private radarChart?: Chart;
   private mediaGaugeChart?: Chart;
-  private frequenciaGaugeChart?: Chart;
   private historicoChart?: Chart;
 
   private dashboardResumo$ = toObservable(this.periodo).pipe(
@@ -63,14 +64,6 @@ export class BlocoDashboardComponent {
             5, 
             ['#f59e0b', '#fef3c7']
           );
-          
-          this.frequenciaGaugeChart = this.renderGaugeChart(
-            'frequenciaGaugeCanvas', 
-            this.frequenciaGaugeChart, 
-            data.frequencia.valor, 
-            100, 
-            ['#22c55e', '#dcfce7']
-          );
 
           this.renderRadarChart(data.categorias);
         }, 0);
@@ -81,6 +74,23 @@ export class BlocoDashboardComponent {
 
   onRecolher() {
     this.recolher.emit();
+  }
+
+  private descricoesCategorias: Record<string, string> = {
+    'Alimentação': 'Avalia a aceitação alimentar do estudante, sua independência ao comer e a presença de eventuais restrições ou seletividades durante as refeições.',
+    'Banheiro': 'Acompanha o nível de independência para usar o banheiro, solicitar ajuda quando necessário e realizar sua própria higiene pessoal.',
+    'Autonomia': 'Mede a capacidade do estudante de realizar tarefas diárias práticas e de seguir a rotina escolar com o mínimo de suporte físico ou verbal.',
+    'Comportamento': 'Observa a regulação emocional perante frustrações, a presença de comportamentos atípicos ou crises e a adequação às regras do ambiente.',
+    'Interação Social': 'Avalia a iniciativa para brincar, a capacidade de compartilhar, o contato visual e a comunicação estabelecida com colegas e educadores.',
+    'Foco nas Atividades': 'Mede o tempo de atenção sustentada, o engajamento na tarefa em execução e a capacidade de concluir as atividades pedagógicas propostas.'
+  };
+
+
+  obterDescricaoCategoria(categoria: string | null): string {
+    if (!categoria || !this.descricoesCategorias[categoria]) {
+      return 'Acompanhamento de desenvolvimento da rotina escolar.';
+    }
+    return this.descricoesCategorias[categoria];
   }
 
   mudarPeriodo(novoPeriodo: 'semana' | 'mes' | 'semestre') {
@@ -98,7 +108,7 @@ export class BlocoDashboardComponent {
 
   abrirDetalheCategoria(categoria: string) {
     this.categoriaSelecionada.set(categoria);
-    this.semanaAtualVisualizada.set(this.getMonday(new Date())); // Reseta para a semana atual ao abrir
+    this.semanaAtualVisualizada.set(this.getMonday(new Date())); 
     this.carregarHistorico(categoria);
   }
 
@@ -142,8 +152,8 @@ export class BlocoDashboardComponent {
     const fim = new Date(inicio);
     fim.setDate(fim.getDate() + 4); 
 
-    const strInicio = formatarParaDataPura(inicio);
-    const strFim = formatarParaDataPura(fim);
+    const strInicio = `${formatarParaDataPura(inicio)}T00:00:00`;
+    const strFim = `${formatarParaDataPura(fim)}T23:59:59`;
 
     const mapaCategorias: Record<string, string> = {
       'Alimentação': 'Alimentação',
@@ -247,6 +257,111 @@ export class BlocoDashboardComponent {
         }
       }
     });
+  }
+
+  // --- Lógica de exportação ---
+  @ViewChild('relatorioDashboard') relatorioDashboard!: ElementRef;
+
+  exportDropdownAberto = signal(false);
+  gerandoPdf = signal(false);
+  dataGeracao = signal('');
+
+  toggleExportDropdown() {
+    this.exportDropdownAberto.update(v => !v);
+  }
+
+  exportarCSV() {
+    this.exportDropdownAberto.set(false);
+    const data = this.dashboardData();
+    if (!data) return;
+
+    const dataAtual = new Date().toLocaleDateString('pt-BR');
+    const periodoLabel = this.periodo() === 'semana' ? 'Últimos 7 dias' : this.periodo() === 'mes' ? 'Últimos 30 dias' : 'Último Semestre';
+
+    let csv = '\ufeff'; 
+    
+    csv += `RELATÓRIO DE DESEMPENHO ANALÍTICO\n`;
+    csv += `Data de Geração:;${dataAtual}\n`;
+    csv += `Período Analisado:;${periodoLabel}\n\n`;
+
+    csv += `VISÃO GERAL\n`;
+    csv += `Métrica;Valor;Variação Anterior\n`;
+    csv += `Média Geral;${data.mediaGeral.valor.toFixed(2)};${data.mediaGeral.variacao >= 0 ? '+' : ''}${data.mediaGeral.variacao.toFixed(2)}\n`;
+    csv += `Frequência;${data.frequencia.valor}%;${data.frequencia.variacao >= 0 ? '+' : ''}${data.frequencia.variacao.toFixed(2)}%\n\n`;
+
+    csv += `DETALHAMENTO POR CATEGORIA\n`;
+    csv += `Categoria;Score (0 a 5);Variação;Descrição do Eixo Avaliado\n`;
+
+    const nomes: Record<string, string> = {
+      'Alimentacao': 'Alimentação', 'Banheiro': 'Banheiro', 'Autonomia': 'Autonomia',
+      'Comportamento': 'Comportamento', 'Interacao': 'Interação Social', 'Foco': 'Foco nas Atividades'
+    };
+
+    Object.keys(data.categorias).forEach(key => {
+      const cat = data.categorias[key];
+      const nomeCorreto = nomes[key] || key;
+      const descricao = this.descricoesCategorias[nomeCorreto] || ''; 
+      
+      csv += `${nomeCorreto};${cat.valor?.toFixed(2) || 0};${cat.variacao >= 0 ? '+' : ''}${cat.variacao?.toFixed(2) || 0};"${descricao}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Relatorio_Dashboard_${this.periodo()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  async exportarPDF() {
+    this.exportDropdownAberto.set(false);
+    
+    await new Promise(resolve => setTimeout(resolve, 100)); 
+
+    const elemento = this.relatorioDashboard.nativeElement;
+
+    const filtroOpcoes = (node: HTMLElement) => {
+      if (node.classList?.contains('esconder-no-pdf')) {
+        return false; 
+      }
+      return true;
+    };
+
+    try {
+      const imgData = await toPng(elemento, {
+        pixelRatio: 2, 
+        backgroundColor: '#f8fafc',
+        width: elemento.scrollWidth,
+        height: elemento.scrollHeight,
+        filter: filtroOpcoes,
+        style: {
+          overflow: 'visible',
+          maxHeight: 'none'
+        }
+      });
+      
+      const pdfFinal = new jsPDF('p', 'mm', 'a4');
+      const larguraPDF = pdfFinal.internal.pageSize.getWidth();
+      const alturaPDF = (elemento.scrollHeight * larguraPDF) / elemento.scrollWidth;
+
+      const pdfDinamico = new jsPDF('p', 'mm', [larguraPDF, alturaPDF]);
+      pdfDinamico.addImage(imgData, 'PNG', 0, 0, larguraPDF, alturaPDF);
+
+      pdfDinamico.setFont("helvetica", "bold");
+      pdfDinamico.setFontSize(9);
+      pdfDinamico.setTextColor(156, 163, 175); 
+      const dataStr = `Gerado em: ${new Date().toLocaleString('pt-BR')}`;
+      pdfDinamico.text(dataStr, larguraPDF - 15, 15, { align: 'right' });
+
+      pdfDinamico.save(`Relatorio_Dashboard_${this.periodo()}.pdf`);
+      
+    } catch (erro) {
+      console.error('Erro ao gerar PDF:', erro);
+      alert('Não foi possível gerar o PDF no momento.');
+    }
   }
 
   // --- Lógica dos Gráficos Principais ---

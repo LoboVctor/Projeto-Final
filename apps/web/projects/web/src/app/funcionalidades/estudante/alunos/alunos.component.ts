@@ -6,15 +6,14 @@ import {
   computed,
   ChangeDetectionStrategy,
   DestroyRef,
-  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, debounceTime, switchMap } from 'rxjs';
 import { EstudantesService } from '../../../compartilhado/services/estudantes.service';
-import { EstudoDeCasoDrawerComponent } from '../components/estudo-de-caso-drawer/estudo-de-caso-drawer.component';
 import { AlunoModalComponent } from '../../../compartilhado/components/aluno-modal/aluno-modal.component';
+import { TurmasService, TurmaResumo } from '../../../nucleo/services/turmas.service';
 import type {
   EstudanteListagemItem,
   PaginacaoResponse,
@@ -24,13 +23,14 @@ import type { AlunoModalData } from '../../../compartilhado/models/aluno-modal.m
 @Component({
   selector: 'app-alunos',
   standalone: true,
-  imports: [CommonModule, FormsModule, EstudoDeCasoDrawerComponent, AlunoModalComponent],
+  imports: [CommonModule, FormsModule, AlunoModalComponent],
   templateUrl: './alunos.component.html',
   styleUrls: ['./alunos.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlunosComponent implements OnInit {
   private readonly estudantesService = inject(EstudantesService);
+  private readonly turmasService = inject(TurmasService);
   private readonly destroyRef = inject(DestroyRef);
 
   // ─── Estado da listagem ───────────────────────────────────────
@@ -41,21 +41,20 @@ export class AlunosComponent implements OnInit {
   // ─── Filtros ──────────────────────────────────────────────────
   termoBusca = signal('');
   filtroDiagnostico = signal('');
+  filtroSexo = signal('');
+  filtroTurmaId = signal('');
+  filtroFormaComunicacao = signal('');
+  filtroCategoria = signal('');
+  filtroIdadeMin = signal<number | undefined>(undefined);
+  filtroIdadeMax = signal<number | undefined>(undefined);
   paginaAtual = signal(1);
   readonly limitePorPagina = 20;
 
+  // ─── Turmas disponíveis (para o filtro de turma) ──────────────
+  turmasDisponiveis = signal<TurmaResumo[]>([]);
+
   // ─── Stream de busca com debounce (RxJS para fluxo assíncrono) ─
   private readonly busca$ = new Subject<void>();
-
-  // ─── Estado do drawer de Estudo de Caso ──────────────────────
-  drawerAberto = signal(false);
-  alunoParaOcorrencia = signal<EstudanteListagemItem | null>(null);
-
-  // ─── Estado do menu sanduíche ─────────────────────────────────
-  menuAbertoId = signal<string | null>(null);
-  /** Coordenadas absolutas (viewport) do dropdown — permite usar position:fixed
-   *  e escapar do overflow:hidden da tabela. */
-  menuPosicao = signal<{ top: number; left: number } | null>(null);
 
   // ─── Estado do modal do aluno ─────────────────────────────────
   modalAlunoAberto = signal(false);
@@ -78,7 +77,19 @@ export class AlunosComponent implements OnInit {
     'OUTRO',
   ];
 
+  readonly categoriaEspecificidade = [
+    'ALIMENTAR',
+    'SENSORIAL',
+    'MOTORA',
+    'COMPORTAMENTAL',
+  ];
+
   ngOnInit(): void {
+    // Carrega lista de turmas para o filtro
+    this.turmasService.getTurmas().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (turmas) => this.turmasDisponiveis.set(turmas),
+    });
+
     // Configura a stream de busca com debounce de 400ms
     this.busca$
       .pipe(
@@ -86,7 +97,7 @@ export class AlunosComponent implements OnInit {
         switchMap(() => {
           this.loading.set(true);
           this.erro.set(null);
-          
+
           const termo = this.termoBusca().trim();
           const isMatricula = termo.length > 0 && /^\d+$/.test(termo);
 
@@ -94,6 +105,12 @@ export class AlunosComponent implements OnInit {
             nome: !isMatricula && termo ? termo : undefined,
             matricula: isMatricula ? termo : undefined,
             diagnosticoTipo: this.filtroDiagnostico() || undefined,
+            sexo: this.filtroSexo() || undefined,
+            turmaId: this.filtroTurmaId() || undefined,
+            formaComunicacao: this.filtroFormaComunicacao() || undefined,
+            categoriaEspecificidade: this.filtroCategoria() || undefined,
+            idadeMin: this.filtroIdadeMin(),
+            idadeMax: this.filtroIdadeMax(),
             page: this.paginaAtual(),
             limit: this.limitePorPagina,
           });
@@ -127,9 +144,53 @@ export class AlunosComponent implements OnInit {
     this.dispararBusca();
   }
 
+  onFiltroSexoChange(sexo: string): void {
+    this.filtroSexo.set(sexo);
+    this.paginaAtual.set(1);
+    this.dispararBusca();
+  }
+
+  onFiltroTurmaChange(turmaId: string): void {
+    this.filtroTurmaId.set(turmaId);
+    this.paginaAtual.set(1);
+    this.dispararBusca();
+  }
+
+  onFiltroFormaComunicacaoChange(forma: string): void {
+    this.filtroFormaComunicacao.set(forma);
+    this.paginaAtual.set(1);
+    this.dispararBusca();
+  }
+
+  onFiltroCategoriaChange(categoria: string): void {
+    this.filtroCategoria.set(categoria);
+    this.paginaAtual.set(1);
+    this.dispararBusca();
+  }
+
+  onFiltroIdadeMinChange(valor: string): void {
+    const num = valor ? parseInt(valor, 10) : undefined;
+    this.filtroIdadeMin.set(isNaN(num as number) ? undefined : num);
+    this.paginaAtual.set(1);
+    this.dispararBusca();
+  }
+
+  onFiltroIdadeMaxChange(valor: string): void {
+    const num = valor ? parseInt(valor, 10) : undefined;
+    this.filtroIdadeMax.set(isNaN(num as number) ? undefined : num);
+    this.paginaAtual.set(1);
+    this.dispararBusca();
+  }
+
   limparFiltros(): void {
     this.termoBusca.set('');
     this.filtroDiagnostico.set('');
+    this.filtroSexo.set('');
+    this.filtroTurmaId.set('');
+    this.filtroFormaComunicacao.set('');
+    this.filtroCategoria.set('');
+    this.filtroIdadeMin.set(undefined);
+    this.filtroIdadeMax.set(undefined);
     this.paginaAtual.set(1);
     this.dispararBusca();
   }
@@ -140,37 +201,9 @@ export class AlunosComponent implements OnInit {
     this.dispararBusca();
   }
 
-  // ─── Menu Sanduíche ───────────────────────────────────────────
-
-  toggleMenu(alunoId: string, event: MouseEvent): void {
-    if (this.menuAbertoId() === alunoId) {
-      this.menuAbertoId.set(null);
-      this.menuPosicao.set(null);
-      return;
-    }
-    const btn = event.currentTarget as HTMLElement;
-    const rect = btn.getBoundingClientRect();
-    this.menuAbertoId.set(alunoId);
-    this.menuPosicao.set({
-      top: rect.bottom + 6,
-      left: rect.right - 190, // 190px = min-width do dropdown
-    });
-  }
-
-  fecharMenu(): void {
-    this.menuAbertoId.set(null);
-    this.menuPosicao.set(null);
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKey(): void {
-    this.fecharMenu();
-  }
-
   // ─── Modal do Aluno ──────────────────────────────────────────
 
   abrirModalAluno(aluno: EstudanteListagemItem): void {
-    this.fecharMenu();
     this.modalAlunoData.set(this.paraAlunoModalData(aluno));
     this.modalAlunoAberto.set(true);
   }
@@ -189,24 +222,6 @@ export class AlunosComponent implements OnInit {
       nivelSuporte: '',
       foto: aluno.foto ?? undefined,
     };
-  }
-
-  // ─── Estudo de Caso ───────────────────────────────────────────
-
-  abrirDrawerOcorrencia(aluno: EstudanteListagemItem): void {
-    this.fecharMenu();
-    this.alunoParaOcorrencia.set(aluno);
-    this.drawerAberto.set(true);
-  }
-
-  fecharDrawer(): void {
-    this.drawerAberto.set(false);
-    this.alunoParaOcorrencia.set(null);
-  }
-
-  onOcorrenciaSalva(_estudoCasoId: string): void {
-    // Recarrega a lista para refletir qualquer mudança de estado
-    this.dispararBusca();
   }
 
   // ─── Exportação CSV ───────────────────────────────────────────

@@ -26,9 +26,12 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      // Consome diretamente o novo método centralizado
       const nomeReal = this.authService.getLoggedUserName();
       this.userName.set(nomeReal);
     }
+  }
+
+  fazerLogout(): void {
+    this.authService.logout();
   }
 }

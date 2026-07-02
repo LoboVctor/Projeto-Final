@@ -1,0 +1,59 @@
+<div class="turma-graficos-wrapper">
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="graficos-loading">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="skeleton-chart"></div>
+      }
+    </div>
+  }
+
+  <!-- Erro -->
+  @if (erro() && !loading()) {
+    <div class="graficos-erro">
+      <span>⚠️ {{ erro() }}</span>
+      <button class="btn-retry" (click)="carregarMetricas()">Tentar novamente</button>
+    </div>
+  }
+
+  <!-- Contêiner único: todos os gráficos lado a lado -->
+  @if (!loading() && !erro() && metricas()) {
+    <div class="graficos-container">
+      <div class="graficos-row">
+
+        <!-- Rosca 1: Proporção por Sexo -->
+        <div class="grafico-card grafico-card--rosca">
+          <h3 class="grafico-titulo">Proporção por Sexo</h3>
+          <div class="grafico-canvas-wrapper">
+            <canvas #canvasSexo></canvas>
+          </div>
+        </div>
+
+        <!-- Rosca 2: Formas de Comunicação -->
+        <div class="grafico-card grafico-card--rosca">
+          <h3 class="grafico-titulo">Formas de Comunicação</h3>
+          <div class="grafico-canvas-wrapper">
+            <canvas #canvasCom></canvas>
+          </div>
+        </div>
+
+        <!-- Barra 1: Alunos por Idade -->
+        <div class="grafico-card grafico-card--barras">
+          <h3 class="grafico-titulo">Alunos por Idade</h3>
+          <div class="grafico-canvas-wrapper">
+            <canvas #canvasIdade></canvas>
+          </div>
+        </div>
+
+        <!-- Barra 2: Alunos por Diagnóstico -->
+        <div class="grafico-card grafico-card--barras">
+          <h3 class="grafico-titulo">Alunos por Diagnóstico</h3>
+          <div class="grafico-canvas-wrapper">
+            <canvas #canvasDiag></canvas>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  }
+</div>

@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
-config({ path: resolve(__dirname, '../../../apps/api/.env') });
 import { resolve } from 'path';
+config({ path: resolve(__dirname, '../../../apps/api/.env') });
+
 import {
   PrismaClient,
   Role,
@@ -13,7 +14,9 @@ import {
   TipoEspecificidade,
   CategoriaEspecificidade,
   UnidadeM,
-  TipoDocumento
+  TipoDocumento,
+  DiaSemana,
+  StatusAula
 } from '../../generated/prisma/index.js';
 import * as bcrypt from 'bcrypt';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -39,8 +42,8 @@ async function main() {
   await prisma.estudanteEspecificidade.deleteMany();
   await prisma.estudanteMedicamento.deleteMany();
   await prisma.registroDiario.deleteMany();
-  await prisma.registroAula.deleteMany();
-  await prisma.aula.deleteMany();
+  await prisma.registroAula.deleteMany(); 
+  await prisma.aula.deleteMany();        
   await prisma.estudoCaso.deleteMany();
   await prisma.relatorioSemestral.deleteMany();
   await prisma.estudante.deleteMany();
@@ -127,7 +130,48 @@ async function main() {
   });
   console.log(` Turma criada: "${turmaAlpha.nome}" (Tipo: ${turmaAlpha.tipo})`);
 
-  console.log(`Admin criado: "${admin.email}" (role: ${admin.role})`);
+  // ==========================================
+  // POPULANDO CRONOGRAMA DE AULAS
+  // ==========================================
+  console.log('\nPopulando cronograma de rotina de aulas...');
+  
+  const criarDataComHorario = (horaStr: string): Date => {
+    return new Date(`1970-01-01T${horaStr}:00.000Z`);
+  };
+
+  const aulaSegunda = await prisma.aula.create({
+    data: {
+      id: '55555555-5555-5555-5555-555555555501',
+      turmaId: turmaAlpha.id,
+      educadorId: educador.id,
+      diaSemana: DiaSemana.SEGUNDA,
+      horarioInicio: criarDataComHorario('08:00'),
+      horarioFim: criarDataComHorario('12:00'),
+    }
+  });
+
+  const aulaTerca = await prisma.aula.create({
+    data: {
+      id: '55555555-5555-5555-5555-555555555502',
+      turmaId: turmaAlpha.id,
+      educadorId: educador.id,
+      diaSemana: DiaSemana.TERCA,
+      horarioInicio: criarDataComHorario('08:00'),
+      horarioFim: criarDataComHorario('12:00'),
+    }
+  });
+
+  const aulaQuarta = await prisma.aula.create({
+    data: {
+      id: '55555555-5555-5555-5555-555555555503',
+      turmaId: turmaAlpha.id,
+      educadorId: educador.id,
+      diaSemana: DiaSemana.QUARTA,
+      horarioInicio: criarDataComHorario('08:00'),
+      horarioFim: criarDataComHorario('12:00'),
+    }
+  });
+  console.log(' Cronograma de rotina semanal injetado.');
 
   // Diagnósticos
   const tea = await prisma.diagnostico.upsert({
@@ -163,7 +207,7 @@ async function main() {
     },
   });
 
-  // Turmas
+  // Turmas Adicionais
   const turma1 = await prisma.turma.upsert({
     where: { id: 'b0000000-0000-0000-0000-000000000001' },
     update: { educadorId: educador.id },
@@ -208,7 +252,6 @@ async function main() {
       tipo: TipoTurma.REGENCIA,
     },
   });
-
   console.log('Turmas criadas/verificadas.');
 
   // Estudantes
@@ -220,7 +263,7 @@ async function main() {
       dataNascimento: new Date('2016-04-15'),
       cpf: '222.222.222-22',
       sexo: Sexo.MASCULINO,
-      foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Lucas',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=spiky,flatTop,parting,shortCurls,plain&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=lucas',
       formaComunicacao: Fcom.VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -240,7 +283,7 @@ async function main() {
       dataNascimento: new Date('2019-05-15'),
       cpf: '123.456.789-01',
       sexo: Sexo.FEMININO,
-      foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Ana',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=longCurls,buns,roundBob,wavy,bangs,fluffy&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=ana',
       formaComunicacao: Fcom.VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -260,7 +303,7 @@ async function main() {
       dataNascimento: new Date('2018-08-22'),
       cpf: '234.567.890-12',
       sexo: Sexo.MASCULINO,
-      foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Bruno',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=spiky,flatTop,parting,shortCurls,plain&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=bruno',
       formaComunicacao: Fcom.NAO_VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -280,7 +323,7 @@ async function main() {
       dataNascimento: new Date('2018-03-10'),
       cpf: '345.678.901-23',
       sexo: Sexo.MASCULINO,
-      foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Carlos',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=spiky,flatTop,parting,shortCurls,plain&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=carlos',
       formaComunicacao: Fcom.VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -300,7 +343,7 @@ async function main() {
       dataNascimento: new Date('2020-11-05'),
       cpf: '456.789.012-34',
       sexo: Sexo.FEMININO,
-      foto: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Daniela',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=longCurls,buns,roundBob,wavy,bangs,fluffy&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=daniela',
       formaComunicacao: Fcom.NAO_VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -318,7 +361,7 @@ async function main() {
   for (const est of estudantesData) {
     await prisma.estudante.upsert({
       where: { matricula: est.matricula },
-      update: {},
+      update: { foto: est.foto },
       create: est,
     });
   }
@@ -359,15 +402,16 @@ async function main() {
       dosagem: 1.5,
       unidadeMedida: UnidadeM.ML,
       intervaloAdministracao: 12,
-      horarioAdministrado: new Date('2026-01-01T13:00:00.000Z'), // Exemplo de horário
+      horarioAdministrado: new Date('2026-01-01T13:00:00.000Z'),
       administradoEscola: true,
     },
   });
 
   await prisma.documentoDiagnostico.create({
     data: {
+      id: '77777777-7777-7777-7777-777777777777',
       tipo: TipoDocumento.LAUDO_MEDICO,
-      arquivo: 'http://localhost:3000/api/v1/uploads/laudos/1781883929415-924710107.pdf', // Simulando a URL do arquivo
+      arquivo: 'http://localhost:3000/api/v1/uploads/laudos/1781883929415-924710107.pdf',
       dataEmissao: new Date('2025-02-10'),
       estudanteId: lucasId,
       diagnosticoId: tea.id,
@@ -376,13 +420,22 @@ async function main() {
 
   console.log('Dados de saúde de teste populados com sucesso.');
 
-// ==========================================
-// POPULANDO HISTÓRICO PARA OS GRÁFICOS (90 DIAS)
-// ==========================================
+  // ==========================================
+  // POPULANDO HISTÓRICO PARA OS GRÁFICOS (90 DIAS)
+  // ==========================================
   console.log('\nPopulando histórico de registros diários para os gráficos...');
 
   const registrosDiariosMock = [];
-  const hoje = new Date();
+  const registrosAulasMock = [];
+  
+  const dataReferencia = new Date();
+  
+  const hoje = new Date(Date.UTC(
+    dataReferencia.getFullYear(), 
+    dataReferencia.getMonth(), 
+    dataReferencia.getDate(), 
+    12, 0, 0
+  ));
 
   const gerarNotaAleatoria = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -390,15 +443,15 @@ async function main() {
 
   for (let i = 0; i < 90; i++) {
     const dataRegistro = new Date(hoje);
-    dataRegistro.setDate(hoje.getDate() - i);
+    dataRegistro.setUTCDate(hoje.getUTCDate() - i);
 
-    const diaDaSemana = dataRegistro.getDay();
+    const diaDaSemana = dataRegistro.getUTCDay();
     
-    if (diaDaSemana === 0 || diaDaSemana === 6) continue;
+    if (diaDaSemana === 0 || diaDaSemana === 6) continue; // Pula fins de semana
 
     registrosDiariosMock.push({
       estudanteId: lucasId,
-      educadorId: educador.id, // Vinculado ao Cláudio Xavier
+      educadorId: educador.id, 
       data: dataRegistro,
       scoreComportamento: gerarNotaAleatoria(3, 5),  
       scoreInteracao: gerarNotaAleatoria(2, 5),     
@@ -409,13 +462,47 @@ async function main() {
       preenchido: true,
       anotacoes: 'Registro diário de dias úteis gerado automaticamente via seed script.',
     });
+
+    // Injetando Ocorrência da Aula do Dia
+    let aulaDoDiaId: string | null = null;
+    if (diaDaSemana === 1) aulaDoDiaId = aulaSegunda.id;
+    if (diaDaSemana === 2) aulaDoDiaId = aulaTerca.id;
+    if (diaDaSemana === 3) aulaDoDiaId = aulaQuarta.id;
+
+    if (aulaDoDiaId) {
+      let status: StatusAula = StatusAula.REALIZADA;
+      let estevePresente = Math.random() > 0.12; 
+
+      if (i % 25 === 0) {
+        status = StatusAula.FERIADO;
+        estevePresente = false;
+      } else if (i % 40 === 0) {
+        status = StatusAula.FALTA_EDUCADOR;
+        estevePresente = false;
+      }
+
+      registrosAulasMock.push({
+        id: `99999999-9999-9999-9999-99998888${String(i).padStart(6, '0')}`,
+        estudanteId: lucasId,      
+        aulaId: aulaDoDiaId,       
+        data: dataRegistro,        
+        status_aula: status,       
+        presenca: estevePresente,  
+        scoreParticipacao: status === StatusAula.REALIZADA && estevePresente ? gerarNotaAleatoria(3, 5) : null,
+        scoreSuporte: status === StatusAula.REALIZADA && estevePresente ? gerarNotaAleatoria(1, 3) : null, 
+      });
+    }
   }
 
   await prisma.registroDiario.createMany({
     data: registrosDiariosMock,
   });
-
   console.log(` ${registrosDiariosMock.length} registros diários (Segunda a Sexta) criados para o Lucas.`);
+
+  await prisma.registroAula.createMany({
+    data: registrosAulasMock,
+  });
+  console.log(` ${registrosAulasMock.length} registros de chamada históricos acoplados à rotina de aulas do estudante.`);
 
   console.log('Estudantes criados e vinculados às turmas.');
 

@@ -1,16 +1,26 @@
 import { Routes } from '@angular/router';
 import { AppShellComponent } from './layout/app-shell/app-shell.component';
 import { authGuard } from './nucleo/guards/auth-guard';
+import { loginGuard } from './nucleo/guards/login-guard';
 
 export const routes: Routes = [
-  // ── Rotas públicas (sem Sidebar) ──────────────────────────────────────
+  // ── Rota raiz: redireciona para /login ────────────────────────────────
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full',
+  },
+
+  // ── Rota pública: login ───────────────────────────────────────────────
+  // loginGuard: usuário já autenticado é redirecionado para /home
   {
     path: 'login',
+    canActivate: [loginGuard],
     loadComponent: () => import('./funcionalidades/autenticacao/login/login').then(m => m.Login)
   },
 
   // ── Rotas internas (com AppShell + Sidebar) ───────────────────────────
-  // CR-03: authGuard aplicado no pai para proteger TODAS as rotas filhas
+  // authGuard aplicado no pai para proteger TODAS as rotas filhas
   {
     path: '',
     component: AppShellComponent,
@@ -45,5 +55,11 @@ export const routes: Routes = [
         loadComponent: () => import('./funcionalidades/dashboard/dashboard-responsavel/dashboard-responsavel.component').then(m => m.DashboardResponsavelComponent)
       }
     ]
-  }
+  },
+
+  // ── Wildcard: qualquer rota desconhecida → /login ─────────────────────
+  {
+    path: '**',
+    redirectTo: 'login',
+  },
 ];

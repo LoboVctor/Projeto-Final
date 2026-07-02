@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico, EstudanteListagemPaginado, AulaAgenda } from './interfaces/IEstudanteRepositorio.js';
-import { Especificidade, EstudanteEspecificidade, TipoEspecificidade, CategoriaEspecificidade, TipoDiagnostico, UnidadeM } from '@prisma-client';
-import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
+import { Especificidade, EstudanteEspecificidade, TipoEspecificidade, CategoriaEspecificidade, TipoDiagnostico, UnidadeM, RegistroAula } from '@prisma-client';
+import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.ts';
+import type { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.ts';
 
 
 @Injectable()
@@ -122,6 +123,15 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
 
+    // Calcula datas de corte para filtro de idade
+    const agora = new Date();
+    const dataMaxNasc = query.idadeMin !== undefined
+      ? new Date(agora.getFullYear() - query.idadeMin, agora.getMonth(), agora.getDate())
+      : undefined;
+    const dataMinNasc = query.idadeMax !== undefined
+      ? new Date(agora.getFullYear() - query.idadeMax - 1, agora.getMonth(), agora.getDate() + 1)
+      : undefined;
+
     const where = {
       ...(query.nome && {
         nomeCompleto: { contains: query.nome, mode: 'insensitive' as const },
@@ -138,6 +148,24 @@ export class EstudanteRepository implements IEstudanteRepositorio {
           },
         },
       }),
+      ...(query.sexo && { sexo: query.sexo }),
+      ...(query.turmaId && {
+        turmas: { some: { id: query.turmaId } },
+      }),
+      ...(query.formaComunicacao && { formaComunicacao: query.formaComunicacao }),
+      ...(query.categoriaEspecificidade && {
+        especificidades: {
+          some: {
+            especificidade: { categoria: query.categoriaEspecificidade },
+          },
+        },
+      }),
+      ...((dataMinNasc || dataMaxNasc) && {
+        dataNascimento: {
+          ...(dataMinNasc && { gte: dataMinNasc }),
+          ...(dataMaxNasc && { lte: dataMaxNasc }),
+        },
+      }),
     };
 
     const select = {
@@ -146,6 +174,9 @@ export class EstudanteRepository implements IEstudanteRepositorio {
       matricula: true,
       foto: true,
       statusMatricula: true,
+      dataNascimento: true,
+      sexo: true,
+      formaComunicacao: true,
       turmas: {
         select: { id: true, nome: true },
       },
@@ -169,6 +200,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
       totalPaginas: Math.ceil(total / limit),
     };
   }
+
 
   async buscarEspecificidadeExata(tipo: TipoEspecificidade, categoria: CategoriaEspecificidade, descricao: string): Promise<Especificidade | null> {
     return this.prisma.client.especificidade.findFirst({
@@ -389,5 +421,25 @@ export class EstudanteRepository implements IEstudanteRepositorio {
         estudanteId_medicamentoId: { estudanteId, medicamentoId },
       },
     });
+  }
+
+  async registrarChamadaEmLote(dto: CreateRegistroAulaBatchDto): Promise<RegistroAula[]> {
+    const dataChamada = new Date(dto.dataAula);
+
+    return this.prisma.client.$transaction(
+      dto.estudantes.map((estudante) =>
+        this.prisma.client.registroAula.create({
+          data: {
+            aulaId: dto.aulaId,
+            estudanteId: estudante.estudanteId,
+            data: dataChamada,
+            status_aula: dto.statusAula,
+            presenca: dto.statusAula === 'REALIZADA' ? estudante.presente : false,
+            scoreParticipacao: dto.statusAula === 'REALIZADA' ? estudante.scoreParticipacao : null,
+            scoreSuporte: dto.statusAula === 'REALIZADA' ? estudante.scoreNivelSuporte : null,
+          },
+        })
+      )
+    );
   }
 }

@@ -154,6 +154,69 @@
   color: #6b7280;
 }
 
+/* ── Filtro Intervalo de Idade ───────────────────────────────── */
+.filtro-idade-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.filtro-idade-wrapper:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.filtro-idade-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.filtro-idade-input {
+  width: 52px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #374151;
+  background: transparent;
+  text-align: center;
+}
+
+.filtro-idade-sep {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* ── Botão Limpar Todos os Filtros ───────────────────────────── */
+.btn-limpar-todos {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.btn-limpar-todos:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #ef4444;
+}
+
+
 /* ── Contador de resultados ──────────────────────────────────── */
 .resultado-contador {
   font-size: 13px;
@@ -207,6 +270,8 @@
   transition: background 0.15s;
 }
 
+
+
 .btn-tentar-novamente:hover {
   background: #fee2e2;
 }
@@ -247,11 +312,23 @@
   transition: background 0.1s;
 }
 
+.tabela-linha--clicavel {
+  cursor: pointer;
+}
+
+.tabela-linha--clicavel:hover {
+  background: #f0f4ff;
+}
+
+.tabela-linha--clicavel:hover .aluno-nome {
+  color: #4F46E5;
+}
+
 .tabela-linha:last-child {
   border-bottom: none;
 }
 
-.tabela-linha:hover {
+.tabela-linha:not(.tabela-linha--clicavel):hover {
   background: #f9fafb;
 }
 

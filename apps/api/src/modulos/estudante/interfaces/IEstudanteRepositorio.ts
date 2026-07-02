@@ -1,5 +1,6 @@
-import { Prisma, EstudanteEspecificidade, Especificidade, TipoEspecificidade, CategoriaEspecificidade, Medicamento, EstudanteMedicamento, UnidadeM } from '@prisma-client';
+import { Prisma, EstudanteEspecificidade, Especificidade, TipoEspecificidade, CategoriaEspecificidade, Medicamento, EstudanteMedicamento, UnidadeM, RegistroAula } from '@prisma-client';
 import { BuscarEstudantesQueryDto } from '../dtos/buscar-estudantes-query.dto.js';
+import { CreateRegistroAulaBatchDto } from '../dtos/create-registro-aula.dto.js';
 
 /** Projeção leve de Estudante usada na listagem geral (Tela 4). */
 export type EstudanteListagem = Prisma.EstudanteGetPayload<{
@@ -9,6 +10,9 @@ export type EstudanteListagem = Prisma.EstudanteGetPayload<{
     matricula: true;
     foto: true;
     statusMatricula: true;
+    dataNascimento: true;
+    sexo: true;
+    formaComunicacao: true;
     turmas: {
       select: {
         id: true;
@@ -33,6 +37,7 @@ export interface EstudanteListagemPaginado {
   limit: number;
   totalPaginas: number;
 }
+
 
 export type EstudanteVisaoGeral = Prisma.EstudanteGetPayload<{
   include: {
@@ -189,5 +194,6 @@ export interface IEstudanteRepositorio {
     dataEmissao: string;
     linkArquivo?: string;
   }): Promise<any>;
+  registrarChamadaEmLote(dto: CreateRegistroAulaBatchDto): Promise<RegistroAula[]>;
 }
 

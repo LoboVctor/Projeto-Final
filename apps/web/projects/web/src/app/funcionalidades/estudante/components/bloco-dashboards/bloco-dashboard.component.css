@@ -19,3 +19,17 @@
 canvas {
   max-width: 100%;
 }
+
+@media print {
+  /* Esconde o menu lateral, topo e o próprio botão de exportar na versão PDF */
+  .shrink-0 > button,
+  nav, header {
+    display: none !important;
+  }
+  
+  /* Remove scrollbars e expande o container para caber na folha A4 */
+  .overflow-y-auto {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+}
