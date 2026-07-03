@@ -263,7 +263,7 @@ async function main() {
       dataNascimento: new Date('2016-04-15'),
       cpf: '222.222.222-22',
       sexo: Sexo.MASCULINO,
-      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=spiky,flatTop,parting,shortCurls,plain&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=lucas',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=lucasM1',
       formaComunicacao: Fcom.VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -283,7 +283,7 @@ async function main() {
       dataNascimento: new Date('2019-05-15'),
       cpf: '123.456.789-01',
       sexo: Sexo.FEMININO,
-      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=longCurls,buns,roundBob,wavy,bangs,fluffy&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=ana',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=anaF1',
       formaComunicacao: Fcom.VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -303,7 +303,7 @@ async function main() {
       dataNascimento: new Date('2018-08-22'),
       cpf: '234.567.890-12',
       sexo: Sexo.MASCULINO,
-      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=spiky,flatTop,parting,shortCurls,plain&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=bruno',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=brunoM1',
       formaComunicacao: Fcom.NAO_VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -323,7 +323,7 @@ async function main() {
       dataNascimento: new Date('2018-03-10'),
       cpf: '345.678.901-23',
       sexo: Sexo.MASCULINO,
-      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=spiky,flatTop,parting,shortCurls,plain&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=carlos',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=carlosM1',
       formaComunicacao: Fcom.VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -343,7 +343,7 @@ async function main() {
       dataNascimento: new Date('2020-11-05'),
       cpf: '456.789.012-34',
       sexo: Sexo.FEMININO,
-      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&hairVariant=longCurls,buns,roundBob,wavy,bangs,fluffy&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=daniela',
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=danielaF1',
       formaComunicacao: Fcom.NAO_VERBAL,
       statusMatricula: true,
       escolaId: escola.id,
@@ -421,15 +421,15 @@ async function main() {
   console.log('Dados de saúde de teste populados com sucesso.');
 
   // ==========================================
-  // POPULANDO HISTÓRICO PARA OS GRÁFICOS (90 DIAS)
+  // POPULANDO HISTÓRICO PADRONIZADO PARA TODOS OS ESTUDANTES (90 DIAS)
   // ==========================================
   console.log('\nPopulando histórico de registros diários para os gráficos...');
 
-  const registrosDiariosMock = [];
-  const registrosAulasMock = [];
-  
+  const registrosDiariosMock: any[] = [];
+  const registrosAulasMock: any[] = [];
+
   const dataReferencia = new Date();
-  
+
   const hoje = new Date(Date.UTC(
     dataReferencia.getFullYear(), 
     dataReferencia.getMonth(), 
@@ -441,7 +441,13 @@ async function main() {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
-  for (let i = 0; i < 90; i++) {
+  // Todos os 5 estudantes recebem o mesmo histórico padronizado (>30 dias).
+  const todosEstudantesIds = estudantesData.map((est) => est.id);
+
+  // Dias -3 a -89 (mais de 30 dias úteis de histórico) preenchidos para TODOS os
+  // estudantes. Os dias "hoje" (i=0) e "ontem" (i=1) ficam pendentes (ver bloco
+  // seguinte), simulando o fluxo real em que a rotina do dia ainda não foi preenchida.
+  for (let i = 2; i < 90; i++) {
     const dataRegistro = new Date(hoje);
     dataRegistro.setUTCDate(hoje.getUTCDate() - i);
 
@@ -449,21 +455,24 @@ async function main() {
     
     if (diaDaSemana === 0 || diaDaSemana === 6) continue; // Pula fins de semana
 
-    registrosDiariosMock.push({
-      estudanteId: lucasId,
-      educadorId: educador.id, 
-      data: dataRegistro,
-      scoreComportamento: gerarNotaAleatoria(3, 5),  
-      scoreInteracao: gerarNotaAleatoria(2, 5),     
-      scoreFoco: gerarNotaAleatoria(3, 5),            
-      scoreAutonomia: gerarNotaAleatoria(2, 5),       
-      statusAlimentacao: gerarNotaAleatoria(4, 5),   
-      usoBanheiro: gerarNotaAleatoria(3, 5),          
-      preenchido: true,
-      anotacoes: 'Registro diário de dias úteis gerado automaticamente via seed script.',
-    });
+    for (const estudanteId of todosEstudantesIds) {
+      registrosDiariosMock.push({
+        estudanteId,
+        educadorId: educador.id, 
+        data: dataRegistro,
+        scoreComportamento: gerarNotaAleatoria(3, 5),  
+        scoreInteracao: gerarNotaAleatoria(2, 5),     
+        scoreFoco: gerarNotaAleatoria(3, 5),            
+        scoreAutonomia: gerarNotaAleatoria(2, 5),       
+        statusAlimentacao: gerarNotaAleatoria(4, 5),   
+        usoBanheiro: gerarNotaAleatoria(3, 5),          
+        preenchido: true,
+        anotacoes: 'Registro diário de dias úteis gerado automaticamente via seed script.',
+      });
+    }
 
-    // Injetando Ocorrência da Aula do Dia
+    // Injetando Ocorrência da Aula do Dia (apenas Turma Alpha/Lucas possui
+    // cronograma de aulas cadastrado nesta seed)
     let aulaDoDiaId: string | null = null;
     if (diaDaSemana === 1) aulaDoDiaId = aulaSegunda.id;
     if (diaDaSemana === 2) aulaDoDiaId = aulaTerca.id;
@@ -497,120 +506,48 @@ async function main() {
   await prisma.registroDiario.createMany({
     data: registrosDiariosMock,
   });
-  console.log(` ${registrosDiariosMock.length} registros diários (Segunda a Sexta) criados para o Lucas.`);
+  console.log(` ${registrosDiariosMock.length} registros diários (Segunda a Sexta) criados para ${todosEstudantesIds.length} estudantes.`);
+
+  await prisma.registroAula.createMany({
+    data: registrosAulasMock,
+  });
+  console.log(` ${registrosAulasMock.length} registros de aula criados para o Lucas (Turma Alpha).`);
 
   // ==========================================
-  // POPULANDO REGISTROS PENDENTES PARA O DASHBOARD
+  // POPULANDO REGISTROS PENDENTES (HOJE E ONTEM) PARA TODOS OS ESTUDANTES
   // ==========================================
-  console.log('\nPopulando registros pendentes para testes do modal e dashboard...');
+  console.log('\nPopulando registros pendentes de hoje/ontem para testes do modal e dashboard...');
 
-  const dataOntem = new Date();
-  dataOntem.setDate(hoje.getDate() - 1); // Pendências de ontem
+  const dataOntem = new Date(hoje);
+  dataOntem.setUTCDate(hoje.getUTCDate() - 1);
 
-  // Vamos gerar pendências para Ana, Bruno e Carlos
-  const estudantesPendentes = [
-    '123e4567-e89b-42d3-8456-426614174001', // Ana
-    '123e4567-e89b-42d3-8456-426614174002', // Bruno
-    '123e4567-e89b-42d3-8456-426614174003', // Carlos
-  ];
+  const registrosPendentesMock: any[] = [];
+  for (const dataPendente of [dataOntem, hoje]) {
+    const diaDaSemana = dataPendente.getUTCDay();
+    if (diaDaSemana === 0 || diaDaSemana === 6) continue; // Pula fins de semana
 
-  const registrosPendentesMock = estudantesPendentes.map(estudanteId => ({
-    estudanteId: estudanteId,
-    educadorId: educador.id, // Vinculado ao Cláudio Xavier para aparecer na tela dele
-    data: dataOntem,
-    // Scores zerados pois a rotina ainda não foi preenchida
-    scoreComportamento: 0,  
-    scoreInteracao: 0,      
-    scoreFoco: 0,           
-    scoreAutonomia: 0,      
-    statusAlimentacao: 0,   
-    usoBanheiro: 0,         
-    preenchido: false,      // O gatilho principal para ser considerado pendente
-  }));
+    for (const estudanteId of todosEstudantesIds) {
+      registrosPendentesMock.push({
+        estudanteId,
+        educadorId: educador.id,
+        data: dataPendente,
+        // Scores zerados pois a rotina ainda não foi preenchida
+        scoreComportamento: 0,  
+        scoreInteracao: 0,      
+        scoreFoco: 0,           
+        scoreAutonomia: 0,      
+        statusAlimentacao: 0,   
+        usoBanheiro: 0,         
+        preenchido: false,      // O gatilho principal para ser considerado pendente
+      });
+    }
+  }
 
   await prisma.registroDiario.createMany({
     data: registrosPendentesMock,
   });
 
   console.log(` ${registrosPendentesMock.length} registros pendentes criados com sucesso.`);
-
-  // ==========================================
-  // POPULANDO REGISTROS DO MÊS ATUAL PARA TODOS OS ESTUDANTES
-  // (para garantir que as métricas do dashboard funcionem)
-  // ==========================================
-  console.log('\nPopulando registros do mês atual para todos os estudantes...');
-
-  const outrosEstudantes = [
-    '123e4567-e89b-42d3-8456-426614174001', // Ana
-    '123e4567-e89b-42d3-8456-426614174002', // Bruno
-    '123e4567-e89b-42d3-8456-426614174003', // Carlos
-    '123e4567-e89b-42d3-8456-426614174004', // Daniela
-  ];
-
-  const anoMesAtual = hoje.getFullYear();
-  const mesAtualNum = hoje.getMonth(); // 0-indexed
-  const diaAtual = hoje.getDate();
-  const registrosMesAtual: any[] = [];
-
-  for (const estudanteId of outrosEstudantes) {
-    // Dias do mês atual (até hoje - 1, todos preenchidos)
-    for (let dia = 1; dia <= diaAtual; dia++) {
-      const dataReg = new Date(Date.UTC(anoMesAtual, mesAtualNum, dia, 12, 0, 0));
-      const diaSemana = dataReg.getUTCDay();
-      if (diaSemana === 0 || diaSemana === 6) continue; // pula fim de semana
-
-      const isHoje = dia === diaAtual;
-      const preenchido = isHoje ? false : Math.random() > 0.2; // hoje pendente, anteriores 80% preenchidos
-      registrosMesAtual.push({
-        estudanteId,
-        educadorId: educador.id,
-        data: dataReg,
-        scoreComportamento: preenchido ? gerarNotaAleatoria(3, 5) : 0,
-        scoreInteracao: preenchido ? gerarNotaAleatoria(2, 5) : 0,
-        scoreFoco: preenchido ? gerarNotaAleatoria(3, 5) : 0,
-        scoreAutonomia: preenchido ? gerarNotaAleatoria(2, 5) : 0,
-        statusAlimentacao: preenchido ? gerarNotaAleatoria(4, 5) : 0,
-        usoBanheiro: preenchido ? gerarNotaAleatoria(3, 5) : 0,
-        preenchido,
-      });
-    }
-
-    // Se for o primeiro dia do mês, popula os 30 dias anteriores também
-    if (diaAtual <= 5) {
-      const mesPasMes = mesAtualNum - 1;
-      const anoMesPasMes = mesPasMes < 0 ? anoMesAtual - 1 : anoMesAtual;
-      const mesPasReal = mesPasMes < 0 ? 11 : mesPasMes;
-      const ultimoDiaMesPas = new Date(anoMesAtual, mesAtualNum, 0).getDate();
-
-      for (let dia = Math.max(1, ultimoDiaMesPas - 20); dia <= ultimoDiaMesPas; dia++) {
-        const dataReg = new Date(Date.UTC(anoMesPasMes, mesPasReal, dia, 12, 0, 0));
-        const diaSemana = dataReg.getUTCDay();
-        if (diaSemana === 0 || diaSemana === 6) continue;
-
-        const preenchido = Math.random() > 0.2;
-        registrosMesAtual.push({
-          estudanteId,
-          educadorId: educador.id,
-          data: dataReg,
-          scoreComportamento: preenchido ? gerarNotaAleatoria(3, 5) : 0,
-          scoreInteracao: preenchido ? gerarNotaAleatoria(2, 5) : 0,
-          scoreFoco: preenchido ? gerarNotaAleatoria(3, 5) : 0,
-          scoreAutonomia: preenchido ? gerarNotaAleatoria(2, 5) : 0,
-          statusAlimentacao: preenchido ? gerarNotaAleatoria(4, 5) : 0,
-          usoBanheiro: preenchido ? gerarNotaAleatoria(3, 5) : 0,
-          preenchido,
-        });
-      }
-    }
-  }
-
-  if (registrosMesAtual.length > 0) {
-    await prisma.registroDiario.createMany({
-      data: registrosMesAtual,
-      skipDuplicates: true,
-    });
-    console.log(` ${registrosMesAtual.length} registros do mês atual criados (${registrosMesAtual.filter(r => r.preenchido).length} preenchidos, ${registrosMesAtual.filter(r => !r.preenchido).length} pendentes).`);
-  }
 
   console.log('Estudantes criados e vinculados às turmas.');
 

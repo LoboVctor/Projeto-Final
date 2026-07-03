@@ -36,7 +36,13 @@
             },
             "ssr": {
               "entry": "projects/web/src/server.ts"
-            }
+            },
+            "allowedCommonJsDependencies": [
+              "jspdf",
+              "core-js",
+              "raf",
+              "rgbcolor"
+            ]
           },
           "configurations": {
             "production": {

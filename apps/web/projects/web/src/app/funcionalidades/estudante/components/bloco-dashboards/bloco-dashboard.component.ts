@@ -43,6 +43,7 @@ export class BlocoDashboardComponent {
   // --- Instâncias dos Gráficos ---
   private radarChart?: Chart;
   private mediaGaugeChart?: Chart;
+  private frequenciaGaugeChart?: Chart;
   private historicoChart?: Chart;
 
   private dashboardResumo$ = toObservable(this.periodo).pipe(
@@ -63,6 +64,14 @@ export class BlocoDashboardComponent {
             data.mediaGeral.valor, 
             5, 
             ['#f59e0b', '#fef3c7']
+          );
+
+          this.frequenciaGaugeChart = this.renderGaugeChart(
+            'frequenciaGaugeCanvas',
+            this.frequenciaGaugeChart,
+            data.frequencia.valor,
+            100,
+            ['#22c55e', '#dcfce7']
           );
 
           this.renderRadarChart(data.categorias);
@@ -316,51 +325,85 @@ export class BlocoDashboardComponent {
     URL.revokeObjectURL(url);
   }
 
+
   async exportarPDF() {
     this.exportDropdownAberto.set(false);
-    
-    await new Promise(resolve => setTimeout(resolve, 100)); 
 
-    const elemento = this.relatorioDashboard.nativeElement;
+    // Aguarda o dropdown fechar e os gráficos estabilizarem
+    await new Promise(resolve => setTimeout(resolve, 300));
 
-    const filtroOpcoes = (node: HTMLElement) => {
-      if (node.classList?.contains('esconder-no-pdf')) {
-        return false; 
-      }
-      return true;
-    };
+    const elemento = this.relatorioDashboard.nativeElement as HTMLElement;
+
+    // ── Fix 1: Canvas em branco ──────────────────────────────────────────────
+    // html-to-image não consegue capturar o conteúdo de <canvas> porque os dados
+    // ficam no buffer da GPU. Substituímos cada canvas por um <img> temporário
+    // com o mesmo dataURL antes de capturar, e restauramos depois.
+    const canvasList = Array.from(elemento.querySelectorAll('canvas')) as HTMLCanvasElement[];
+    const overlays: { canvas: HTMLCanvasElement; img: HTMLImageElement }[] = [];
+
+    for (const canvas of canvasList) {
+      try {
+        const dataUrl = canvas.toDataURL('image/png');
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        img.style.position = 'absolute';
+        img.style.top = canvas.offsetTop + 'px';
+        img.style.left = canvas.offsetLeft + 'px';
+        img.style.width = canvas.offsetWidth + 'px';
+        img.style.height = canvas.offsetHeight + 'px';
+        img.style.pointerEvents = 'none';
+        canvas.parentElement?.appendChild(img);
+        canvas.style.opacity = '0';
+        overlays.push({ canvas, img });
+      } catch { /* tainted canvas — skip */ }
+    }
+
+    // ── Fix 2: Altura cortada pelo overflow-y: auto ──────────────────────────
+    const estiloOriginalOverflow = elemento.style.overflow;
+    const estiloOriginalMaxH = elemento.style.maxHeight;
+    elemento.style.overflow = 'visible';
+    elemento.style.maxHeight = 'none';
+
+    const filtroOpcoes = (node: HTMLElement) =>
+      !node.classList?.contains('esconder-no-pdf');
 
     try {
       const imgData = await toPng(elemento, {
-        pixelRatio: 2, 
+        pixelRatio: 2,
         backgroundColor: '#f8fafc',
         width: elemento.scrollWidth,
         height: elemento.scrollHeight,
         filter: filtroOpcoes,
-        style: {
-          overflow: 'visible',
-          maxHeight: 'none'
-        }
+        style: { overflow: 'visible', maxHeight: 'none' },
       });
-      
-      const pdfFinal = new jsPDF('p', 'mm', 'a4');
-      const larguraPDF = pdfFinal.internal.pageSize.getWidth();
+
+      const larguraPDF = new jsPDF('p', 'mm', 'a4').internal.pageSize.getWidth();
       const alturaPDF = (elemento.scrollHeight * larguraPDF) / elemento.scrollWidth;
 
       const pdfDinamico = new jsPDF('p', 'mm', [larguraPDF, alturaPDF]);
       pdfDinamico.addImage(imgData, 'PNG', 0, 0, larguraPDF, alturaPDF);
 
-      pdfDinamico.setFont("helvetica", "bold");
+      pdfDinamico.setFont('helvetica', 'bold');
       pdfDinamico.setFontSize(9);
-      pdfDinamico.setTextColor(156, 163, 175); 
-      const dataStr = `Gerado em: ${new Date().toLocaleString('pt-BR')}`;
-      pdfDinamico.text(dataStr, larguraPDF - 15, 15, { align: 'right' });
+      pdfDinamico.setTextColor(156, 163, 175);
+      pdfDinamico.text(
+        `Gerado em: ${new Date().toLocaleString('pt-BR')}`,
+        larguraPDF - 15, 15, { align: 'right' }
+      );
 
       pdfDinamico.save(`Relatorio_Dashboard_${this.periodo()}.pdf`);
-      
+
     } catch (erro) {
       console.error('Erro ao gerar PDF:', erro);
       alert('Não foi possível gerar o PDF no momento.');
+    } finally {
+      // Restaura o DOM independentemente de sucesso ou falha
+      for (const { canvas, img } of overlays) {
+        canvas.style.opacity = '';
+        img.remove();
+      }
+      elemento.style.overflow = estiloOriginalOverflow;
+      elemento.style.maxHeight = estiloOriginalMaxH;
     }
   }
 

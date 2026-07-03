@@ -7,7 +7,7 @@ import {
   signal,
   ChangeDetectionStrategy,
   input,
-  effect
+  effect,
   OnChanges,
   SimpleChanges
 } from '@angular/core';
@@ -46,8 +46,6 @@ export class AlunoModalComponent implements OnChanges {
   @Input() aluno: AlunoModalData | null = null;
 
   @Output() fecharModal = new EventEmitter<void>();
-  @Output() agendaClick = new EventEmitter<void>();
-  @Output() dashboardClick = new EventEmitter<void>();
 
   // Estados
   isInfoGeraisOpen = signal(false);
@@ -79,6 +77,7 @@ export class AlunoModalComponent implements OnChanges {
       }
     }, { allowSignalWrites: true }); 
     // allowSignalWrites é necessário pois estamos alterando outros signals dentro do effect
+  }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['aluno'] && this.aluno) {
       this.isInfoGeraisOpen.set(true);
@@ -179,6 +178,5 @@ export class AlunoModalComponent implements OnChanges {
     if (!this.aluno) return;
     this.recolherPaineis();
     this.isAgendaExpanded.set(true);
-    this.agendaClick.emit();
   }
 }

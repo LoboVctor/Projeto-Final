@@ -40,9 +40,9 @@
   }
 
   <!-- Estado: Erro -->
-  @if (error) {
+  @if (error()) {
   <div class="bg-red-50 border border-red-100 rounded-xl p-6 text-center">
-    <p class="text-red-700 font-medium mb-3">{{ error }}</p>
+    <p class="text-red-700 font-medium mb-3">{{ error() }}</p>
     <button (click)="onTentarNovamente()"
       class="px-4 py-2 bg-white text-red-600 rounded-lg border border-red-200 font-semibold text-sm hover:bg-red-50">
       Tentar Novamente
@@ -51,7 +51,7 @@
   }
 
   <!-- Conteúdo Real -->
-  @if (!loading() && !error && visaoGeralData(); as vg) {
+  @if (!loading() && !error() && visaoGeralData(); as vg) {
   <div class="space-y-6">
     <!-- Dados Gerais -->
     <div class="bg-white border border-gray-100 shadow-sm rounded-2xl p-6">
@@ -83,7 +83,7 @@
     <!-- Informações Acadêmicas -->
     <div>
       <div class="flex items-center space-x-2 mb-3">
-        <h3 class="font-bold text-blue-800 font-sora">Informações Acadêmicas</h3>
+        <h3 class="font-bold text-blue-700 font-sora">Informações Acadêmicas</h3>
         @if (userRole === 'PROFESSOR') {
         <span class="flex items-center text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none"
@@ -149,7 +149,7 @@
     <!-- Informações Pessoais -->
     <div>
       <div class="flex items-center space-x-2 mb-3">
-        <h3 class="font-bold text-blue-800 font-sora">Informações Pessoais</h3>
+        <h3 class="font-bold text-blue-700 font-sora">Informações Pessoais</h3>
         @if (userRole === 'PROFESSOR') {
         <span class="flex items-center text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none"
@@ -229,7 +229,7 @@
     <div>
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center space-x-2">
-          <h3 class="font-bold text-blue-800 font-sora">Especificidades</h3>
+          <h3 class="font-bold text-blue-700 font-sora">Especificidades</h3>
         </div>
         <div class="flex items-center space-x-2">
           <button (click)="abrirModalEspecificidade()"
@@ -279,7 +279,7 @@
         </div>
         <!-- Bloco de Comportamentos Atípicos -->
         <div class="bg-blue-50/40 border border-blue-200 rounded-xl p-4 flex flex-col h-full">
-          <h5 class="text-blue-800 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-blue-200 m-0">
+          <h5 class="text-blue-700 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-blue-200 m-0">
             Comportamentos Atípicos
           </h5>
           @if (comportamentosAtipicos.length > 0) {

@@ -271,7 +271,7 @@
                     <span 
                       [class]="'px-2 py-0.5 rounded text-[10px] font-nunito font-bold border inline-block m-0.5 ' + getCorDiagnostico(d.diagnostico.tipo)"
                     >
-                      {{ d.diagnostico.tipo }}
+                      {{ d.diagnostico.tipo | diagLabel }}
                     </span>
                   }
                 } @else {
@@ -334,6 +334,4 @@
   [aluno]="modalAlunoData()"
   [abaInicial]="abaSolicitada()" 
   (fecharModal)="fecharModalAluno()">
-  (fecharModal)="fecharModalAluno()"
->
 </app-aluno-modal>

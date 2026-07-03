@@ -94,7 +94,7 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return this.tokenSubject.value !== null;
+    return !!this.tokenSubject.value;
   }
 
   /**

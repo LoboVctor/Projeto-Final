@@ -1,12 +1,10 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, BadRequestException } from '@nestjs/common';
 import type {
   IEstudanteRepositorio,
   EstudanteVisaoGeral,
   EstudanteSaude,
   EstudantePedagogico,
 } from './interfaces/IEstudanteRepositorio.js';
-import { Injectable, NotFoundException, Inject, BadRequestException } from '@nestjs/common';
-import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico } from './interfaces/IEstudanteRepositorio.js';
 import { EspecificidadeDto } from './dtos/create.especifidades.dto.js';
 import { DiaSemana, StatusAula } from '../../../../../infra/generated/prisma';
 import { ObterAgendaSemanaDto } from './dtos/obter-agenda-semana.dto.js';
@@ -310,7 +308,6 @@ export class EstudanteService {
     const diaSemanaJs = dataBase.getDay();
     const diffParaSegunda =
       dataBase.getDate() - diaSemanaJs + (diaSemanaJs === 0 ? -6 : 1);
-    const segundaFeira = new Date(ano, mes - 1, diffParaSegunda);
 
     const nomesDiasUI = [
       'DOMINGO',
@@ -386,7 +383,7 @@ export class EstudanteService {
   }
 
   async atualizarLaudo(documentoId: string, dados: any, arquivo?: any) {
-    let linkArquivo = undefined;
+    let linkArquivo: string | undefined;
 
     if (arquivo) {
       linkArquivo = `http://localhost:3000/api/v1/uploads/laudos/${arquivo.filename}`;
@@ -489,8 +486,6 @@ export class EstudanteService {
       medicamentoId,
     );
   }
-}
-
   async registrarChamadaLote(dto: CreateRegistroAulaBatchDto) {
     if (!dto.estudantes || dto.estudantes.length === 0) {
       throw new BadRequestException('A lista de estudantes para registro não pode estar vazia.');

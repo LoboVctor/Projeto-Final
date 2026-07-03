@@ -193,10 +193,8 @@
 
     <!-- VIEW: CARDS -->
     @if (!loading() && !error() && viewMode() === 'grid') {
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-4 justify-items-start items-start">
-        <!-- O Novo Card sendo repetido para cada aluno da turma -->
       <div 
-        class="students-grid students-container-transition" 
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-4 justify-items-start items-start students-container-transition"
         [class.is-loading-students]="loadingEstudantes()"
       >
         @for (estudante of estudantes(); track estudante) {

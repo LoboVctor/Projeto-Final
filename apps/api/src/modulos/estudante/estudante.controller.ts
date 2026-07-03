@@ -1,24 +1,3 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  ParseIntPipe,
-  UseGuards,
-  Query,
-  UseInterceptors,
-  UploadedFile,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiOkResponse,
-  ApiBearerAuth,
-  ApiQuery,
-} from '@nestjs/swagger';
 import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards, Query, UseInterceptors, UploadedFile, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { EstudanteService } from './estudante.service.js';
@@ -246,7 +225,6 @@ export class EstudantesController {
       Number(medicamentoId),
     );
   }
-}
 
   @Post('registros-aula/batch')
   @HttpCode(HttpStatus.CREATED)

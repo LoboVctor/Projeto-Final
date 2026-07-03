@@ -73,13 +73,6 @@ export class BlocoSaudeComponent implements OnInit {
     this.recolher.emit();
   }
 
-  adicionarLaudo(): void {
-
-  }
-
-  adicionarMedicamento(): void {
-
-  }
 
   abrirModalEspecificidades(): void {
     this.isModalEspecificidadesOpen = true;
@@ -167,8 +160,5 @@ export class BlocoSaudeComponent implements OnInit {
   }
 
 
-  fecharPreview(): void {
-    // preview agora é aberto via window.open — método mantido para compatibilidade de template
-  }
 }
 

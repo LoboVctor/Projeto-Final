@@ -5,8 +5,8 @@ import type {
   TurmaLista,
   TurmaComEstudantes,
   TurmaParaGrafico,
+  TurmaParaMetricas
 } from './interfaces/ITurmaRepositorio.js';
-import type { ITurmaRepositorio, TurmaLista, TurmaComEstudantes, TurmaParaGrafico, TurmaParaMetricas } from './interfaces/ITurmaRepositorio.js';
 
 @Injectable()
 export class TurmaRepository implements ITurmaRepositorio {

@@ -1,6 +1,7 @@
 import {
   Component,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
   ElementRef,
   ViewChild,
@@ -73,7 +74,7 @@ const FCOM_LABEL: Record<string, string> = {
   styleUrls: ['./turma-graficos.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TurmaGraficosComponent {
+export class TurmaGraficosComponent implements OnDestroy {
   readonly turmaId = input.required<string>();
 
   @ViewChild('canvasSexo', { static: false }) canvasSexo?: ElementRef<HTMLCanvasElement>;
@@ -287,6 +288,10 @@ export class TurmaGraficosComponent {
         },
       });
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destruirGraficos();
   }
 
   private destruirGraficos(): void {

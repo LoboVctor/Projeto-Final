@@ -8,19 +8,6 @@ import {
   IsNotEmpty,
   IsDateString,
   IsOptional,
-} from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { DiaSemana } from '../../../../../../infra/generated/prisma';
-import { 
-  IsUUID, 
-  IsBoolean, 
-  IsInt, 
-  Min, 
-  Max, 
-  IsEnum, 
-  IsNotEmpty, 
-  IsDateString, 
-  IsOptional, 
   ValidateNested,
   IsArray
 } from 'class-validator';
@@ -77,8 +64,6 @@ export class CreateRegistroAulaDto {
   @Min(1, { message: 'O score mínimo é 1' })
   @Max(5, { message: 'O score máximo é 5' })
   scoreParticipacao?: number;
-}
-
   @ApiPropertyOptional({ description: 'Score do nível de suporte (de 1 a 5)', minimum: 1, maximum: 5 })
   @IsOptional()
   @IsInt({ message: 'O score de nível de suporte deve ser um número inteiro' })

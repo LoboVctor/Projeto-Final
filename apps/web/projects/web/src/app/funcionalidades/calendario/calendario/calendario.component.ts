@@ -269,6 +269,18 @@ export class CalendarioComponent implements OnInit {
     }
   }
 
+  excluirEvento(id: string): void {
+    this.calendarioService.removerEvento(id).subscribe({
+      next: () => {
+        this.fecharPopup();
+        this.carregarEventos(this.mesAtual(), this.anoAtual());
+      },
+      error: () => {
+        alert('Erro ao excluir o evento. Tente novamente.');
+      }
+    });
+  }
+
   // ─── Helpers ─────────────────────────────────────────────────────────────────
 
   getCorEvento(): string {

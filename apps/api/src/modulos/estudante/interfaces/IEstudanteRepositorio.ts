@@ -7,8 +7,8 @@ import {
   Medicamento,
   EstudanteMedicamento,
   UnidadeM,
+  RegistroAula
 } from '@prisma-client';
-import { Prisma, EstudanteEspecificidade, Especificidade, TipoEspecificidade, CategoriaEspecificidade, Medicamento, EstudanteMedicamento, UnidadeM, RegistroAula } from '@prisma-client';
 import { BuscarEstudantesQueryDto } from '../dtos/buscar-estudantes-query.dto.js';
 import { CreateRegistroAulaBatchDto } from '../dtos/create-registro-aula.dto.js';
 

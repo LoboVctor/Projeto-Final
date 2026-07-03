@@ -48,7 +48,7 @@ export class RegistroDiarioService {
 
   async getResumoMensal(educadorId: string) {
     const hoje = new Date();
-    const primeiroDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const primeiroDiaDoMes = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth(), 1));
 
     const [totalPreenchidos, totalEsperado] = await Promise.all([
       this.registroDiarioRepositorio.contarRegistrosPreenchidos(
@@ -137,10 +137,6 @@ export class RegistroDiarioService {
   async upsertRegistro(dto: CreateRegistrosDiarioDto) {
     const dataOperacao = this.parseDateOnlyToSafeDate(dto.data);
 
-    const inicioDia = new Date(dataOperacao);
-    inicioDia.setUTCHours(0, 0, 0, 0);
-    const fimDia = new Date(dataOperacao);
-    fimDia.setUTCHours(23, 59, 59, 999);
 
     const existente =
       await this.registroDiarioRepositorio.buscarPorEstudanteEData(
@@ -375,58 +371,9 @@ export class RegistroDiarioService {
     return labels;
   }
 
-  private getLabelIndexForDate(
-    dataRegistro: Date,
-    dataLimite: Date,
-    periodo: string,
-  ): number {
-    const msPorDia = 1000 * 60 * 60 * 24;
-    const diferencaDias = Math.floor(
-      (dataRegistro.getTime() - dataLimite.getTime()) / msPorDia,
-    );
 
-    if (periodo === 'semana') {
-      return diferencaDias;
-    } else if (periodo === 'mes') {
-      return Math.floor(diferencaDias / 7);
-    } else {
-      const diferencaMeses =
-        (dataRegistro.getFullYear() - dataLimite.getFullYear()) * 12 +
-        (dataRegistro.getMonth() - dataLimite.getMonth());
-      return diferencaMeses;
-    }
-  }
-
-  private getIndicatorColor(indicador: string): string {
-    const colors: Record<string, string> = {
-      Comportamento: '#f97316',
-      Interação: '#3b82f6',
-      Foco: '#10b981',
-      Autonomia: '#a855f7',
-      Alimentação: '#eab308',
-      Banheiro: '#ec4899',
-    };
-    return colors[indicador] || '#64748b';
-  }
 
   async getDashboardSummary(studentId: string, periodo: string) {
-    const { atualInicio, atualFim, anteriorInicio, anteriorFim } =
-      this.getIntervalosDeComparacao(periodo);
-
-    const [registrosAtuais, registrosAnteriores] = await Promise.all([
-      this.registroDiarioRepositorio.buscarRegistrosPorIntervalo(
-        studentId,
-        atualInicio,
-        atualFim,
-      ),
-      this.registroDiarioRepositorio.buscarRegistrosPorIntervalo(
-        studentId,
-        anteriorInicio,
-        anteriorFim,
-      ),
-    ]);
-
-    const mediasAtuais = this.calcularMedias(registrosAtuais);
 
     const { atualInicio, atualFim, anteriorInicio, anteriorFim } = this.getIntervalosDeComparacao(periodo);
     
@@ -459,7 +406,8 @@ export class RegistroDiarioService {
 
     const mediasAtuais = this.calcularMedias(registrosAtuais);
     const mediasAnteriores = this.calcularMedias(registrosAnteriores);
-
+    const mediaGeralAtual = this.calcularMediaGlobal(mediasAtuais);
+    const mediaGeralAnterior = this.calcularMediaGlobal(mediasAnteriores);
     const calcularMetricasFrequencia = (aulas: { presenca: boolean }[]) => {
       if (aulas.length === 0) return 0;
       const totaisPresencas = aulas.filter(a => a.presenca).length;
@@ -472,11 +420,8 @@ export class RegistroDiarioService {
 
     return {
       mediaGeral: {
-        valor: this.calcularMediaGlobal(mediasAtuais),
-        variacao: this.calcularVariacao(
-          this.calcularMediaGlobal(mediasAtuais),
-          this.calcularMediaGlobal(mediasAnteriores),
-        ),
+        valor: mediaGeralAtual,
+        variacao: this.calcularVariacao(mediaGeralAtual, mediaGeralAnterior),
       },
       categorias: {
         Alimentacao: {
@@ -523,9 +468,6 @@ export class RegistroDiarioService {
         },
       },
       frequencia: {
-        valor: 92,
-        variacao: 0.3,
-      },
         valor: parseFloat(frequenciaAtual.toFixed(1)), 
         variacao: parseFloat(variacaoFrequencia.toFixed(1))
       }

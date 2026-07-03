@@ -21,11 +21,12 @@ import type {
   PaginacaoResponse,
 } from '../../../compartilhado/models/gerenciamento-alunos.model';
 import type { AlunoModalData } from '../../../compartilhado/models/aluno-modal.model';
+import { DiagLabelPipe } from '../../../compartilhado/pipes/student.pipes';
 
 @Component({
   selector: 'app-alunos',
   standalone: true,
-  imports: [CommonModule, FormsModule, AlunoModalComponent],
+  imports: [CommonModule, FormsModule, AlunoModalComponent, DiagLabelPipe],
   templateUrl: './alunos.component.html',
   styleUrls: ['./alunos.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -73,7 +74,7 @@ export class AlunosComponent implements OnInit {
   readonly totalPaginas = computed(() => this.resposta()?.totalPaginas ?? 1);
   readonly temResultados = computed(() => this.estudantes().length > 0);
 
-  /** Valores exatos do enum TipoDiagnostico do schema Prisma */
+  /** Labels padronizados de exibição do diagnóstico (normalizados para o enum no backend) */
   readonly tiposDiagnostico = [
     'TEA',
     'TDAH',
@@ -186,10 +187,7 @@ export class AlunosComponent implements OnInit {
     this.dispararBusca();
   }
 
-  limparFiltros(): void {
-    this.termoBusca.set('');
-    this.filtroDiagnostico.set('');
-    this.filtroStatus.set(undefined);
+
   onFiltroSexoChange(sexo: string): void {
     this.filtroSexo.set(sexo);
     this.paginaAtual.set(1);
@@ -306,7 +304,16 @@ export class AlunosComponent implements OnInit {
 
   getDiagnosticoLabel(aluno: EstudanteListagemItem): string {
     if (aluno.diagnosticos.length === 0) return '—';
-    return aluno.diagnosticos.map((d) => d.diagnostico.tipo).join(', ');
+    const mapa: Record<string, string> = {
+      TEA: 'TEA',
+      TDAH: 'TDAH',
+      SINDROME_DOWN: 'S.Down',
+      PARALISIA_CEREBRAL: 'P.Cerebral',
+      DEFICIENCIA_INTELECTUAL: 'Def. Int.',
+      DEFICIENCIA_MULTIPLA: 'Def. Múlt.',
+      OUTRO: 'Outro'
+    };
+    return aluno.diagnosticos.map((d) => mapa[d.diagnostico.tipo] || d.diagnostico.tipo).join(', ');
   }
 
   getTurmaLabel(aluno: EstudanteListagemItem): string {

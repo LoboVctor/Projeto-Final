@@ -1,5 +1,6 @@
 import { Component, input, output, ChangeDetectionStrategy, computed } from '@angular/core';
 import { calcularIdade } from '../../utils/date.utils';
+import { DiagLabelPipe } from '../../pipes/student.pipes';
 
 /** Contrato mínimo de dados do estudante necessário para renderizar o card. */
 export interface EstudanteCardInput {
@@ -10,12 +11,11 @@ export interface EstudanteCardInput {
 
 @Component({
   selector: 'app-card-aluno',
-  imports: [],
+  imports: [DiagLabelPipe],
   templateUrl: './card-aluno.html',
+  styleUrl: './card-aluno.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-  styleUrl: './card-aluno.css',
-  changeDetection: ChangeDetectionStrategy.OnPush })
 export class CardAlunoComponent {
   nome = input.required<string>();
   foto = input<string | null>();

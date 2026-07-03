@@ -1,7 +1,6 @@
 import {
   Component,
   EventEmitter,
-  Input,
   Output,
   ChangeDetectionStrategy,
   input } from '@angular/core';
@@ -20,7 +19,7 @@ import { EspecificidadeModalComponent } from './modais/especificidade-modal/espe
 export class BlocoVisaoGeralComponent {
   readonly visaoGeralData = input<EstudanteVisaoGeral | null>(null);
   readonly loading = input<boolean>(false);
-  @Input() error: string | null = null;
+  readonly error = input<string | null>(null);
 
   @Output() recolher = new EventEmitter<void>();
   @Output() fechar = new EventEmitter<void>();

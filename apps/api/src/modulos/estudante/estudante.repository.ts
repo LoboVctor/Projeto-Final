@@ -15,12 +15,10 @@ import {
   CategoriaEspecificidade,
   TipoDiagnostico,
   UnidadeM,
+  RegistroAula
 } from '@prisma-client';
 import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
-import type { IEstudanteRepositorio, EstudanteVisaoGeral, EstudanteSaude, EstudantePedagogico, EstudanteListagemPaginado, AulaAgenda } from './interfaces/IEstudanteRepositorio.js';
-import { Especificidade, EstudanteEspecificidade, TipoEspecificidade, CategoriaEspecificidade, TipoDiagnostico, UnidadeM, RegistroAula } from '@prisma-client';
-import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.ts';
-import type { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.ts';
+import type { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
 
 @Injectable()
 export class EstudanteRepository implements IEstudanteRepositorio {
@@ -165,13 +163,16 @@ export class EstudanteRepository implements IEstudanteRepositorio {
         diagnosticos: {
           some: {
             diagnostico: {
-              tipo: query.diagnosticoTipo as TipoDiagnostico,
+              // O front-end exibe os diagnósticos com espaço (ex: "SINDROME DOWN")
+              // para padronização visual, mas o enum do Prisma usa underscore.
+              tipo: query.diagnosticoTipo.trim().replace(/\s+/g, '_').toUpperCase() as TipoDiagnostico,
             },
           },
         },
       }),
       ...(query.status && {
         statusMatricula: query.status === 'PENDENTE' ? false : true,
+      }),
       ...(query.sexo && { sexo: query.sexo }),
       ...(query.turmaId && {
         turmas: { some: { id: query.turmaId } },
@@ -230,12 +231,6 @@ export class EstudanteRepository implements IEstudanteRepositorio {
       totalPaginas: Math.ceil(total / limit),
     };
   }
-
-  async buscarEspecificidadeExata(
-    tipo: TipoEspecificidade,
-    categoria: CategoriaEspecificidade,
-    descricao: string,
-  ): Promise<Especificidade | null> {
 
   async buscarEspecificidadeExata(tipo: TipoEspecificidade, categoria: CategoriaEspecificidade, descricao: string): Promise<Especificidade | null> {
     return this.prisma.client.especificidade.findFirst({
