@@ -1,4 +1,4 @@
-/* ── Layout principal ────────────────────────────────── */
+/* ── Layout principal (Voltamos ao flex pois a divisão é interna) ── */
 .turmas-layout {
   display: flex;
   flex-direction: column;
@@ -20,365 +20,218 @@
   gap: 20px;
 }
 
-/* ── Cabeçalho ───────────────────────────────────────── */
-.main-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+/* ── Cabeçalho e Big Numbers (MANTIDO INTACTO) ───────── */
+.main-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.main-title-block { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.main-title { font-size: 22px; font-weight: 700; color: #1f2328; margin: 0; }
+.turma-badge { font-size: 12px; font-weight: 600; color: #57606a; background: #f3f5f8; padding: 3px 10px; border-radius: 999px; border: 1px solid #d0d7de; }
+.turma-selector { display: flex; gap: 6px; flex-wrap: wrap; }
+.turma-selector-btn { padding: 6px 14px; font-size: 12.5px; font-weight: 600; color: #57606a; background: #f3f5f8; border: 1px solid #d0d7de; border-radius: 20px; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; white-space: nowrap; }
+.turma-selector-btn:hover { background: #e8eaed; color: #1f2328; }
+.turma-selector-btn.active { background: #6C3CC9; color: #ffffff; border-color: #6C3CC9; }
+.view-toggle { display: flex; background: #f3f5f8; border: 1px solid #d0d7de; border-radius: 8px; overflow: hidden; }
+.toggle-btn { display: flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 12.5px; font-weight: 600; color: #57606a; background: none; border: none; cursor: pointer; transition: background 0.12s, color 0.12s; }
+.toggle-btn:hover { background: #e8eaed; }
+.toggle-btn.active { background: #ffffff; color: #1f2328; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); }
+.state-error { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #fff0f0; border: 1px solid #ffb3b3; border-radius: 8px; font-size: 13px; color: #cf222e; }
+.state-empty { padding: 48px 0; text-align: center; font-size: 14px; color: #8c95a0; }
+.skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; }
+.skeleton-card { height: 160px; border-radius: 8px; background: linear-gradient(90deg, #e8eaed 25%, #f3f5f8 50%, #e8eaed 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ── Big Numbers ─────────────────────────────────────── */
+.big-numbers-row { 
+  display: grid; 
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 16px; 
 }
 
-.main-title-block {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
+.big-number-card { 
+  display: flex; 
+  align-items: center; 
+  gap: 24px; /* Mais espaço entre o ícone e os textos */
+  padding: 28px 24px; /* Expandido para dar mais imponência ao card */
+  background: #ffffff; 
+  border: 1px solid #e5e7eb; 
+  border-radius: 16px; 
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-height: 124px; /* Garante que todos os cards tenham exatamente a mesma altura fixa */
 }
 
-.main-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #1f2328;
-  margin: 0;
+.big-number-card:hover { 
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08); 
 }
 
-.turma-badge {
-  font-size: 12px;
-  font-weight: 600;
-  color: #57606a;
-  background: #f3f5f8;
-  padding: 3px 10px;
-  border-radius: 999px;
-  border: 1px solid #d0d7de;
+/* Ícone robusto aumentado para máximo preenchimento */
+.big-number-icon { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  width: 68px; 
+  height: 68px; 
+  border-radius: 14px; 
+  flex-shrink: 0; 
 }
 
-/* ── Seletor de Turmas (botões horizontais) ──────────── */
-.turma-selector {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+/* Tamanho do SVG interno do ícone ampliado */
+.big-number-icon svg {
+  width: 32px !important;
+  height: 32px !important;
+  stroke-width: 2.25;
 }
 
-.turma-selector-btn {
-  padding: 6px 14px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #57606a;
-  background: #f3f5f8;
-  border: 1px solid #d0d7de;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  white-space: nowrap;
+.big-number-icon--purple { background: #EDE9FE; color: #6C3CC9; }
+.big-number-icon--blue { background: #DBEAFE; color: #2563EB; }
+.big-number-icon--amber { background: #FEF3C7; color: #D97706; }
+.big-number-icon--green { background: #D1FAE5; color: #059669; }
+
+.big-number-info { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 6px; /* Ajuste sutil no distanciamento vertical interno */
+  min-width: 0; 
+  flex: 1;
 }
 
-.turma-selector-btn:hover {
-  background: #e8eaed;
-  color: #1f2328;
+/* Label superior padronizada */
+.big-number-label { 
+  font-size: 13px; 
+  font-weight: 700; 
+  color: #6B7280; 
+  text-transform: uppercase; 
+  letter-spacing: 0.06em; 
+  white-space: nowrap; 
 }
 
-.turma-selector-btn.active {
-  background: #6C3CC9;
-  color: #ffffff;
-  border-color: #6C3CC9;
-}
-
-/* ── Toggle de visualização ──────────────────────────── */
-.view-toggle {
-  display: flex;
-  background: #f3f5f8;
-  border: 1px solid #d0d7de;
-  border-radius: 8px;
+/* ABSOLUTA PADRONIZAÇÃO: Valor Numérico e Textos com o exato mesmo tamanho e peso */
+.big-number-value,
+.big-number-value--sm { 
+  font-size: 28px; /* Tamanho unificado e equilibrado baseado no ideal da Idade */
+  font-weight: 800; /* Negrito ultra-marcado igual ao '7 anos' */
+  color: #111827; 
+  line-height: 1.1; 
+  white-space: normal; /* Permite que laudos longos quebrem linha se necessário */
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* No máximo duas linhas para o texto grande, mantendo o alinhamento */
+  -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #57606a;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+.big-number-value.is-loading { 
+  opacity: 0.3; 
+  filter: blur(3px); 
 }
 
-.toggle-btn:hover {
-  background: #e8eaed;
-}
-
-.toggle-btn.active {
-  background: #ffffff;
-  color: #1f2328;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-}
-
-/* ── Estado de erro ──────────────────────────────────── */
-.state-error {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: #fff0f0;
-  border: 1px solid #ffb3b3;
-  border-radius: 8px;
-  font-size: 13px;
-  color: #cf222e;
-}
-
-/* ── Estado vazio ────────────────────────────────────── */
-.state-empty {
-  padding: 48px 0;
-  text-align: center;
-  font-size: 14px;
-  color: #8c95a0;
-}
-
-/* ── Skeleton loader ─────────────────────────────────── */
-.skeleton-grid {
+/* ── LAYOUT DIVIDIDO (ALUNOS E ABAS) ─────────────────── */
+.content-split {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 16px;
+  /* Define exatamente duas colunas: a primeira com peso 2.5 e a segunda com peso 1.5 */
+  grid-template-columns: 2.5fr 1.5fr; 
+  gap: 20px; 
+  flex: 1;
+  min-height: 0; 
 }
 
-.skeleton-card {
-  height: 160px;
-  border-radius: 8px;
-  background: linear-gradient(90deg, #e8eaed 25%, #f3f5f8 50%, #e8eaed 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
+.students-area {
+  grid-column: 1; 
+  overflow-y: auto;
+  padding-right: 12px;
 }
 
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* ── Big Numbers ─────────────────────────────────────── */
-.big-numbers-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-}
-
-.big-number-card {
+.sidebar-area {
+  /* Ocupa a segunda coluna (a de peso 1.5) */
+  grid-column: 2; 
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px;
+  flex-direction: column;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  transition: box-shadow 0.15s;
-}
-
-.big-number-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.10);
-}
-
-.big-number-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  flex-shrink: 0;
-}
-
-.big-number-icon--purple {
-  background: #EDE9FE;
-  color: #6C3CC9;
-}
-
-.big-number-icon--blue {
-  background: #DBEAFE;
-  color: #2563EB;
-}
-
-.big-number-icon--amber {
-  background: #FEF3C7;
-  color: #D97706;
-}
-
-.big-number-icon--green {
-  background: #D1FAE5;
-  color: #059669;
-}
-
-.big-number-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.big-number-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #6B7280;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
-.big-number-value {
-  font-size: 22px;
-  font-weight: 800;
-  color: #111827;
-  line-height: 1.1;
-  white-space: nowrap;
-  transition: opacity 0.3s ease, filter 0.3s ease;
-}
-
-.big-number-value--sm {
-  font-size: 15px;
-  font-weight: 700;
-  white-space: normal;
-  line-height: 1.2;
-}
-
-.big-number-value.is-loading {
-  opacity: 0.3;
-  filter: blur(3px);
-}
-
-.students-container-transition {
-  transition: opacity 0.3s ease, filter 0.3s ease;
-}
-
-.students-container-transition.is-loading-students {
-  opacity: 0.4;
-  filter: blur(4px);
-  pointer-events: none;
-}
-
-/* ── Grid de cards ───────────────────────────────────── */
-.students-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
-}
-
-/* ── Tabela de lista ─────────────────────────────────── */
-.students-list {
-  overflow-x: auto;
-}
-
-.list-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13.5px;
-}
-
-.list-table thead tr {
-  background: #f7f4fa;
-  border-bottom: 2px solid #d0d7de;
-}
-
-.list-table th {
-  text-align: left;
-  padding: 10px 14px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #57606a;
-}
-
-.list-row {
-  border-bottom: 1px solid #e1e4e8;
-  transition: background 0.12s, box-shadow 0.12s;
-  cursor: pointer;
-}
-
-.list-row:hover {
-  background: #f0f4ff;
-}
-
-.list-row:hover .list-cell-nome span {
-  color: #3c5f94;
-}
-
-.list-row td {
-  padding: 10px 14px;
-  vertical-align: middle;
-}
-
-.list-cell-nome {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 600;
-  color: #1f2328;
-}
-
-.list-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #dce1e8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.list-avatar img {
-  width: 100%;
+  padding: 24px; 
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
   height: 100%;
-  object-fit: cover;
+  min-height: 600px;
 }
 
-.list-avatar-placeholder {
-  font-size: 14px;
-  font-weight: 700;
-  color: #57606a;
-}
-
-.list-cell-mat {
-  color: #57606a;
-  font-size: 13px;
-}
-
-.list-cell-diag {
+/* ── Estilos das Abas e Estrutura 2x2 ────────────────── */
+.sidebar-tabs {
   display: flex;
-  flex-wrap: wrap;
+  background: #f3f5f8;
+  border-radius: 8px;
+  padding: 4px;
   gap: 4px;
 }
 
-.tag-diagnostico {
-  font-size: 10.5px;
+.sidebar-tab-btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: #3c5f94;
-  background: #e8f0fb;
-  border-radius: 4px;
-  padding: 1px 7px;
+  color: #57606a;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.no-diag {
-  color: #aaa;
-  font-size: 12px;
+.sidebar-tab-btn:hover { color: #1f2328; background: #e8eaed; }
+.sidebar-tab-btn.ativo { background: #ffffff; color: #6C3CC9; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+.sidebar-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+  animation: tabFadeIn 0.3s ease;
+  overflow-y: auto; 
+  overflow-x: hidden;
+  padding-right: 8px; /* Evita que o scrollbar sobreponha o gráfico */
 }
+
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ── Estilos da Grid e Lista de Alunos (MANTIDOS) ────── */
+.students-container-transition { transition: opacity 0.3s ease, filter 0.3s ease; }
+.students-container-transition.is-loading-students { opacity: 0.4; filter: blur(4px); pointer-events: none; }
+.students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+.students-list { overflow-x: auto; }
+.list-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.list-table thead tr { background: #f7f4fa; border-bottom: 2px solid #d0d7de; }
+.list-table th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #57606a; }
+.list-row { border-bottom: 1px solid #e1e4e8; transition: background 0.12s, box-shadow 0.12s; cursor: pointer; }
+.list-row:hover { background: #f0f4ff; }
+.list-row:hover .list-cell-nome span { color: #3c5f94; }
+.list-row td { padding: 10px 14px; vertical-align: middle; }
+.list-cell-nome { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #1f2328; }
+.list-avatar { width: 34px; height: 34px; border-radius: 50%; overflow: hidden; background: #dce1e8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.list-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.list-avatar-placeholder { font-size: 14px; font-weight: 700; color: #57606a; }
+.list-cell-mat { color: #57606a; font-size: 13px; }
+.list-cell-diag { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag-diagnostico { font-size: 10.5px; font-weight: 600; color: #3c5f94; background: #e8f0fb; border-radius: 4px; padding: 1px 7px; }
+.no-diag { color: #aaa; font-size: 12px; }
 
 /* ── Responsividade ──────────────────────────────────── */
+@media (max-width: 1200px) {
+  /* Se o ecrã ficar pequeno, damos 50% de espaço para a aba para não espremer os gráficos */
+  .students-area { grid-column: span 2; }
+  .sidebar-area { grid-column: span 2; }
+}
+
 @media (max-width: 900px) {
-  .big-numbers-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .content-split { grid-template-columns: 1fr; }
+  .students-area, .sidebar-area { grid-column: span 1; }
+  .big-numbers-row { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 600px) {
-  .big-numbers-row {
-    grid-template-columns: 1fr;
-  }
-  .turmas-main {
-    padding: 16px;
-  }
+  .big-numbers-row { grid-template-columns: 1fr; }
+  .turmas-main { padding: 16px; }
 }

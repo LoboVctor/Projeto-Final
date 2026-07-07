@@ -1,5 +1,7 @@
 import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
-import type { ITurmaRepositorio, MetricasTurma } from './interfaces/ITurmaRepositorio.js';
+import type { ITurmaRepositorio, MetricasTurma, AgregacaoKpisDiarios } from './interfaces/ITurmaRepositorio.js';
+import { KpisTurmaResponseDto } from './dtos/kpis-turma-response.dto.js';
+import { TurmaDashboardResponseDto } from './dtos/turma-dashboard-response.dto.js';
 
 @Injectable()
 export class TurmaService {
@@ -165,5 +167,135 @@ export class TurmaService {
       distribuicaoDiagnostico,
       distribuicaoComunicacao,
     };
+  }
+
+  async obterKpisTurma(turmaId: string): Promise<KpisTurmaResponseDto> {
+    try {
+      const turmaExists = await this.turmaRepositorio.buscarEstudantesPorTurma(turmaId);
+      if (!turmaExists) {
+        throw new NotFoundException(`Turma com id "${turmaId}" não encontrada.`);
+      }
+
+      const agregacoes = await this.turmaRepositorio.buscarAgregacoesKpis({ turmaId });
+      return this.formatarKpisResumo(agregacoes);
+    } catch (error) {
+      this.logger.error(`Erro ao processar KPIs da turma ${turmaId}`, error);
+      throw error;
+    }
+  }
+
+  async obterKpisGeraisEscola(escolaId?: string): Promise<KpisTurmaResponseDto> {
+    try {
+      const agregacoes = await this.turmaRepositorio.buscarAgregacoesKpis({ escolaId });
+      return this.formatarKpisResumo(agregacoes);
+    } catch (error) {
+      this.logger.error(`Erro ao processar KPIs da escola ${escolaId}`, error);
+      throw error;
+    }
+  }
+
+  private formatarKpisResumo(agregacoes: AgregacaoKpisDiarios): KpisTurmaResponseDto {
+    const { diariosAgregados } = agregacoes;
+
+    return {
+      mediaComportamento: Number(diariosAgregados._avg.scoreComportamento?.toFixed(1)) || 0,
+      mediaInteracao: Number(diariosAgregados._avg.scoreInteracao?.toFixed(1)) || 0,
+      mediaFoco: Number(diariosAgregados._avg.scoreFoco?.toFixed(1)) || 0,
+      mediaAutonomia: Number(diariosAgregados._avg.scoreAutonomia?.toFixed(1)) || 0,
+      mediaAlimentacao: Number(diariosAgregados._avg.statusAlimentacao?.toFixed(1)) || 0,
+      mediaBanheiro: Number(diariosAgregados._avg.usoBanheiro?.toFixed(1)) || 0,
+    };
+  }
+
+  async obterDashboardTurma(turmaId: string, periodo: string = 'semana'): Promise<TurmaDashboardResponseDto> {
+    const turmaExists = await this.turmaRepositorio.buscarEstudantesPorTurma(turmaId);
+    if (!turmaExists) throw new NotFoundException(`Turma não encontrada.`);
+
+    // 1. Calcular Janelas de Tempo (Atual e Anterior para Variação)
+    const { atualInicio, atualFim, anteriorInicio, anteriorFim } = this.calcularJanelasDeTempo(periodo);
+
+    // 2. Buscar Dados em Paralelo para Alta Performance
+    const [diarioAtual, diarioAnterior, freqAtual, freqAnterior] = await Promise.all([
+      this.turmaRepositorio.buscarAgregacoesDiariasPorPeriodo(turmaId, atualInicio, atualFim),
+      this.turmaRepositorio.buscarAgregacoesDiariasPorPeriodo(turmaId, anteriorInicio, anteriorFim),
+      this.turmaRepositorio.buscarFrequenciaPorPeriodo(turmaId, atualInicio, atualFim),
+      this.turmaRepositorio.buscarFrequenciaPorPeriodo(turmaId, anteriorInicio, anteriorFim),
+    ]);
+
+    // 3. Processar Frequências
+    const calcFreq = (aggs: any[]) => {
+      const presencas = aggs.find((a) => a.presenca === true)?._count.presenca || 0;
+      const ausencias = aggs.find((a) => a.presenca === false)?._count.presenca || 0;
+      const total = presencas + ausencias;
+      return total > 0 ? (presencas / total) * 100 : 0;
+    };
+    const valFreqAtual = calcFreq(freqAtual);
+    const valFreqAnterior = calcFreq(freqAnterior);
+
+    // 4. Mapear Categorias
+    const chaves = [
+      { key: 'Alimentacao', prop: 'statusAlimentacao' },
+      { key: 'Banheiro', prop: 'usoBanheiro' },
+      { key: 'Autonomia', prop: 'scoreAutonomia' },
+      { key: 'Comportamento', prop: 'scoreComportamento' },
+      { key: 'Interacao', prop: 'scoreInteracao' },
+      { key: 'Foco', prop: 'scoreFoco' },
+    ];
+
+    const categorias: Record<string, { valor: number; variacao: number }> = {};
+    let somaMediaGeral = 0;
+    let somaMediaGeralAnterior = 0;
+
+    for (const c of chaves) {
+      const valAtual = diarioAtual._avg[c.prop] || 0;
+      const valAnterior = diarioAnterior._avg[c.prop] || 0;
+      
+      categorias[c.key] = {
+        valor: Number(valAtual.toFixed(1)),
+        variacao: Number((valAtual - valAnterior).toFixed(1)),
+      };
+      somaMediaGeral += valAtual;
+      somaMediaGeralAnterior += valAnterior;
+    }
+
+    const valMediaGeral = somaMediaGeral / 6;
+    const valMediaGeralAnterior = somaMediaGeralAnterior / 6;
+
+    // 5. Retornar estrutura EXATA do Dashboard do Aluno
+    return {
+      mediaGeral: {
+        valor: Number(valMediaGeral.toFixed(1)),
+        variacao: Number((valMediaGeral - valMediaGeralAnterior).toFixed(1)),
+      },
+      frequencia: {
+        valor: Number(valFreqAtual.toFixed(0)),
+        variacao: Number((valFreqAtual - valFreqAnterior).toFixed(1)),
+      },
+      categorias,
+    };
+  }
+
+  // Função Auxiliar de Datas
+  private calcularJanelasDeTempo(periodo: string) {
+    let dias = 7;
+    if (periodo === 'mes') dias = 30;
+    if (periodo === 'semestre') dias = 180;
+
+    const atualFim = new Date();
+    atualFim.setHours(23, 59, 59, 999);
+
+    const atualInicio = new Date(atualFim);
+    atualInicio.setDate(atualInicio.getDate() - dias);
+    atualInicio.setHours(0, 0, 0, 0);
+
+    const anteriorFim = new Date(atualInicio);
+    anteriorFim.setDate(anteriorFim.getDate() - 1);
+    anteriorFim.setHours(23, 59, 59, 999);
+
+    const anteriorInicio = new Date(anteriorFim);
+    anteriorInicio.setDate(anteriorInicio.getDate() - dias);
+    anteriorInicio.setHours(0, 0, 0, 0);
+
+    return { atualInicio, atualFim, anteriorInicio, anteriorFim };
   }
 }

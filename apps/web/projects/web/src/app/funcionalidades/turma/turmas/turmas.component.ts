@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TurmasService, TurmaResumo, EstudanteResumo, EstudantesPorTurmaResponse, MetricasTurma } from '../../../nucleo/services/turmas.service';
 import { AuthService } from '../../../nucleo/services/auth';
@@ -7,6 +7,8 @@ import { CardAlunoComponent } from '../../../compartilhado/components/card-aluno
 import { AlunoModalData } from '../../../compartilhado/models/aluno-modal.model';
 import { AlunoModalComponent } from '../../../compartilhado/components/aluno-modal/aluno-modal.component';
 import { TurmaGraficosComponent } from '../components/turma-graficos/turma-graficos';
+import { KpisTurma } from '../../../compartilhado/models/kpis-turma.model';
+import { KpisTurmaComponent } from '../components/kpis-turma/kpis-turma.component';
 
 type ViewMode = 'grid' | 'list';
 
@@ -35,6 +37,7 @@ const FCOM_LABEL: Record<string, string> = {
     DiagLabelPipe,
     AlunoModalComponent,
     TurmaGraficosComponent,
+    KpisTurmaComponent
   ],
   templateUrl: './turmas.component.html',
   styleUrls: ['./turmas.component.css'],
@@ -52,6 +55,7 @@ export class TurmasComponent implements OnInit {
   loading = signal(false);
   loadingEstudantes = signal(false);
   error = signal<string | null>(null);
+  abaAtiva = signal<'perfil' | 'kpis'>('perfil');
 
   // ── Computed helpers para Big Numbers ─────────────────────────
   readonly diagnosticoPrincipalLabel = computed(() => {
@@ -66,6 +70,10 @@ export class TurmasComponent implements OnInit {
 
   ngOnInit(): void {
     this.carregarTurmas();
+  }
+
+  trocarAba(aba: 'perfil' | 'kpis'): void {
+    this.abaAtiva.set(aba);
   }
 
   carregarTurmas(): void {

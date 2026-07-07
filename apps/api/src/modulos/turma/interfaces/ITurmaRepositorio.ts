@@ -78,6 +78,24 @@ export interface MetricasTurma {
   distribuicaoComunicacao: { forma: string; quantidade: number }[];
 }
 
+export interface FiltroKpisDiarios {
+  turmaId?: string;
+  escolaId?: string;
+}
+
+export interface AgregacaoKpisDiarios {
+  diariosAgregados: {
+    _avg: {
+      scoreComportamento: number | null;
+      scoreInteracao: number | null;
+      scoreFoco: number | null;
+      scoreAutonomia: number | null;
+      statusAlimentacao: number | null;
+      usoBanheiro: number | null;
+    };
+  };
+}
+
 export interface ITurmaRepositorio {
   buscarTodas(educadorId?: string): Promise<TurmaLista[]>;
   buscarEstudantesPorTurma(turmaId: string): Promise<TurmaComEstudantes | null>;
@@ -85,6 +103,11 @@ export interface ITurmaRepositorio {
     turma: TurmaParaGrafico | null;
     assiduidade: { presenca: boolean | null; _count: { presenca: number } }[];
   }>;
-  buscarDadosGraficos(turmaId: string): Promise<{ turma: TurmaParaGrafico | null; assiduidade: { presenca: boolean | null; _count: { presenca: number } }[] }>;
   buscarMetricasTurma(turmaId: string): Promise<TurmaParaMetricas | null>;
+  
+  // NOVO MÉTODO
+  buscarAgregacoesKpis(filtro?: FiltroKpisDiarios): Promise<AgregacaoKpisDiarios>;
+
+  buscarAgregacoesDiariasPorPeriodo(turmaId: string, inicio: Date, fim: Date): Promise<any>;
+  buscarFrequenciaPorPeriodo(turmaId: string, inicio: Date, fim: Date): Promise<any>;
 }
