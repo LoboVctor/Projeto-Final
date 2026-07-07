@@ -2,66 +2,34 @@
   <main class="turmas-main">
     
     <div class="main-header">
+      
       <div class="main-title-block">
         <h1 class="main-title">
           {{ turmaSelecionada() ? turmaSelecionada()!.nome : 'Turmas' }}
         </h1>
+        
         @if (turmaSelecionada()) {
           <span class="turma-badge">
             {{ turmaSelecionada()!.anoLetivo }} · {{ turmaSelecionada()!.turno | slice: 0 : 3 }}
           </span>
         }
+
+        @if (turmas().length > 1) {
+          <div class="turma-selector" role="group" aria-label="Selecionar turma">
+            @for (turma of turmas(); track turma.id) {
+              <button
+                class="turma-selector-btn"
+                [class.active]="turmaSelecionada()?.id === turma.id"
+                (click)="selecionarTurma(turma)"
+                type="button"
+              >
+                {{ turma.nome }}
+              </button>
+            }
+          </div>
+        }
       </div>
 
-      @if (turmas().length > 1) {
-        <div class="turma-selector" role="group" aria-label="Selecionar turma">
-          @for (turma of turmas(); track turma.id) {
-            <button
-              class="turma-selector-btn"
-              [class.active]="turmaSelecionada()?.id === turma.id"
-              (click)="selecionarTurma(turma)"
-              type="button"
-            >
-              {{ turma.nome }}
-            </button>
-          }
-        </div>
-      }
-
-      <div class="view-toggle" role="group" aria-label="Modo de visualização">
-        <button
-          id="btn-view-grid"
-          class="toggle-btn"
-          [class.active]="viewMode() === 'grid'"
-          (click)="setView('grid')"
-          title="Visualização em Cards"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7" />
-            <rect x="14" y="3" width="7" height="7" />
-            <rect x="14" y="14" width="7" height="7" />
-            <rect x="3" y="14" width="7" height="7" />
-          </svg>
-          Cards
-        </button>
-        <button
-          id="btn-view-list"
-          class="toggle-btn"
-          [class.active]="viewMode() === 'list'"
-          (click)="setView('list')"
-          title="Visualização em Lista"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="8" y1="6" x2="21" y2="6" />
-            <line x1="8" y1="12" x2="21" y2="12" />
-            <line x1="8" y1="18" x2="21" y2="18" />
-            <line x1="3" y1="6" x2="3.01" y2="6" />
-            <line x1="3" y1="12" x2="3.01" y2="12" />
-            <line x1="3" y1="18" x2="3.01" y2="18" />
-          </svg>
-          Lista
-        </button>
-      </div>
     </div>
 
     @if (error()) {
@@ -84,7 +52,7 @@
     }
 
     @if (!loading() && !error() && turmaSelecionada()) {
-      <div class="big-numbers-row">
+      <div class="big-numbers-row mt-4">
         <div class="big-number-card">
           <div class="big-number-icon big-number-icon--purple">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -140,87 +108,135 @@
     }
 
     @if (!loading() && !error() && turmaSelecionada()) {
-      <div class="content-split mt-6">
+      <div class="content-split">
         
-        <div class="students-area">
+        <div class="students-column">
           
-          @if (viewMode() === 'grid') {
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-start items-start students-container-transition" [class.is-loading-students]="loadingEstudantes()">
-              @for (estudante of estudantes(); track estudante.id) {
-                <app-card-aluno
-                  [nome]="estudante.nomeCompleto"
-                  [matricula]="estudante.matricula"
-                  [foto]="estudante.foto"
-                  [estudante]="estudante"
-                  [diagnostico]="estudante.diagnosticos.length > 0 ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo' : 'Sem Laudo'"
-                  (abrirPerfil)="abrirDetalhesAluno(estudante)"
-                ></app-card-aluno>
-              }
-              @if (estudantes().length === 0) {
-                <div class="state-empty col-span-full text-center py-8 text-gray-500">
-                  Nenhum estudante nesta turma.
-                </div>
-              }
+          <div class="students-column-header flex justify-between items-end mb-3">
+            <div>
+              <h3 class="text-lg font-sora font-bold text-gray-800">Alunos da Turma</h3>
             </div>
-          }
-
-          @if (viewMode() === 'list') {
-            <div class="students-list students-container-transition" [class.is-loading-students]="loadingEstudantes()">
-              @if (estudantes().length === 0) {
-                <div class="state-empty">Nenhum estudante nesta turma.</div>
-              }
-              @if (estudantes().length > 0) {
-                <table class="list-table">
-                  <thead>
-                    <tr>
-                      <th>Aluno</th>
-                      <th>Matrícula</th>
-                      <th>Diagnósticos</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (e of estudantes(); track e.id) {
-                      <tr class="list-row" (click)="abrirDetalhesAluno(e)" title="Ver perfil de {{ e.nomeCompleto }}">
-                        <td class="list-cell-nome">
-                          <div class="list-avatar">
-                            @if (e.foto) { <img [src]="e.foto" [alt]="e.nomeCompleto" /> }
-                            @if (!e.foto) { <div class="list-avatar-placeholder">{{ e.nomeCompleto[0] }}</div> }
-                          </div>
-                          <span>{{ e.nomeCompleto }}</span>
-                        </td>
-                        <td class="list-cell-mat">{{ e.matricula }}</td>
-                        <td class="list-cell-diag">
-                          @for (d of e.diagnosticos; track d) {
-                            <span class="tag-diagnostico">{{ d.diagnostico.tipo | diagLabel }}</span>
-                          }
-                          @if (!e.diagnosticos.length) { <span class="no-diag">—</span> }
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              }
+            
+            <div class="view-toggle" role="group" aria-label="Modo de visualização">
+              <button id="btn-view-grid" class="toggle-btn" [class.active]="viewMode() === 'grid'" (click)="setView('grid')" title="Visualização em Cards">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                Cards
+              </button>
+              <button id="btn-view-list" class="toggle-btn" [class.active]="viewMode() === 'list'" (click)="setView('list')" title="Visualização em Lista">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                Lista
+              </button>
             </div>
-          }
-        </div>
-
-        <aside class="sidebar-area">
-          <div class="sidebar-tabs">
-            <button class="sidebar-tab-btn" [class.ativo]="abaAtiva() === 'perfil'" (click)="trocarAba('perfil')">Perfil da Turma</button>
-            <button class="sidebar-tab-btn" [class.ativo]="abaAtiva() === 'kpis'" (click)="trocarAba('kpis')">KPIs Diários</button>
           </div>
 
-          <div class="sidebar-content graficos-2x2-wrapper">
-            @switch (abaAtiva()) {
-              @case ('perfil') {
-                <app-turma-graficos [turmaId]="turmaSelecionada()!.id"></app-turma-graficos>
-              }
-              @case ('kpis') {
-                <app-kpis-turma [turmaId]="turmaSelecionada()!.id"></app-kpis-turma>
-              }
+          <div class="students-area">
+            
+            @if (viewMode() === 'grid') {
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-start items-start students-container-transition" [class.is-loading-students]="loadingEstudantes()">
+                @for (estudante of estudantes(); track estudante.id) {
+                  <app-card-aluno [nome]="estudante.nomeCompleto" [matricula]="estudante.matricula" [foto]="estudante.foto" [estudante]="estudante" [diagnostico]="estudante.diagnosticos.length > 0 ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo' : 'Sem Laudo'" (abrirPerfil)="abrirDetalhesAluno(estudante)"></app-card-aluno>
+                }
+                @if (estudantes().length === 0) {
+                  <div class="state-empty col-span-full text-center py-8 text-gray-500">Nenhum estudante nesta turma.</div>
+                }
+              </div>
+            }
+
+            @if (viewMode() === 'list') {
+              <div class="students-list students-container-transition" [class.is-loading-students]="loadingEstudantes()">
+                
+                @if (estudantes().length === 0) {
+                  <div class="state-empty text-center py-8 text-gray-500">Nenhum estudante nesta turma.</div>
+                } @else {
+                  
+                  <!-- Tabela refatorada com Tailwind Puro -->
+                  <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden w-full">
+                    <table class="w-full text-left border-collapse">
+                      
+                      <thead>
+                        <tr class="bg-gray-50/50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-bold">
+                          <th class="px-6 py-4 font-sora">Aluno</th>
+                          <th class="px-6 py-4 font-sora">Matrícula</th>
+                          <th class="px-6 py-4 font-sora">Turma</th>
+                          <th class="px-6 py-4 font-sora">Diagnóstico</th>
+                        </tr>
+                      </thead>
+                      
+                      <tbody class="divide-y divide-gray-50">
+                        @for (aluno of estudantes(); track aluno.id) {
+                          <tr class="hover:bg-purple-50/30 transition-colors cursor-pointer group"
+                              (click)="abrirDetalhesAluno(aluno)"
+                              tabindex="0"
+                              (keydown.enter)="abrirDetalhesAluno(aluno)"
+                              (keydown.space)="abrirDetalhesAluno(aluno)">
+                            
+                            <!-- Coluna: Aluno (Foto + Nome) -->
+                            <td class="px-6 py-3">
+                              <div class="flex items-center space-x-3">
+                                <img [src]="aluno.foto || 'assets/placeholder-avatar.png'" 
+                                     [alt]="aluno.nomeCompleto" 
+                                     class="w-10 h-10 rounded-full object-cover border border-gray-200 group-hover:border-purple-300 transition-colors" 
+                                     loading="lazy" />
+                                <span class="text-sm font-bold text-gray-800">{{ aluno.nomeCompleto }}</span>
+                              </div>
+                            </td>
+                            
+                            <!-- Coluna: Matrícula -->
+                            <td class="px-6 py-3">
+                              <span class="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded-md">{{ aluno.matricula }}</span>
+                            </td>
+                            
+                            <!-- Coluna: Turma -->
+                            <td class="px-6 py-3 text-sm text-gray-600 font-medium">
+                              {{ turmaSelecionada()?.nome }}
+                            </td>
+                            
+                            <!-- Coluna: Diagnóstico -->
+                            <td class="px-6 py-3">
+                              @if (aluno.diagnosticos.length > 0) {
+                                <div class="flex flex-wrap gap-1">
+                                  @for (d of aluno.diagnosticos; track d.diagnostico.nome) {
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-nunito font-bold border bg-purple-50 text-purple-700 border-purple-200 shadow-sm">
+                                      {{ d.diagnostico.tipo | diagLabel }}
+                                    </span>
+                                  }
+                                </div>
+                              } @else {
+                                <span class="text-gray-400 font-medium text-sm">—</span>
+                              }
+                            </td>
+                            
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+
+                }
+              </div>
             }
           </div>
-        </aside>
+        </div>
+
+        <div class="sidebar-wrapper">
+          <div class="sidebar-tabs-outer">
+            <button class="sidebar-tab-btn-outer" [class.ativo]="abaAtiva() === 'perfil'" (click)="trocarAba('perfil')">Perfil da Turma</button>
+            <button class="sidebar-tab-btn-outer" [class.ativo]="abaAtiva() === 'kpis'" (click)="trocarAba('kpis')">Métricas</button>
+          </div>
+
+          <aside class="sidebar-area-clean">
+            <div class="sidebar-content-clean">
+              @switch (abaAtiva()) {
+                @case ('perfil') {
+                  <app-turma-graficos [turmaId]="turmaSelecionada()!.id"></app-turma-graficos>
+                }
+                @case ('kpis') {
+                  <app-kpis-turma [turmaId]="turmaSelecionada()!.id"></app-kpis-turma>
+                }
+              }
+            </div>
+          </aside>
+        </div>
 
       </div>
     }

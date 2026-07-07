@@ -133,44 +133,89 @@ export class TurmaGraficosComponent implements OnDestroy {
 
   private renderizarSexo(dados: MetricasTurma): void {
     if (!this.canvasSexo) return;
-    const labels = dados.distribuicaoSexo.map((d) => SEXO_LABEL[d.sexo] ?? d.sexo);
-    const data = dados.distribuicaoSexo.map((d) => d.quantidade);
+    
     const SEXO_COLOR: Record<string, string> = {
       MASCULINO: '#4A248A',
       FEMININO: '#f4c54e',
       OUTRO: '#B79CED',
     };
-    const bgColors = dados.distribuicaoSexo.map((d) => SEXO_COLOR[d.sexo] ?? '#9CA3AF');
+
+    const datasets = dados.distribuicaoSexo.map((d) => ({
+      label: SEXO_LABEL[d.sexo] ?? d.sexo,
+      data: [d.quantidade], 
+      backgroundColor: SEXO_COLOR[d.sexo] ?? '#9CA3AF',
+      borderWidth: 2,       
+      borderColor: '#ffffff',
+      borderRadius: 4,      
+      borderSkipped: false,
+      barPercentage: 0.6    
+    }));
+
     const chart = this.graficosInstancias['sexo'];
-    if (chart && chart.data.datasets[0]) {
-      chart.data.labels = labels;
-      chart.data.datasets[0].data = data;
-      chart.data.datasets[0].backgroundColor = bgColors;
+    if (chart) {
+      chart.data.datasets = datasets;
       chart.update();
     } else {
       this.graficosInstancias['sexo'] = new Chart(this.canvasSexo.nativeElement, {
-        type: 'doughnut',
+        type: 'bar',
         data: {
-          labels,
-          datasets: [{
-            data,
-            backgroundColor: bgColors,
-            borderWidth: 0,
-            hoverOffset: 6,
-          }],
+          labels: [''], 
+          datasets,
         },
         options: {
+          indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
-          layout: { padding: 10 },
+          layout: { padding: 0 },
+          scales: {
+            x: { stacked: true, display: false },
+            y: { stacked: true, display: false }
+          },
           plugins: {
             legend: {
               position: 'bottom',
-              reverse: true,
-              labels: { font: { family: 'Nunito', size: 11 } },
+              labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Nunito', size: 11 } }
             },
-          },
+            tooltip: {
+              callbacks: {
+                label: (context) => ` ${context.dataset.label}: ${context.raw}`
+              }
+            }
+          }
         },
+        plugins: [{
+          id: 'textInsideBarSexo',
+          afterDatasetsDraw(chartInstance) {
+            const { ctx, data } = chartInstance;
+            let total = 0;
+            
+            data.datasets.forEach(ds => total += (ds.data[0] as number) || 0);
+
+            data.datasets.forEach((dataset, i) => {
+              const meta = chartInstance.getDatasetMeta(i);
+              const bar = meta.data[0] as any; 
+              const valor = (dataset.data[0] as number) || 0;
+
+              if (bar && valor > 0 && total > 0) {
+                const percentagem = ((valor / total) * 100).toFixed(1).replace('.0', '') + '%';
+                
+                const centroX = (bar.x + bar.base) / 2;
+                const centroY = bar.y;
+
+                ctx.save();
+                ctx.fillStyle = '#ffffff'; 
+                ctx.font = 'bold 12px "Nunito", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                if ((bar.x - bar.base) > 30) {
+                  ctx.fillText(percentagem, centroX, centroY);
+                }
+                ctx.restore();
+              }
+            });
+          }
+        }]
       });
     }
   }
@@ -193,6 +238,7 @@ export class TurmaGraficosComponent implements OnDestroy {
             label: 'Alunos',
             data,
             backgroundColor: '#4A248A',
+            borderWidth: 0,
             borderRadius: 6,
           }],
         },
@@ -230,8 +276,7 @@ export class TurmaGraficosComponent implements OnDestroy {
             label: 'Alunos',
             data,
             backgroundColor: bgColors,
-            borderColor: borderColors,
-            borderWidth: 1.5,
+            borderWidth: 0,
             borderRadius: 6,
           }],
         },
@@ -250,42 +295,82 @@ export class TurmaGraficosComponent implements OnDestroy {
 
   private renderizarCom(dados: MetricasTurma): void {
     if (!this.canvasCom) return;
-    const labels = dados.distribuicaoComunicacao.map((d) => FCOM_LABEL[d.forma] ?? d.forma);
-    const data = dados.distribuicaoComunicacao.map((d) => d.quantidade);
-    const bgColors = dados.distribuicaoComunicacao.map((d) =>
-      d.forma === 'VERBAL' ? '#f4c54e' : '#4A248A'
-    );
+
+    const datasets = dados.distribuicaoComunicacao.map((d) => ({
+      label: FCOM_LABEL[d.forma] ?? d.forma,
+      data: [d.quantidade],
+      backgroundColor: d.forma === 'VERBAL' ? '#f4c54e' : '#4A248A',
+      borderWidth: 2,
+      borderColor: '#ffffff',
+      borderRadius: 4,
+      borderSkipped: false,
+      barPercentage: 0.6
+    }));
 
     const chart = this.graficosInstancias['com'];
-    if (chart && chart.data.datasets[0]) {
-      chart.data.labels = labels;
-      chart.data.datasets[0].data = data;
-      chart.data.datasets[0].backgroundColor = bgColors;
+    if (chart) {
+      chart.data.datasets = datasets;
       chart.update();
     } else {
       this.graficosInstancias['com'] = new Chart(this.canvasCom.nativeElement, {
-        type: 'doughnut',
+        type: 'bar',
         data: {
-          labels,
-          datasets: [{
-            data,
-            backgroundColor: bgColors,
-            borderWidth: 0,
-            hoverOffset: 6,
-          }],
+          labels: [''],
+          datasets,
         },
         options: {
+          indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
-          layout: { padding: 10 },
+          layout: { padding: 0 },
+          scales: {
+            x: { stacked: true, display: false },
+            y: { stacked: true, display: false }
+          },
           plugins: {
             legend: {
               position: 'bottom',
-              reverse: true,
-              labels: { font: { family: 'Nunito', size: 11 } },
+              labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Nunito', size: 11 } }
             },
-          },
+            tooltip: {
+              callbacks: {
+                label: (context) => ` ${context.dataset.label}: ${context.raw}`
+              }
+            }
+          }
         },
+
+        plugins: [{
+          id: 'textInsideBarCom',
+          afterDatasetsDraw(chartInstance) {
+            const { ctx, data } = chartInstance;
+            let total = 0;
+            data.datasets.forEach(ds => total += (ds.data[0] as number) || 0);
+
+            data.datasets.forEach((dataset, i) => {
+              const meta = chartInstance.getDatasetMeta(i);
+              const bar = meta.data[0] as any;
+              const valor = (dataset.data[0] as number) || 0;
+
+              if (bar && valor > 0 && total > 0) {
+                const percentagem = ((valor / total) * 100).toFixed(1).replace('.0', '') + '%';
+                const centroX = (bar.x + bar.base) / 2;
+                const centroY = bar.y;
+
+                ctx.save();
+                ctx.fillStyle = '#ffffff'; 
+                ctx.font = 'bold 12px "Nunito", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                if ((bar.x - bar.base) > 30) {
+                  ctx.fillText(percentagem, centroX, centroY);
+                }
+                ctx.restore();
+              }
+            });
+          }
+        }]
       });
     }
   }

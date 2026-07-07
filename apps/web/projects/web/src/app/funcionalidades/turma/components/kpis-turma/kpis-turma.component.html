@@ -7,7 +7,7 @@
 @if (dashboardData(); as dados) {
   <div class="flex flex-col h-full w-full">
     
-    <div class="flex justify-between items-center mb-6 shrink-0">
+    <div class="flex justify-between items-center mb-3 shrink-0">
       <div>
         <h3 class="text-lg font-sora font-bold text-gray-800">Desempenho Diário da Turma</h3>
         <p class="text-sm text-gray-500">Média geral baseada nos registos dos alunos.</p>
@@ -26,18 +26,18 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 shrink-0">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-3 shrink-0">
       
-      <div class="bg-orange-50/50 border border-orange-100 rounded-2xl p-6 flex flex-col items-center justify-center relative shadow-sm min-h-[200px]">
-        <h3 class="text-lg font-bold text-gray-800 mb-2">Média Geral</h3>
+      <div class="bg-orange-50/50 border border-orange-100 rounded-2xl p-4 flex flex-col items-center justify-center relative shadow-sm min-h-[140px]">
+        <h3 class="text-base font-bold text-gray-800 mb-2">Média Geral</h3>
         
-        <div class="relative w-48 h-24 mb-2 shrink-0">
+        <div class="relative w-48 h-14 mb-2 shrink-0">
           <canvas #mediaGaugeCanvas></canvas>
           <div class="absolute bottom-0 w-full text-center">
-            <span class="text-4xl font-extrabold text-gray-800">{{ dados.mediaGeral.valor | number:'1.1-1' }}</span><span class="text-gray-500 text-xl">/5</span>
+            <span class="text-2xl font-extrabold text-gray-800">{{ dados.mediaGeral.valor | number:'1.1-1' }}</span><span class="text-gray-500 text-xl">/5</span>
           </div>
         </div>
-        <p class="text-sm font-medium text-gray-500 text-center mb-2">Desempenho global da turma</p>
+        <p class="text-xs font-medium text-gray-400 text-center mb-2">Desempenho geral da turma</p>
         
         <div class="flex items-center text-xs font-semibold" [ngClass]="dados.mediaGeral.variacao >= 0 ? 'text-green-600' : 'text-red-500'">
           <span class="text-base font-black mr-1 leading-none">{{ dados.mediaGeral.variacao >= 0 ? '↑' : '↓' }}</span>
@@ -45,36 +45,55 @@
         </div>
       </div>
 
-      <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center min-h-[200px]">
-        <div class="flex items-center space-x-3 mb-4">
-          <div class="bg-green-50 p-3 rounded-xl text-green-600 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </div>
-          <h3 class="text-lg font-bold text-gray-800 m-0">Assiduidade</h3>
+      <div class="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center justify-center relative shadow-sm min-h-[140px]">
+        
+        <h3 class="text-base font-bold text-gray-800 mb-4">Frequência</h3>
+
+        <div class="text-center mb-1">
+          <span class="text-2xl font-extrabold text-gray-800 leading-none">{{ dados.frequencia.valor }}%</span>
         </div>
         
-        <div class="text-center mb-2">
-          <span class="text-4xl font-extrabold text-gray-800">{{ dados.frequencia.valor }}%</span>
+        <div class="w-full max-w-[192px] relative h-3.5 rounded-md overflow-hidden mb-3 mt--1.5"
+             [ngClass]="{
+               'bg-green-100': dados.frequencia.valor >= 75,
+               'bg-amber-100': dados.frequencia.valor >= 50 && dados.frequencia.valor < 75,
+               'bg-red-100': dados.frequencia.valor < 50
+             }">
+          
+          <div class="h-full transition-all duration-1000 ease-out"
+               [ngClass]="{
+                 'bg-green-500': dados.frequencia.valor >= 75,
+                 'bg-amber-400': dados.frequencia.valor >= 50 && dados.frequencia.valor < 75,
+                 'bg-red-500': dados.frequencia.valor < 50
+               }"
+               [style.width.%]="dados.frequencia.valor">
+          </div>
+
+          <div class="absolute inset-0 flex justify-evenly pointer-events-none">
+            <div class="w-[1.5px] h-full bg-white/80"></div>
+            <div class="w-[1.5px] h-full bg-white/80"></div>
+            <div class="w-[1.5px] h-full bg-white/80"></div>
+            <div class="w-[1.5px] h-full bg-white/80"></div>
+          </div>
         </div>
 
-        <div class="text-[10px] font-semibold px-2 py-1 rounded-lg bg-gray-50 border border-gray-100 flex items-center" [ngClass]="dados.frequencia.variacao >= 0 ? 'text-green-600' : 'text-red-500'">
-          <span class="text-xs font-black mr-1 leading-none">{{ dados.frequencia.variacao >= 0 ? '↑' : '↓' }}</span>
-          <span>{{ dados.frequencia.variacao >= 0 ? '+' : '' }}{{ dados.frequencia.variacao | number:'1.1-1' }}%</span>
+
+        <p class="text-xs font-medium text-gray-400 text-center mb-2">Frequência geral da turma</p>
+        
+        <div class="flex items-center text-xs font-semibold" [ngClass]="dados.frequencia.variacao >= 0 ? 'text-green-600' : 'text-red-500'">
+          <span class="text-base font-black mr-1 leading-none">{{ dados.frequencia.variacao >= 0 ? '↑' : '↓' }}</span>
+          <span>{{ dados.frequencia.variacao >= 0 ? '+' : '' }}{{ dados.frequencia.variacao | number:'1.1-1' }}% em relação ao período anterior</span>
         </div>
+
       </div>
 
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 pb-6">
       @for (item of categoriasList; track item.key) {
         
         <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-purple-100 transition-all duration-200">
-          <div class="flex items-center space-x-3 mb-4">
+          <div class="flex items-center space-x-3 mb-2">
             <div class="p-2 rounded-lg flex items-center justify-center w-10 h-10" [ngClass]="[item.bgIcon, item.color]">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
                 <path [attr.d]="item.svgPath" />

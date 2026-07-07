@@ -177,4 +177,15 @@ export class TurmaRepository implements ITurmaRepositorio {
       _count: { presenca: true },
     });
   }
+
+  async buscarAulasRealizadas(turmaId: string, inicio: Date, fim: Date) {
+    return this.prisma.client.registroAula.findMany({
+      where: {
+        aula: { turmaId: turmaId },
+        data: { gte: inicio, lte: fim },
+        status_aula: 'REALIZADA' 
+      },
+      select: { presenca: true }
+    });
+  }
 }

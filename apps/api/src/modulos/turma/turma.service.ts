@@ -11,6 +11,7 @@ export class TurmaService {
     @Inject('ITurmaRepositorio')
     private readonly turmaRepositorio: ITurmaRepositorio,
   ) {}
+  
 
   /**
    * Lista as turmas cujo educador possui pelo menos uma Aula associada.
@@ -211,28 +212,26 @@ export class TurmaService {
     const turmaExists = await this.turmaRepositorio.buscarEstudantesPorTurma(turmaId);
     if (!turmaExists) throw new NotFoundException(`Turma não encontrada.`);
 
-    // 1. Calcular Janelas de Tempo (Atual e Anterior para Variação)
-    const { atualInicio, atualFim, anteriorInicio, anteriorFim } = this.calcularJanelasDeTempo(periodo);
+    const { atualInicio, atualFim, anteriorInicio, anteriorFim } = this.calcularJanelasDeTempoIguaisAoAluno(periodo);
 
-    // 2. Buscar Dados em Paralelo para Alta Performance
+    // 2. Trocamos o this.prisma por this.turmaRepositorio
     const [diarioAtual, diarioAnterior, freqAtual, freqAnterior] = await Promise.all([
       this.turmaRepositorio.buscarAgregacoesDiariasPorPeriodo(turmaId, atualInicio, atualFim),
       this.turmaRepositorio.buscarAgregacoesDiariasPorPeriodo(turmaId, anteriorInicio, anteriorFim),
-      this.turmaRepositorio.buscarFrequenciaPorPeriodo(turmaId, atualInicio, atualFim),
-      this.turmaRepositorio.buscarFrequenciaPorPeriodo(turmaId, anteriorInicio, anteriorFim),
+      
+      this.turmaRepositorio.buscarAulasRealizadas(turmaId, atualInicio, atualFim),
+      this.turmaRepositorio.buscarAulasRealizadas(turmaId, anteriorInicio, anteriorFim)
     ]);
 
-    // 3. Processar Frequências
-    const calcFreq = (aggs: any[]) => {
-      const presencas = aggs.find((a) => a.presenca === true)?._count.presenca || 0;
-      const ausencias = aggs.find((a) => a.presenca === false)?._count.presenca || 0;
-      const total = presencas + ausencias;
-      return total > 0 ? (presencas / total) * 100 : 0;
+    const calcularMetricasFrequencia = (aulas: { presenca: boolean }[]) => {
+      if (aulas.length === 0) return 0;
+      const totaisPresencas = aulas.filter(a => a.presenca).length;
+      return (totaisPresencas / aulas.length) * 100;
     };
-    const valFreqAtual = calcFreq(freqAtual);
-    const valFreqAnterior = calcFreq(freqAnterior);
 
-    // 4. Mapear Categorias
+    const valFreqAtual = calcularMetricasFrequencia(freqAtual);
+    const valFreqAnterior = calcularMetricasFrequencia(freqAnterior);
+
     const chaves = [
       { key: 'Alimentacao', prop: 'statusAlimentacao' },
       { key: 'Banheiro', prop: 'usoBanheiro' },
@@ -247,8 +246,8 @@ export class TurmaService {
     let somaMediaGeralAnterior = 0;
 
     for (const c of chaves) {
-      const valAtual = diarioAtual._avg[c.prop] || 0;
-      const valAnterior = diarioAnterior._avg[c.prop] || 0;
+      const valAtual = diarioAtual._avg[c.prop as keyof typeof diarioAtual._avg] || 0;
+      const valAnterior = diarioAnterior._avg[c.prop as keyof typeof diarioAnterior._avg] || 0;
       
       categorias[c.key] = {
         valor: Number(valAtual.toFixed(1)),
@@ -261,40 +260,38 @@ export class TurmaService {
     const valMediaGeral = somaMediaGeral / 6;
     const valMediaGeralAnterior = somaMediaGeralAnterior / 6;
 
-    // 5. Retornar estrutura EXATA do Dashboard do Aluno
     return {
       mediaGeral: {
         valor: Number(valMediaGeral.toFixed(1)),
         variacao: Number((valMediaGeral - valMediaGeralAnterior).toFixed(1)),
       },
       frequencia: {
-        valor: Number(valFreqAtual.toFixed(0)),
+        valor: Number(valFreqAtual.toFixed(1)),
         variacao: Number((valFreqAtual - valFreqAnterior).toFixed(1)),
       },
       categorias,
     };
   }
 
-  // Função Auxiliar de Datas
-  private calcularJanelasDeTempo(periodo: string) {
-    let dias = 7;
-    if (periodo === 'mes') dias = 30;
-    if (periodo === 'semestre') dias = 180;
-
+  private calcularJanelasDeTempoIguaisAoAluno(periodo: string) {
     const atualFim = new Date();
-    atualFim.setHours(23, 59, 59, 999);
+    const atualInicio = new Date();
+    const anteriorFim = new Date();
+    const anteriorInicio = new Date();
 
-    const atualInicio = new Date(atualFim);
-    atualInicio.setDate(atualInicio.getDate() - dias);
-    atualInicio.setHours(0, 0, 0, 0);
-
-    const anteriorFim = new Date(atualInicio);
-    anteriorFim.setDate(anteriorFim.getDate() - 1);
-    anteriorFim.setHours(23, 59, 59, 999);
-
-    const anteriorInicio = new Date(anteriorFim);
-    anteriorInicio.setDate(anteriorInicio.getDate() - dias);
-    anteriorInicio.setHours(0, 0, 0, 0);
+    if (periodo === 'semestre') {
+      atualInicio.setMonth(atualInicio.getMonth() - 6);
+      anteriorFim.setMonth(anteriorFim.getMonth() - 6);
+      anteriorInicio.setMonth(anteriorInicio.getMonth() - 12);
+    } else if (periodo === 'mes') {
+      atualInicio.setDate(atualInicio.getDate() - 30);
+      anteriorFim.setDate(anteriorFim.getDate() - 30);
+      anteriorInicio.setDate(anteriorInicio.getDate() - 60);
+    } else {
+      atualInicio.setDate(atualInicio.getDate() - 7);
+      anteriorFim.setDate(anteriorFim.getDate() - 7);
+      anteriorInicio.setDate(anteriorInicio.getDate() - 14);
+    }
 
     return { atualInicio, atualFim, anteriorInicio, anteriorFim };
   }

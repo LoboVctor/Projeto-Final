@@ -1,3 +1,23 @@
+:host {
+  display: block;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.turma-graficos-wrapper,
+.graficos-container {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+
 /* ── Wrapper principal ─────────────────────────── */
 .turma-graficos-wrapper {
 }
