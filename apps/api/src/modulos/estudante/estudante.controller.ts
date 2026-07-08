@@ -10,6 +10,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
+import { CreateAulaEstudanteDto } from './dtos/create-aula.dto.js';
 
 @ApiTags('Estudantes')
 @ApiBearerAuth()
@@ -224,6 +225,17 @@ export class EstudantesController {
       estudanteId,
       Number(medicamentoId),
     );
+  }
+
+  @Post(':estudanteId/aulas')
+  @ApiOperation({
+    summary: 'Registra uma nova aula para o estudante na agenda semanal',
+  })
+  async adicionarAula(
+    @Param('estudanteId') estudanteId: string,
+    @Body() dto: CreateAulaEstudanteDto,
+  ) {
+    return this.estudanteService.adicionarAula(estudanteId, dto);
   }
 
   @Post('registros-aula/batch')

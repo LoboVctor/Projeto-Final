@@ -24,6 +24,7 @@ import { TurmasService, TurmaResumo, EstudanteResumo } from '../../../nucleo/ser
 import { CardAlunoComponent } from '../../../compartilhado/components/card-aluno/card-aluno';
 import { AlunoModalComponent } from '../../../compartilhado/components/aluno-modal/aluno-modal.component';
 import { AlunoModalData } from '../../../compartilhado/models/aluno-modal.model';
+import { CalendarioService, EventoCalendario } from '../../../compartilhado/services/calendario.service';
 
 export type ChartOptions = {
   series: ApexNonAxisChartSeries;
@@ -49,6 +50,8 @@ export class HomeComponent implements OnInit {
 
   private readonly destroyRef = inject(DestroyRef);
 
+  private readonly calendarioService = inject(CalendarioService);
+
   registrosPendentes = signal<RegistroDiarioPendente[]>([]);
   totalEsperado = signal<number>(0);
   totalPreenchidos = signal<number>(0);
@@ -59,6 +62,9 @@ export class HomeComponent implements OnInit {
   loadingEstudantes = signal(false);
   erroEstudantes = signal<string | null>(null);
   alunoEmDestaque = signal<AlunoModalData | null>(null);
+
+  proximosEventos = signal<EventoCalendario[]>([]);
+  loadingEventos = signal(false);
 
   totalPendentes = computed(() => this.registrosPendentes().length);
 
@@ -127,6 +133,7 @@ export class HomeComponent implements OnInit {
       });
 
     this.carregarTurmaEEstudantes(educadorIdAtual);
+    this.carregarProximosEventos();
   }
 
   carregarTurmaEEstudantes(educadorId: string): void {
@@ -183,5 +190,22 @@ export class HomeComponent implements OnInit {
     };
 
     this.alunoEmDestaque.set(dadosParaModal);
+  }
+
+  carregarProximosEventos(): void {
+    const escolaId = this.authService.getEscolaId();
+    if (!escolaId) return;
+
+    this.loadingEventos.set(true);
+    this.calendarioService
+      .buscarProximosEventos(escolaId, 4)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (eventos) => {
+          this.proximosEventos.set(eventos);
+          this.loadingEventos.set(false);
+        },
+        error: () => this.loadingEventos.set(false)
+      });
   }
 }

@@ -11,6 +11,7 @@ import {
 } from '@prisma-client';
 import { BuscarEstudantesQueryDto } from '../dtos/buscar-estudantes-query.dto.js';
 import { CreateRegistroAulaBatchDto } from '../dtos/create-registro-aula.dto.js';
+import { CreateAulaEstudanteDto } from '../dtos/create-aula.dto.js';
 
 /** Projeção leve de Estudante usada na listagem geral (Tela 4). */
 export type EstudanteListagem = Prisma.EstudanteGetPayload<{
@@ -234,6 +235,12 @@ export interface IEstudanteRepositorio {
     },
   ): Promise<any>;
   deletarDocumento(documentoId: string): Promise<any>;
+  atualizarLaudo(
+    documentoId: string,
+    dados: any,
+    urlArquivo?: string,
+  ): Promise<any>;
+  criarAula(estudanteId: string, dto: CreateAulaEstudanteDto): Promise<any>;
   atualizarDocumento(
     documentoId: string,
     dados: {
@@ -242,10 +249,5 @@ export interface IEstudanteRepositorio {
       linkArquivo?: string;
     },
   ): Promise<any>;
-  atualizarDocumento(documentoId: string, dados: {
-    tipoDocumento: string;
-    dataEmissao: string;
-    linkArquivo?: string;
-  }): Promise<any>;
   registrarChamadaEmLote(dto: CreateRegistroAulaBatchDto): Promise<RegistroAula[]>;
 }

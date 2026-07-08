@@ -44,6 +44,17 @@ export class EventoController {
     );
   }
 
+  @Get('proximos')
+  @ApiOperation({ summary: 'Lista próximos eventos da escola a partir de hoje' })
+  @ApiQuery({ name: 'escolaId', type: String })
+  @ApiQuery({ name: 'limite', type: Number, required: false })
+  async buscarProximosEventos(
+    @Query('escolaId') escolaId: string,
+    @Query('limite') limite = '4',
+  ) {
+    return this.eventoService.buscarProximosEventos(escolaId, Number(limite));
+  }
+
   @Post()
   @ApiOperation({ summary: 'Cria um evento esporádico' })
   async criar(@Body() dto: CreateEventoDto) {

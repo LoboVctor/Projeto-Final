@@ -6,9 +6,11 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
 import { AutenticacaoController } from './autenticacao.controller.js';
 import { AutenticacaoService } from './autenticacao.service.js';
 import { UsuarioModule } from '../usuario/usuario.module.js';
+import { PrismaModule } from '../../prisma/prisma.module.js';
 
 @Module({
   imports: [
+    PrismaModule,
     UsuarioModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
