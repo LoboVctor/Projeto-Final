@@ -261,7 +261,7 @@
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           <span class="text-xs font-medium text-[#2D1E40]">
-            {{ eventoSelecionado()!.dataEvento | date:'dd/MM/yyyy' }}
+            {{ eventoSelecionado()!.dataEvento | date:'dd/MM/yyyy':'UTC' }}
           </span>
           <span class="text-[#686177] text-xs">·</span>
           <svg class="w-3.5 h-3.5 text-[#6C3CC9] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,7 +269,7 @@
               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span class="text-xs font-medium text-[#2D1E40]">
-            {{ eventoSelecionado()!.dataEvento | date:'HH:mm' }}
+            {{ eventoSelecionado()!.horarioInicio ? (eventoSelecionado()!.horarioInicio | date:'HH:mm':'UTC') : (eventoSelecionado()!.dataEvento | date:'HH:mm':'UTC') }}
           </span>
         </div>
 

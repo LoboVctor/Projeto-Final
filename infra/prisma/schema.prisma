@@ -251,7 +251,7 @@ model Aula {
   // Campos preenchidos apenas quando isEvento = true
   titulo     String?
   descricao  String?
-  dataEvento DateTime? @db.Date
+  dataEvento DateTime?
 
   registroAulas RegistroAula[]
   educador      Educador         @relation(fields: [educadorId], references: [id])
