@@ -111,4 +111,17 @@ export interface ITurmaRepositorio {
   buscarAgregacoesDiariasPorPeriodo(turmaId: string, inicio: Date, fim: Date): Promise<any>;
   buscarFrequenciaPorPeriodo(turmaId: string, inicio: Date, fim: Date): Promise<any>;
   buscarAulasRealizadas(turmaId: string, inicio: Date, fim: Date): Promise<{ presenca: boolean }[]>;
+  contarEstudantesDoEducador(educadorId: string): Promise<number>;
+  buscarRegistrosDiariosDoEducador(
+    educadorId: string, 
+    dataCorte?: Date
+  ): Promise<{
+    data: Date;
+    scoreComportamento: number;
+    scoreInteracao: number;
+    scoreFoco: number;
+    scoreAutonomia: number;
+    statusAlimentacao: number;
+    usoBanheiro: number;
+  }[]>;
 }

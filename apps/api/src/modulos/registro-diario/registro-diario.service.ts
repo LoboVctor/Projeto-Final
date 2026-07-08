@@ -49,17 +49,19 @@ export class RegistroDiarioService {
   async getResumoMensal(educadorId: string) {
     const hoje = new Date();
     const primeiroDiaDoMes = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth(), 1));
-
+    const dataFimOntem = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth(), hoje.getUTCDate() - 1, 23, 59, 59, 999));
+    const dataLimiteSuperior = dataFimOntem < primeiroDiaDoMes ? primeiroDiaDoMes : dataFimOntem;
+    
     const [totalPreenchidos, totalEsperado] = await Promise.all([
       this.registroDiarioRepositorio.contarRegistrosPreenchidos(
         educadorId,
         primeiroDiaDoMes,
-        hoje,
+        dataLimiteSuperior,
       ),
       this.registroDiarioRepositorio.contarRegistrosEsperados(
         educadorId,
         primeiroDiaDoMes,
-        hoje,
+        dataLimiteSuperior,
       ),
     ]);
 

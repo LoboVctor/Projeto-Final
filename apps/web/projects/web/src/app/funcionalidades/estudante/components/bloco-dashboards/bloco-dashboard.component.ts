@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, effect, inject, signal, computed } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, effect, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, catchError } from 'rxjs/operators';
@@ -7,6 +7,7 @@ import { AnalyticsService } from '../../../../compartilhado/services/analytics.s
 import Chart from 'chart.js/auto';
 import { jsPDF } from 'jspdf';
 import { toPng } from 'html-to-image';
+import { AuthService } from "../../../../nucleo/services/auth";
 
 @Component({
   selector: 'app-bloco-dashboard',
@@ -15,16 +16,20 @@ import { toPng } from 'html-to-image';
   templateUrl: './bloco-dashboard.component.html',
   styleUrls: ['./bloco-dashboard.component.css']
 })
-export class BlocoDashboardComponent {
+export class BlocoDashboardComponent implements OnInit {
   @Input({ required: true }) estudanteId!: string;
   @Output() recolher = new EventEmitter<void>();
 
   private analyticsService = inject(AnalyticsService);
+  private authService = inject(AuthService);
 
   periodo = signal<'semana' | 'mes' | 'semestre'>('mes');
   categoriaSelecionada = signal<string | null>(null);
-
   semanaAtualVisualizada = signal<Date>(this.getMonday(new Date()));
+
+  // Novos Signals para a exportação
+  nomeUsuarioLogado = signal<string>('');
+  dataHoraAtual = signal<Date>(new Date());
 
   labelNavegadorSemana = computed(() => {
     const inicio = this.semanaAtualVisualizada();
@@ -80,6 +85,10 @@ export class BlocoDashboardComponent {
     });
   }
 
+  ngOnInit() {
+    // Busca o nome do usuário assim que o componente carrega
+    this.nomeUsuarioLogado.set(this.authService.getLoggedUserName());
+  }
 
   onRecolher() {
     this.recolher.emit();
@@ -93,7 +102,6 @@ export class BlocoDashboardComponent {
     'Interação Social': 'Avalia a iniciativa para brincar, a capacidade de compartilhar, o contato visual e a comunicação estabelecida com colegas e educadores.',
     'Foco nas Atividades': 'Mede o tempo de atenção sustentada, o engajamento na tarefa em execução e a capacidade de concluir as atividades pedagógicas propostas.'
   };
-
 
   obterDescricaoCategoria(categoria: string | null): string {
     if (!categoria || !this.descricoesCategorias[categoria]) {
@@ -284,13 +292,18 @@ export class BlocoDashboardComponent {
     const data = this.dashboardData();
     if (!data) return;
 
-    const dataAtual = new Date().toLocaleDateString('pt-BR');
+    // Atualiza a hora da geração
+    this.dataHoraAtual.set(new Date());
+
+    const dataAtual = this.dataHoraAtual().toLocaleDateString('pt-BR');
+    const horaAtual = this.dataHoraAtual().toLocaleTimeString('pt-BR');
     const periodoLabel = this.periodo() === 'semana' ? 'Últimos 7 dias' : this.periodo() === 'mes' ? 'Últimos 30 dias' : 'Último Semestre';
 
     let csv = '\ufeff'; 
     
     csv += `RELATÓRIO DE DESEMPENHO ANALÍTICO\n`;
-    csv += `Data de Geração:;${dataAtual}\n`;
+    csv += `Data de Geração:;${dataAtual} às ${horaAtual}\n`;
+    csv += `Gerado por:;${this.nomeUsuarioLogado()}\n`;
     csv += `Período Analisado:;${periodoLabel}\n\n`;
 
     csv += `VISÃO GERAL\n`;
@@ -325,19 +338,22 @@ export class BlocoDashboardComponent {
     URL.revokeObjectURL(url);
   }
 
-
   async exportarPDF() {
     this.exportDropdownAberto.set(false);
+    this.dataHoraAtual.set(new Date());
 
     // Aguarda o dropdown fechar e os gráficos estabilizarem
     await new Promise(resolve => setTimeout(resolve, 300));
 
     const elemento = this.relatorioDashboard.nativeElement as HTMLElement;
+    const cabecalhoPdf = document.getElementById('cabecalho-relatorio-pdf');
+    const botoesEsconder = document.querySelectorAll('.esconder-no-pdf');
+
+    // Mostra o cabeçalho de impressão e esconde botões interativos
+    if (cabecalhoPdf) cabecalhoPdf.classList.remove('hidden');
+    botoesEsconder.forEach(el => (el as HTMLElement).style.display = 'none');
 
     // ── Fix 1: Canvas em branco ──────────────────────────────────────────────
-    // html-to-image não consegue capturar o conteúdo de <canvas> porque os dados
-    // ficam no buffer da GPU. Substituímos cada canvas por um <img> temporário
-    // com o mesmo dataURL antes de capturar, e restauramos depois.
     const canvasList = Array.from(elemento.querySelectorAll('canvas')) as HTMLCanvasElement[];
     const overlays: { canvas: HTMLCanvasElement; img: HTMLImageElement }[] = [];
 
@@ -364,16 +380,13 @@ export class BlocoDashboardComponent {
     elemento.style.overflow = 'visible';
     elemento.style.maxHeight = 'none';
 
-    const filtroOpcoes = (node: HTMLElement) =>
-      !node.classList?.contains('esconder-no-pdf');
-
+    // Removemos a filtragem de esconder-no-pdf daqui, porque já os escondemos via display: none acima
     try {
       const imgData = await toPng(elemento, {
         pixelRatio: 2,
         backgroundColor: '#f8fafc',
         width: elemento.scrollWidth,
         height: elemento.scrollHeight,
-        filter: filtroOpcoes,
         style: { overflow: 'visible', maxHeight: 'none' },
       });
 
@@ -382,14 +395,6 @@ export class BlocoDashboardComponent {
 
       const pdfDinamico = new jsPDF('p', 'mm', [larguraPDF, alturaPDF]);
       pdfDinamico.addImage(imgData, 'PNG', 0, 0, larguraPDF, alturaPDF);
-
-      pdfDinamico.setFont('helvetica', 'bold');
-      pdfDinamico.setFontSize(9);
-      pdfDinamico.setTextColor(156, 163, 175);
-      pdfDinamico.text(
-        `Gerado em: ${new Date().toLocaleString('pt-BR')}`,
-        larguraPDF - 15, 15, { align: 'right' }
-      );
 
       pdfDinamico.save(`Relatorio_Dashboard_${this.periodo()}.pdf`);
 
@@ -404,6 +409,10 @@ export class BlocoDashboardComponent {
       }
       elemento.style.overflow = estiloOriginalOverflow;
       elemento.style.maxHeight = estiloOriginalMaxH;
+
+      // Esconde o cabeçalho novamente e mostra os botões
+      if (cabecalhoPdf) cabecalhoPdf.classList.add('hidden');
+      botoesEsconder.forEach(el => (el as HTMLElement).style.display = '');
     }
   }
 

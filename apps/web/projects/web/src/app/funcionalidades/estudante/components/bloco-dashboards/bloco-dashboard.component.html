@@ -6,6 +6,21 @@
   class="flex-1 bg-gray-50/50 p-6 md:p-8 rounded-r-3xl overflow-y-auto overflow-x-hidden h-full max-h-[90vh] md:max-h-[85vh] relative w-full flex flex-col transform-gpu will-change-scroll modal-scroll-area">
 
   <div class="flex items-center justify-between mb-8 shrink-0">
+
+    <div id="cabecalho-relatorio-pdf" class="hidden flex-col items-center justify-center mb-8 border-b-2 border-gray-200 pb-6">
+    <h1 class="text-3xl font-extrabold text-[#2D1E40] mb-2 font-sora">Relatório de Desempenho</h1>
+    <p class="text-lg text-gray-600 font-medium">Período Selecionado: {{ periodo() === 'semana' ? 'Últimos 7 dias' : (periodo() === 'mes' ? 'Últimos 30 dias' : 'Último Semestre') }}</p>
+    
+    <div class="flex gap-6 mt-4 text-sm text-gray-500">
+      <span class="flex items-center gap-1">
+        <i class="fa-regular fa-calendar"></i> Data: {{ dataHoraAtual() | date:'dd/MM/yyyy HH:mm' }}
+      </span>
+      <span class="flex items-center gap-1">
+        <i class="fa-regular fa-user"></i> Gerado por: {{ nomeUsuarioLogado() }}
+      </span>
+    </div>
+  </div>
+  
     <div class="flex items-center space-x-3 text-green-700">
       <div class="bg-green-100 p-2 rounded-full flex items-center justify-center w-10 h-10">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"

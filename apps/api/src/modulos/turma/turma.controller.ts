@@ -75,4 +75,9 @@ export class TurmaController {
   ): Promise<TurmaDashboardResponseDto> {
     return this.turmaService.obterDashboardTurma(id, periodo);
   }
+
+  @Get('home/big-numbers/:educadorId')
+  async obterBigNumbersHome(@Param('educadorId') educadorId: string) {
+    return this.turmaService.obterBigNumbersHome(educadorId);
+  }
 }

@@ -188,4 +188,37 @@ export class TurmaRepository implements ITurmaRepositorio {
       select: { presenca: true }
     });
   }
+
+  async contarEstudantesDoEducador(educadorId: string): Promise<number> {
+    return this.prisma.client.estudante.count({
+      where: {
+        turmas: {
+          some: { educadorId: educadorId }
+        }
+      }
+    });
+  }
+  async buscarRegistrosDiariosDoEducador(educadorId: string, dataCorte?: Date) {
+    const whereCondition: any = { 
+      educadorId: educadorId,
+      preenchido: true 
+    };
+
+    if (dataCorte) {
+      whereCondition.data = { gte: dataCorte };
+    }
+
+    return this.prisma.client.registroDiario.findMany({
+      where: whereCondition,
+      select: {
+        data: true,
+        scoreComportamento: true,
+        scoreInteracao: true,
+        scoreFoco: true,
+        scoreAutonomia: true,
+        statusAlimentacao: true,
+        usoBanheiro: true
+      }
+    });
+  }
 }

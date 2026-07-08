@@ -295,4 +295,44 @@ export class TurmaService {
 
     return { atualInicio, atualFim, anteriorInicio, anteriorFim };
   }
+  async obterBigNumbersHome(educadorId: string) {
+    const totalAlunos = await this.turmaRepositorio.contarEstudantesDoEducador(educadorId);
+
+    const hoje = new Date();
+    const diaDaSemanaAtual = hoje.getDay();
+    
+    const dataCorte = new Date();
+    dataCorte.setDate(dataCorte.getDate() - 90);
+
+    const registros = await this.turmaRepositorio.buscarRegistrosDiariosDoEducador(educadorId, dataCorte);
+
+    const registrosDoDia = registros.filter(r => {
+      return new Date(r.data).getDay() === diaDaSemanaAtual;
+    });
+
+    let scoreMedio = 0;
+
+    if (registrosDoDia.length > 0) {
+      let somaGeral = 0;
+      for (const r of registrosDoDia) {
+        const mediaDoRegistro = (
+          r.scoreComportamento + 
+          r.scoreInteracao + 
+          r.scoreFoco + 
+          r.scoreAutonomia + 
+          r.statusAlimentacao + 
+          r.usoBanheiro
+        ) / 6;
+        somaGeral += mediaDoRegistro;
+      }
+      // Calcula a média das médias
+      scoreMedio = Number((somaGeral / registrosDoDia.length).toFixed(1));
+    }
+
+    return {
+      totalAlunos,
+      scoreMedioDia: scoreMedio,
+      diaDaSemana: diaDaSemanaAtual
+    };
+  }
 }

@@ -35,6 +35,12 @@ export interface EstudantesPorTurmaResponse {
   estudantes: EstudanteResumo[];
 }
 
+export interface BigNumbersHomeResponse {
+  totalAlunos: number;
+  scoreMedioDia: number;
+  diaDaSemana: number;
+}
+
 export interface DadosGraficoTurma {
   diagnosticos: { tipo: string; quantidade: number }[];
   assiduidade: { presentes: number; ausentes: number };
@@ -87,5 +93,9 @@ export class TurmasService {
     const params = new HttpParams().set('periodo', periodo);
     
     return this.http.get<any>(`${this.API}/${turmaId}/kpis`, { params });
+  }
+
+  getBigNumbersHome(educadorId: string) {
+    return this.http.get<BigNumbersHomeResponse>(`${this.API}/home/big-numbers/${educadorId}`);
   }
 }
