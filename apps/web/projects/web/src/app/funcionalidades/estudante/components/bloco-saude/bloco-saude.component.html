@@ -203,8 +203,8 @@
         @for (med of dadosSaude.medicamentos; track med) {
         <li class="bg-slate-50/60 p-3 rounded-lg border border-gray-100 flex items-center justify-between">
           <div class="text-sm">
-            <span class="font-semibold text-slate-700">{{ med.nome }}</span>
-            <span class="text-xs text-slate-500 ml-2">({{ med.dosagem }})</span>
+             <span class="font-semibold text-slate-700">{{ med.nome }}</span>
+                  <span class="text-slate-400 font-normal ml-2">({{ med.dosagem }} {{ med.unidadeMedida | lowercase }})</span>
           </div>
         </li>
         }
