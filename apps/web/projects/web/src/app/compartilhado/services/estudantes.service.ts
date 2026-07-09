@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../nucleo/config/api.config';
-import { EstudantePedagogico } from '../models/estudante-pedagogico.model';
+import { EstudantePedagogico, Semestre, Eixo } from '../models/estudante-pedagogico.model';
 import { EstudanteVisaoGeral } from '../models/estudante-visao-geral.model';
 import { DiaAgenda } from '../models/estudante-agenda.model';
 import {
@@ -12,6 +12,25 @@ import {
   EstudoCasoResponse,
   PaginacaoResponse,
 } from '../models/gerenciamento-alunos.model';
+
+export interface MetaDesenvolvimentoPayload {
+  eixoDesenvolvimento: Eixo;
+  descricao: string;
+  scoreFinal: number;
+  parecer?: string;
+}
+
+export interface AvaliacaoMetaPayload {
+  scoreFinal: number;
+  parecer: string;
+}
+
+export interface UpsertRelatorioSemestralPayload {
+  estudanteId: string;
+  semestre: Semestre;
+  ano: number;
+  metas: MetaDesenvolvimentoPayload[];
+}
 
 export interface EspecificidadePayload {
   tipo: string;
@@ -56,7 +75,7 @@ export class EstudantesService {
   totalEventosSemana = signal<number>(0);
   private readonly baseUrl = inject(API_BASE_URL);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // --- SAÚDE ---
   getSaude(estudanteId: string): Observable<EstudanteSaude> {
@@ -151,5 +170,15 @@ export class EstudantesService {
    */
   criarEstudoCaso(payload: EstudoCasoPayload): Observable<EstudoCasoResponse> {
     return this.http.post<EstudoCasoResponse>(`${this.baseUrl}/estudo-de-caso`, payload);
+  }
+
+  // --- METAS / RELATÓRIOS SEMESTRAIS ---
+
+  upsertRelatorioSemestral(payload: UpsertRelatorioSemestralPayload): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/relatorios-semestrais`, payload);
+  }
+
+  updateAvaliacaoMeta(metaId: string, payload: AvaliacaoMetaPayload): Observable<unknown> {
+    return this.http.put(`${this.baseUrl}/relatorios-semestrais/metas/${metaId}/avaliacao`, payload);
   }
 }

@@ -14,6 +14,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { EstudanteModule } from './modulos/estudante/estudante.module.js';
 import { EstudoCasoModule } from './modulos/estudo-de-caso/estudo-de-caso.module.js';
 import { EventoModule } from './modulos/evento/evento.module.js';
+import { RelatorioSemestralModule } from './modulos/relatorio-semestral/relatorio-semestral.module.js';
 import * as Joi from 'joi';
 
 @Module({
@@ -37,6 +38,7 @@ import * as Joi from 'joi';
     EstudanteModule,
     EstudoCasoModule,
     EventoModule,
+    RelatorioSemestralModule,
   ],
   controllers: [],
 

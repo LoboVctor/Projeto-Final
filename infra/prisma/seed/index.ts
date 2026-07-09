@@ -45,6 +45,8 @@ async function main() {
   await prisma.registroAula.deleteMany(); 
   await prisma.aula.deleteMany();        
   await prisma.estudoCaso.deleteMany();
+  await prisma.pibi.deleteMany();
+  await prisma.metaDesenvolvimento.deleteMany();
   await prisma.relatorioSemestral.deleteMany();
   await prisma.estudante.deleteMany();
   await prisma.turma.deleteMany();
@@ -112,6 +114,39 @@ async function main() {
     },
   });
   console.log(` Usuário do Educador criado: "${usuarioProfessor.email}"`);
+
+  // Educador (Professor Regente - Mariana)
+  const educadorMariana = await prisma.educador.upsert({
+    where: { id: '123e4567-e89b-42d3-8456-426614174002' },
+    update: {},
+    create: {
+      id: '123e4567-e89b-42d3-8456-426614174002',
+      matricula: 'REG-2026-M',
+      nome: 'Mariana Costa Ribeiro',
+      cpf: '111.111.111-22',
+      dataContratacao: new Date('2024-03-01'),
+      tipo: TipoEducador.REGENTE,
+      telefone: '(21) 97777-5555',
+      escolaId: escola.id,
+    },
+  });
+  console.log(` Educador criado: "${educadorMariana.nome}" (id: ${educadorMariana.id})`);
+
+  const senhaMarianaHash = await bcrypt.hash('Prof@1234', SALT_ROUNDS);
+  const usuarioMariana = await prisma.usuario.upsert({
+    where: { email: 'mariana@escola.elo' },
+    update: {
+      senha: senhaMarianaHash,
+      educadorId: educadorMariana.id
+    },
+    create: {
+      email: 'mariana@escola.elo',
+      senha: senhaMarianaHash,
+      role: Role.PROFESSOR_REGENTE,
+      educadorId: educadorMariana.id,
+    },
+  });
+  console.log(` Usuário da Educadora criado: "${usuarioMariana.email}"`);
 
   // Turma (tipo REGENCIA) ligando Escola, Educador
   const turmaAlpha = await prisma.turma.upsert({
@@ -356,6 +391,487 @@ async function main() {
         ],
       },
     },
+
+    {
+      id: '123e4567-e89b-42d3-8456-426614174005',
+      matricula: '202605',
+      nomeCompleto: 'Eduardo Martins Rocha',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '005.005.005-00',
+      sexo: Sexo.FEMININO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=eduardoF0',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: '44444444-4444-4444-4444-444444444444' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000001' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174006',
+      matricula: '202606',
+      nomeCompleto: 'Fernanda Costa Ribeiro',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '006.006.006-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=fernandaM1',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: '44444444-4444-4444-4444-444444444444' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000002' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174007',
+      matricula: '202607',
+      nomeCompleto: 'Gabriel Lima Silva',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '007.007.007-00',
+      sexo: Sexo.FEMININO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=gabrielF2',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: '44444444-4444-4444-4444-444444444444' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000003' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174008',
+      matricula: '202608',
+      nomeCompleto: 'Helena Souza',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '008.008.008-00',
+      sexo: Sexo.FEMININO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=helenaF3',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: '44444444-4444-4444-4444-444444444444' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000001' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174009',
+      matricula: '202609',
+      nomeCompleto: 'Igor Santos',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '009.009.009-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=igorM4',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: '44444444-4444-4444-4444-444444444444' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000002' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-42661417400a',
+      matricula: '202610',
+      nomeCompleto: 'Julia Ferreira',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '010.010.010-00',
+      sexo: Sexo.FEMININO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=juliaF5',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: '44444444-4444-4444-4444-444444444444' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000003' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-42661417400b',
+      matricula: '202611',
+      nomeCompleto: 'Kauan Oliveira',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '011.011.011-00',
+      sexo: Sexo.FEMININO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=kauanF6',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000001' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000001' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-42661417400c',
+      matricula: '202612',
+      nomeCompleto: 'Leticia Costa',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '012.012.012-00',
+      sexo: Sexo.FEMININO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=leticiaF7',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000001' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000002' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-42661417400d',
+      matricula: '202613',
+      nomeCompleto: 'Matheus Almeida',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '013.013.013-00',
+      sexo: Sexo.FEMININO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=matheusF8',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000001' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000003' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-42661417400e',
+      matricula: '202614',
+      nomeCompleto: 'Natalia Pereira',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '014.014.014-00',
+      sexo: Sexo.FEMININO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=nataliaF9',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000001' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000001' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-42661417400f',
+      matricula: '202615',
+      nomeCompleto: 'Otavio Mendes',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '015.015.015-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=otavioM10',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000001' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000002' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174010',
+      matricula: '202616',
+      nomeCompleto: 'Paula Rodrigues',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '016.016.016-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=paulaM11',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000001' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000003' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174011',
+      matricula: '202617',
+      nomeCompleto: 'Rafael Cunha',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '017.017.017-00',
+      sexo: Sexo.FEMININO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=rafaelF12',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000002' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000001' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174012',
+      matricula: '202618',
+      nomeCompleto: 'Sara Alves',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '018.018.018-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=saraM13',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000002' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000002' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174013',
+      matricula: '202619',
+      nomeCompleto: 'Tiago Monteiro',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '019.019.019-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=tiagoM14',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000002' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000003' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174014',
+      matricula: '202620',
+      nomeCompleto: 'Ursula Castro',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '020.020.020-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=ursulaM15',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000002' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000001' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174015',
+      matricula: '202621',
+      nomeCompleto: 'Vitor Campos',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '021.021.021-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=vitorM16',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000002' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000002' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174016',
+      matricula: '202622',
+      nomeCompleto: 'Yasmim Martins',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '022.022.022-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=yasmimM17',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000002' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000003' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174017',
+      matricula: '202623',
+      nomeCompleto: 'Zeca Pagodinho',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '023.023.023-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=zecaM18',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000003' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000001' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174018',
+      matricula: '202624',
+      nomeCompleto: 'Alice Nunes',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '024.024.024-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=aliceM19',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000003' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000002' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-426614174019',
+      matricula: '202625',
+      nomeCompleto: 'Breno Farias',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '025.025.025-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=brenoM20',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000003' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000003' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-42661417401a',
+      matricula: '202626',
+      nomeCompleto: 'Cecilia Machado',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '026.026.026-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=ceciliaM21',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000003' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000001' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-42661417401b',
+      matricula: '202627',
+      nomeCompleto: 'Davi Borges',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '027.027.027-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=daviM22',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000003' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000002' } },
+          },
+        ],
+      },
+    },
+    {
+      id: '123e4567-e89b-42d3-8456-42661417401c',
+      matricula: '202628',
+      nomeCompleto: 'Eva Peixoto',
+      dataNascimento: new Date('2018-05-15'),
+      cpf: '028.028.028-00',
+      sexo: Sexo.MASCULINO,
+      foto: 'https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=evaM23',
+      formaComunicacao: Fcom.VERBAL,
+      statusMatricula: true,
+      escolaId: escola.id,
+      turmas: { connect: [{ id: 'b0000000-0000-0000-0000-000000000003' }] },
+      diagnosticos: {
+        create: [
+          {
+            diagnostico: { connect: { id: 'a0000000-0000-0000-0000-000000000003' } },
+          },
+        ],
+      },
+    }
   ];
 
   for (const est of estudantesData) {
