@@ -17,6 +17,7 @@ model Usuario {
   id            String       @id @default(uuid())
   email         String       @unique
   senha         String       // Aqui ficará o hash do bcrypt
+  bloqueado     Boolean      @default(false)
 
   educadorId    String?      @unique
   responsavelId String?      @unique
@@ -28,6 +29,8 @@ model Usuario {
 
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+
+  auditorias    AuditoriaExportacao[]
 }
 
 model Estudante {
@@ -201,6 +204,7 @@ model Educador {
   tipo            TipoEducador
   telefone        String
   escolaId        String
+  ativo           Boolean      @default(true)
 
   usuario          Usuario?
   registrosDiarios RegistroDiario[]
@@ -319,6 +323,16 @@ model Pibi {
   createdAt           DateTime        @default(now())
 
   metaDesenvolvimento MetaDesenvolvimento @relation(fields: [metaId], references: [id])
+}
+
+model AuditoriaExportacao {
+  id        String            @id @default(uuid())
+  usuarioId String
+  usuario   Usuario           @relation(fields: [usuarioId], references: [id])
+  entidade  String            // ex: "ALUNOS_COORDENADOR", "PROFESSORES", "ALUNOS_PROFESSOR", "RELATORIO_DASHBOARD"
+  formato   FormatoExportacao @default(CSV)
+  dataHora  DateTime          @default(now())
+  detalhes  String?           // Opcional: filtros utilizados na hora do download
 }
 
 // ==========================================
@@ -450,4 +464,9 @@ enum StatusAula {
   FERIADO
   FALTA_EDUCADOR
   SUSPENSA
+}
+
+enum FormatoExportacao {
+  CSV
+  PDF
 }

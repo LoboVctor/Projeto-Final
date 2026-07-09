@@ -97,6 +97,7 @@ export class AuthService {
     return !!this.tokenSubject.value;
   }
 
+
   /**
    * Retorna o ID do perfil de ação do usuário logado
    * (educadorId tem prioridade sobre responsavelId).
@@ -110,6 +111,19 @@ export class AuthService {
     if (user.responsavel?.id) return user.responsavel.id;
 
     return user.id ?? null;
+  }
+
+  getRole(): string | null {
+    return this.usuarioSubject.value?.role ?? null;
+  }
+
+  isCoordenador(): boolean {
+    return this.usuarioSubject.value?.role === 'COORDENADOR';
+  }
+
+  isProfessor(): boolean {
+    const role = this.usuarioSubject.value?.role;
+    return role === 'PROFESSOR_REGENTE' || role === 'PROFESSOR_ATENDIMENTO';
   }
 
   getEscolaId(): string | null {

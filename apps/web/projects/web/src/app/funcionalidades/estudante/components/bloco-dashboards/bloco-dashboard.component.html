@@ -2,6 +2,15 @@
      As classes 'transform-gpu' e 'will-change-scroll' foram adicionadas ao container principal 
      para forçar a renderização na GPU. Isso resolve o "lag/delay" onde os gráficos do Chart.js
      parecem descolar do fundo durante o scroll. -->
+
+@if (gerandoPdf()) {
+<div class="fixed inset-0 z-[9999] bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center animate-fade-in">
+  <div class="w-16 h-16 border-4 border-elo-roxo-principal border-t-transparent rounded-full animate-spin"></div>
+  <p class="mt-4 text-elo-roxo-principal font-bold text-lg font-sora">Gerando Relatório PDF...</p>
+  <p class="text-sm text-gray-500">Isso pode levar alguns segundos.</p>
+</div>
+}
+
 <div #relatorioDashboard
   class="flex-1 bg-gray-50/50 p-6 md:p-8 rounded-r-3xl overflow-y-auto overflow-x-hidden h-full max-h-[90vh] md:max-h-[85vh] relative w-full flex flex-col transform-gpu will-change-scroll modal-scroll-area">
 

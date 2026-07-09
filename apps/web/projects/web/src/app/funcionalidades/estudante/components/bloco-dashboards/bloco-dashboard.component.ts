@@ -4,6 +4,8 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { AnalyticsService } from '../../../../compartilhado/services/analytics.service';
+import { AuditoriaService } from '../../../../nucleo/services/auditoria.service';
+import { AuthService } from '../../../../nucleo/services/auth';
 import Chart from 'chart.js/auto';
 import { jsPDF } from 'jspdf';
 import { toPng } from 'html-to-image';
@@ -20,6 +22,8 @@ export class BlocoDashboardComponent {
   @Output() recolher = new EventEmitter<void>();
 
   private analyticsService = inject(AnalyticsService);
+  private readonly auditoriaService = inject(AuditoriaService);
+  private readonly authService = inject(AuthService);
 
   periodo = signal<'semana' | 'mes' | 'semestre'>('mes');
   categoriaSelecionada = signal<string | null>(null);
@@ -323,13 +327,15 @@ export class BlocoDashboardComponent {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    this.auditoriaService.registrarDownload('RELATORIO_DASHBOARD', 'CSV', this.buildDetalhes()).subscribe();
   }
 
 
   async exportarPDF() {
     this.exportDropdownAberto.set(false);
+    this.gerandoPdf.set(true);
 
-    // Aguarda o dropdown fechar e os gráficos estabilizarem
+    // Aguarda o dropdown fechar, o overlay de carregamento aparecer e os gráficos estabilizarem
     await new Promise(resolve => setTimeout(resolve, 300));
 
     const elemento = this.relatorioDashboard.nativeElement as HTMLElement;
@@ -383,15 +389,22 @@ export class BlocoDashboardComponent {
       const pdfDinamico = new jsPDF('p', 'mm', [larguraPDF, alturaPDF]);
       pdfDinamico.addImage(imgData, 'PNG', 0, 0, larguraPDF, alturaPDF);
 
+      const nomeUsuario = this.authService.getLoggedUserName();
+
       pdfDinamico.setFont('helvetica', 'bold');
       pdfDinamico.setFontSize(9);
       pdfDinamico.setTextColor(156, 163, 175);
       pdfDinamico.text(
+        `Baixado por: ${nomeUsuario}`,
+        larguraPDF - 15, 12, { align: 'right' }
+      );
+      pdfDinamico.text(
         `Gerado em: ${new Date().toLocaleString('pt-BR')}`,
-        larguraPDF - 15, 15, { align: 'right' }
+        larguraPDF - 15, 17, { align: 'right' }
       );
 
       pdfDinamico.save(`Relatorio_Dashboard_${this.periodo()}.pdf`);
+      this.auditoriaService.registrarDownload('RELATORIO_DASHBOARD', 'PDF', this.buildDetalhes()).subscribe();
 
     } catch (erro) {
       console.error('Erro ao gerar PDF:', erro);
@@ -404,7 +417,12 @@ export class BlocoDashboardComponent {
       }
       elemento.style.overflow = estiloOriginalOverflow;
       elemento.style.maxHeight = estiloOriginalMaxH;
+      this.gerandoPdf.set(false);
     }
+  }
+
+  private buildDetalhes(): string {
+    return `periodo=${this.periodo()}; estudanteId=${this.estudanteId}`;
   }
 
   // --- Lógica dos Gráficos Principais ---
