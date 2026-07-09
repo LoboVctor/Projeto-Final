@@ -1,121 +1,163 @@
-<!-- Overlay -->
-<div class="drawer-overlay" (click)="onFechar()"></div>
+<!-- Overlay + Modal centralizado (padrão do laudos-modal da aba Saúde) -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in"
+  (click)="onFechar()">
 
-<!-- Painel lateral -->
-<aside class="drawer-panel" role="dialog" aria-modal="true" [attr.aria-label]="'Estudo de Caso — ' + estudanteNome">
+  <!-- Painel do modal (stopPropagation evita fechar ao clicar dentro) -->
+  <div
+    class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-gray-100"
+    role="dialog" aria-modal="true" [attr.aria-label]="'Estudo de Caso — ' + estudanteNome"
+    (click)="$event.stopPropagation()">
 
-  <!-- Cabeçalho -->
-  <div class="drawer-header">
-    <div class="drawer-header-info">
-      <span class="drawer-icon">📋</span>
+    <!-- Cabeçalho -->
+    <div class="flex items-center justify-between p-5 border-b border-gray-100 bg-slate-50 flex-shrink-0">
       <div>
-        <h2 class="drawer-title">Estudo de Caso / Ocorrência</h2>
+        <h3 class="text-lg font-bold font-['Sora'] text-slate-700 m-0">Estudo de Caso / Ocorrência</h3>
         @if (estudanteNome) {
-          <p class="drawer-subtitle">{{ estudanteNome }}</p>
+        <p class="text-xs text-slate-500 m-0 mt-0.5">{{ estudanteNome }}</p>
         }
       </div>
+      <button (click)="onFechar()" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+        aria-label="Fechar modal">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
-    <button class="drawer-close-btn" (click)="onFechar()" aria-label="Fechar drawer">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
-  </div>
 
-  <!-- Corpo do formulário -->
-  <div class="drawer-body">
+    <!-- Corpo do formulário -->
+    <div class="p-6 space-y-5 m-0">
 
-    <!-- Feedback de sucesso -->
-    @if (sucesso()) {
-      <div class="feedback-sucesso" role="status">
-        <span>✅</span>
-        <span>Estudo de Caso registrado com sucesso!</span>
+      <!-- Feedback de sucesso -->
+      @if (sucesso()) {
+      <div
+        class="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 font-medium"
+        role="status">
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        Estudo de Caso registrado com sucesso!
       </div>
-    }
+      }
 
-    <!-- Feedback de erro -->
-    @if (erro()) {
-      <div class="feedback-erro" role="alert">
-        <span>⚠️ {{ erro() }}</span>
+      <!-- Feedback de erro -->
+      @if (erro()) {
+      <div class="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700"
+        role="alert">
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+        </svg>
+        {{ erro() }}
       </div>
-    }
+      }
 
-    <!-- Campo: Data da Reunião -->
-    <div class="campo-grupo">
-      <label for="dataReuniao" class="campo-label">Data da Reunião <span class="obrigatorio">*</span></label>
-      <input
-        id="dataReuniao"
-        type="date"
-        class="campo-input"
-        [value]="dataReuniao()"
-        (input)="dataReuniao.set($any($event.target).value)"
-        [disabled]="loading() || sucesso()"
-      />
-    </div>
+      <!-- Campo: Data da Reunião -->
+      <div class="flex flex-col gap-1.5">
+        <label for="dataReuniao" class="text-xs font-bold text-slate-600 font-['Sora']">
+          Data da Reunião <span class="text-red-500">*</span>
+        </label>
+        <input id="dataReuniao" type="date"
+          class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
+          [value]="dataReuniao()" (input)="dataReuniao.set($any($event.target).value)"
+          [disabled]="loading() || sucesso()" />
+      </div>
 
-    <!-- Campo: Parecer / Decisão -->
-    <div class="campo-grupo">
-      <label for="parecerDecisao" class="campo-label">Parecer e Decisão <span class="obrigatorio">*</span></label>
-      <textarea
-        id="parecerDecisao"
-        class="campo-textarea"
-        rows="5"
-        placeholder="Descreva o parecer da reunião pedagógica, as decisões tomadas e os encaminhamentos definidos..."
-        [value]="parecerDecisao()"
-        (input)="parecerDecisao.set($any($event.target).value)"
-        [disabled]="loading() || sucesso()"
-      ></textarea>
-      <span class="campo-hint">Mínimo de 10 caracteres.</span>
-    </div>
+      <!-- Campo: Parecer / Decisão -->
+      <div class="flex flex-col gap-1.5">
+        <label for="parecerDecisao" class="text-xs font-bold text-slate-600 font-['Sora']">
+          Parecer e Decisão <span class="text-red-500">*</span>
+        </label>
+        <textarea id="parecerDecisao" rows="5"
+          placeholder="Descreva o parecer da reunião pedagógica, as decisões tomadas e os encaminhamentos definidos..."
+          class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm resize-vertical"
+          [value]="parecerDecisao()" (input)="parecerDecisao.set($any($event.target).value)"
+          [disabled]="loading() || sucesso()"></textarea>
+        <span class="text-[11px] text-slate-400">Mínimo de 10 caracteres.</span>
+      </div>
 
-    <!-- Campo: Educadores participantes -->
-    <div class="campo-grupo">
-      <label class="campo-label">
-        Educadores Participantes <span class="obrigatorio">*</span>
-      </label>
-      <div class="educadores-lista">
-        @for (educador of educadoresDisponiveis; track educador.id) {
-          <button
-            type="button"
-            class="educador-chip"
-            [class.educador-chip--selecionado]="isEducadorSelecionado(educador.id)"
-            (click)="toggleEducador(educador.id)"
-            [disabled]="loading() || sucesso()"
-          >
-            <span class="educador-chip-inicial">{{ educador.nome.charAt(0) }}</span>
-            <span>{{ educador.nome }}</span>
+      <!-- Campo: Educadores participantes -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold text-slate-600 font-['Sora']">
+          Educadores Participantes <span class="text-red-500">*</span>
+        </label>
+        <!-- Grid de educadores (2 colunas) -->
+        <div class="grid grid-cols-2 gap-2 min-h-[120px] content-start">
+          @for (educador of educadoresPaginaAtual(); track educador.id) {
+          <button type="button"
+            class="flex items-center gap-2 px-2.5 py-1.5 border-[1.5px] rounded-md text-[13px] text-left transition-all duration-150 w-full"
+            [class]="isEducadorSelecionado(educador.id)
+                ? 'border-purple-300 bg-white text-slate-700 font-medium shadow-sm'
+                : 'border-gray-200 bg-white text-slate-600 hover:border-purple-300/50 hover:bg-purple-50/30'"
+            (click)="toggleEducador(educador.id)" [disabled]="loading() || sucesso()">
+            <span
+              class="w-6 h-6 rounded-full bg-purple-600 text-white text-[11px] font-bold flex items-center justify-center flex-shrink-0">
+              {{ educador.nome.charAt(0) }}
+            </span>
+            <span class="flex-1 truncate">{{ educador.nome }}</span>
             @if (isEducadorSelecionado(educador.id)) {
-              <span class="educador-chip-check">✓</span>
+            <svg class="w-3.5 h-3.5 text-purple-600 ml-auto shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            </svg>
             }
           </button>
-        }
+          }
+        </div>
+
+        <!-- Resumo de seleção e Paginação -->
+        <div class="flex items-center justify-between mt-1">
+          @if (educadoresSelecionados().length > 0) {
+          <p class="text-xs text-purple-600 font-semibold m-0">
+            {{ educadoresSelecionados().length }} educador(es) selecionado(s)
+          </p>
+          } @else {
+          <div></div>
+          }
+
+          @if (totalPaginas() > 1) {
+          <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg p-0.5 shadow-sm">
+            <button type="button" (click)="paginaAnterior()" [disabled]="paginaEducadores() === 0 || loading() || sucesso()"
+              class="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-white hover:shadow-xs disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:shadow-none transition-all cursor-pointer disabled:cursor-not-allowed">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span class="text-[10px] text-slate-500 font-bold tracking-wider px-1">
+              {{ paginaEducadores() + 1 }}/{{ totalPaginas() }}
+            </span>
+            <button type="button" (click)="proximaPagina()" [disabled]="paginaEducadores() === totalPaginas() - 1 || loading() || sucesso()"
+              class="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-white hover:shadow-xs disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:shadow-none transition-all cursor-pointer disabled:cursor-not-allowed">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+          }
+        </div>
       </div>
-      @if (educadoresSelecionados().length > 0) {
-        <p class="educadores-contador">{{ educadoresSelecionados().length }} educador(es) selecionado(s)</p>
-      }
+
+    </div>
+
+    <!-- Rodapé com ações -->
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-slate-50 flex-shrink-0">
+      <button type="button" (click)="onFechar()" [disabled]="loading()"
+        class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer disabled:opacity-50">
+        Cancelar
+      </button>
+      <button type="button" (click)="salvar()" [disabled]="!formularioValido || loading() || sucesso()"
+        class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xs flex items-center gap-2 cursor-pointer">
+        @if (loading()) {
+        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+          </path>
+        </svg>
+        Salvando...
+        } @else {
+        Registrar Ocorrência
+        }
+      </button>
     </div>
 
   </div>
-
-  <!-- Rodapé com ações -->
-  <div class="drawer-footer">
-    <button class="btn-secundario" (click)="onFechar()" [disabled]="loading()">
-      Cancelar
-    </button>
-    <button
-      class="btn-primario"
-      (click)="salvar()"
-      [disabled]="!formularioValido || loading() || sucesso()"
-    >
-      @if (loading()) {
-        <span class="spinner"></span>
-        Salvando...
-      } @else {
-        📋 Registrar Ocorrência
-      }
-    </button>
-  </div>
-
-</aside>
+</div>

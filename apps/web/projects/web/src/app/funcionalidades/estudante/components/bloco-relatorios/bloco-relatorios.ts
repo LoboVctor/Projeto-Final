@@ -17,33 +17,41 @@ import {
   EstudantePedagogico,
   StatusRelatorio,
   Semestre,
-  Eixo } from '../../../../compartilhado/models/estudante-pedagogico.model';
+  Eixo,
+  MetaDesenvolvimento
+} from '../../../../compartilhado/models/estudante-pedagogico.model';
 import { EstudoDeCasoDrawerComponent } from '../estudo-de-caso-drawer/estudo-de-caso-drawer.component';
+import { MetasModalComponent } from './modais/metas-modal.component';
+import { AvaliacaoMetaModalComponent } from './modais/avaliacao-meta-modal.component';
 
 
 
 const SEMESTRE_LABEL: Record<Semestre, string> = {
   PRIMEIRO: '1º Semestre',
-  SEGUNDO: '2º Semestre' };
+  SEGUNDO: '2º Semestre'
+};
 
 const EIXO_LABEL: Record<Eixo, string> = {
   COGNITIVO: 'Cognitivo',
   MOTOR: 'Motor',
   LINGUAGEM: 'Linguagem',
   SOCIOEMOCIONAL: 'Socioemocional',
-  AUTONOMIA: 'Autonomia' };
+  AUTONOMIA: 'Autonomia'
+};
 
 const STATUS_LABEL: Record<StatusRelatorio, string> = {
   RASCUNHO: 'Rascunho',
   EM_REVISAO: 'Em andamento',
-  CONCLUIDO: 'Concluído' };
+  CONCLUIDO: 'Concluído'
+};
 
 @Component({
   selector: 'app-bloco-relatorios',
-  imports: [CommonModule, EstudoDeCasoDrawerComponent],
+  imports: [CommonModule, EstudoDeCasoDrawerComponent, MetasModalComponent, AvaliacaoMetaModalComponent],
   templateUrl: './bloco-relatorios.html',
   styleUrls: ['./bloco-relatorios.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush })
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
 export class BlocoRelatoriosComponent implements OnInit, OnChanges {
   readonly estudanteId = input.required<string>();
   /** Nome do estudante para exibir no drawer de estudo de caso */
@@ -55,6 +63,12 @@ export class BlocoRelatoriosComponent implements OnInit, OnChanges {
 
   /** Controla abertura do drawer de Estudo de Caso */
   drawerEstudoCasoAberto = signal(false);
+
+  /** Controla abertura do modal de Metas do Semestre */
+  metasModalAberto = signal(false);
+
+  /** Meta selecionada para avaliação final */
+  metaSelecionadaParaAvaliacao = signal<MetaDesenvolvimento | null>(null);
 
 
   dados: EstudantePedagogico | null = null;
@@ -101,7 +115,8 @@ export class BlocoRelatoriosComponent implements OnInit, OnChanges {
         this.erroCarregamento = true;
         this.isLoading = false;
         this.cdr.detectChanges();
-      } });
+      }
+    });
   }
 
 
@@ -132,6 +147,14 @@ export class BlocoRelatoriosComponent implements OnInit, OnChanges {
     return this.metasAbertas.has(metaId);
   }
 
+  abrirAvaliacaoMeta(meta: MetaDesenvolvimento, event: Event): void {
+    event.stopPropagation();
+    this.metaSelecionadaParaAvaliacao.set(meta);
+  }
+
+  fecharAvaliacaoMeta(): void {
+    this.metaSelecionadaParaAvaliacao.set(null);
+  }
 
 
   semestreLabel(s: Semestre): string {
@@ -149,18 +172,20 @@ export class BlocoRelatoriosComponent implements OnInit, OnChanges {
   /** Classes Tailwind para badge de status */
   statusBadgeClass(s: StatusRelatorio): string {
     const map: Record<StatusRelatorio, string> = {
-      RASCUNHO:   'bg-gray-100 text-gray-600 border border-gray-200',
+      RASCUNHO: 'bg-gray-100 text-gray-600 border border-gray-200',
       EM_REVISAO: 'bg-amber-50 text-amber-700 border border-amber-200',
-      CONCLUIDO:  'bg-green-50 text-green-700 border border-green-200' };
+      CONCLUIDO: 'bg-green-50 text-green-700 border border-green-200'
+    };
     return map[s] ?? '';
   }
 
   /** Classes Tailwind para barra de progresso PIBI */
   progressoBarraClass(s: StatusRelatorio): string {
     const map: Record<StatusRelatorio, string> = {
-      RASCUNHO:   'bg-gray-400',
+      RASCUNHO: 'bg-gray-400',
       EM_REVISAO: 'bg-amber-400',
-      CONCLUIDO:  'bg-green-500' };
+      CONCLUIDO: 'bg-green-500'
+    };
     return map[s] ?? 'bg-purple-500';
   }
 
@@ -179,11 +204,33 @@ export class BlocoRelatoriosComponent implements OnInit, OnChanges {
   /** Chip de eixo de desenvolvimento — cor por eixo */
   eixoChipClass(e: Eixo): string {
     const map: Record<Eixo, string> = {
-      COGNITIVO:      'bg-blue-50 text-blue-700',
-      MOTOR:          'bg-orange-50 text-orange-700',
-      LINGUAGEM:      'bg-purple-50 text-purple-700',
+      COGNITIVO: 'bg-blue-50 text-blue-700',
+      MOTOR: 'bg-orange-50 text-orange-700',
+      LINGUAGEM: 'bg-purple-50 text-purple-700',
       SOCIOEMOCIONAL: 'bg-pink-50 text-pink-700',
-      AUTONOMIA:      'bg-teal-50 text-teal-700' };
+      AUTONOMIA: 'bg-teal-50 text-teal-700'
+    };
     return map[e] ?? 'bg-gray-50 text-gray-700';
+  }
+
+  /** Exibe semestre + ano no formato 2026.1 / 2026.2 */
+  semestreAno(semestre: Semestre, ano: number): string {
+    return `${ano}.${semestre === 'PRIMEIRO' ? '1' : '2'}`;
+  }
+
+  /** Label visual derivada do scoreFinal */
+  scoreFinalLabel(score: number): string {
+    if (score === 5) return 'Alcançado';
+    if (score >= 3) return 'Parcialmente alcançado';
+    if (score >= 1) return 'Não alcançado';
+    return 'Pendente';
+  }
+
+  /** Badge derivado do scoreFinal */
+  scoreFinalBadgeClass(score: number): string {
+    if (score === 5) return 'bg-green-50 text-green-700 border border-green-200';
+    if (score >= 3) return 'bg-amber-50 text-amber-700 border border-amber-200';
+    if (score >= 1) return 'bg-red-50 text-red-700 border border-red-200';
+    return 'bg-gray-100 text-gray-500 border border-gray-200';
   }
 }

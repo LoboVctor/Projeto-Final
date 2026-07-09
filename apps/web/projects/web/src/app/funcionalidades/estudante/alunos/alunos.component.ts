@@ -14,6 +14,7 @@ import { Subject, debounceTime, switchMap } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EstudantesService } from '../../../compartilhado/services/estudantes.service';
 import { AlunoModalComponent } from '../../../compartilhado/components/aluno-modal/aluno-modal.component';
+import { calcularIdade } from '../../../compartilhado/utils/date.utils';
 
 import { TurmasService, TurmaResumo } from '../../../nucleo/services/turmas.service';
 import type {
@@ -42,7 +43,7 @@ export class AlunosComponent implements OnInit {
   abaSolicitada = signal<string | null>(null);
   // ─── Estado da listagem ───────────────────────────────────────
   resposta = signal<PaginacaoResponse<EstudanteListagemItem> | null>(null);
-  loading = signal(false);
+  loading = signal(true);
   erro = signal<string | null>(null);
 
   // ─── Filtros ──────────────────────────────────────────────────
@@ -56,7 +57,7 @@ export class AlunosComponent implements OnInit {
   filtroIdadeMin = signal<number | undefined>(undefined);
   filtroIdadeMax = signal<number | undefined>(undefined);
   paginaAtual = signal(1);
-  readonly limitePorPagina = 20;
+  readonly limitePorPagina = 7;
 
   // ─── Turmas disponíveis (para o filtro de turma) ──────────────
   turmasDisponiveis = signal<TurmaResumo[]>([]);
@@ -297,6 +298,12 @@ export class AlunosComponent implements OnInit {
   }
 
   // ─── Helpers de template ──────────────────────────────────────
+
+  getIdadeLabel(aluno: EstudanteListagemItem): string {
+    if (!aluno.dataNascimento) return '—';
+    const idade = calcularIdade(aluno.dataNascimento);
+    return `${idade} anos`;
+  }
 
   getStatusLabel(aluno: EstudanteListagemItem): string {
     return aluno.statusMatricula ? 'ATIVO' : 'INATIVO';

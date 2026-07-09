@@ -21,7 +21,7 @@
       </div>
     </div>
 
-    <div class="flex items-center space-x-3 mr-14">
+    <div class="flex items-center space-x-3">
       <button (click)="onRecolher()"
         class="close-button-centered absolute top-[24px] right-[24px] w-10 h-10 text-gray-400 hover:text-gray-700 hover:bg-gray-200/50 rounded-full transition-colors cursor-pointer"
         aria-label="Fechar modal">
@@ -31,29 +31,6 @@
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </button>
-      <!-- Botão Novo Estudo de Caso -->
-      <button
-        id="btn-novo-estudo-caso"
-        (click)="drawerEstudoCasoAberto.set(true)"
-        class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors cursor-pointer"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        <span>Estudo de Caso</span>
-      </button>
-
     </div>
   </div>
 
@@ -86,12 +63,6 @@
     <section>
       <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
         <div class="flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-            class="text-blue-600">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
           <h4 class="text-base font-bold font-['Sora'] text-blue-700 m-0">Metas</h4>
           <span class="flex items-center gap-1 text-xs text-gray-400 ml-1">
             <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
@@ -102,6 +73,13 @@
             Informações gerenciadas pelo professor regente
           </span>
         </div>
+        <button id="btn-nova-meta" (click)="metasModalAberto.set(true)"
+          class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5 cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Metas do Semestre
+        </button>
       </div>
       <!-- Accordion por relatório semestral -->
       <div class="space-y-3">
@@ -127,7 +105,7 @@
               </div>
               <div>
                 <p class="text-sm font-semibold text-gray-800 m-0">
-                  {{ semestreLabel(relatorio.semestre) }} de {{ relatorio.ano }}
+                  {{ semestreAno(relatorio.semestre, relatorio.ano) }}
                 </p>
                 <p class="text-xs text-gray-400 m-0">{{ relatorio.metas.length }} meta(s)</p>
               </div>
@@ -193,9 +171,9 @@
                   <div class="flex items-center gap-2 shrink-0 mt-0.5">
                     <span [class]="
                                   'text-xs font-bold px-2 py-1 rounded-full border ' +
-                                  scoreBadgeClass(meta.scoreFinal)
+                                  scoreFinalBadgeClass(meta.scoreFinal)
                                 ">
-                      {{ meta.scoreFinal }}/5
+                      {{ scoreFinalLabel(meta.scoreFinal) }}
                     </span>
                     <svg class="w-3.5 h-3.5 text-blue-400 transition-transform duration-300 shrink-0"
                       [class.rotate-180]="isMetaAberta(meta.id)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -206,6 +184,17 @@
                 <!-- Corpo da meta (PIBI + parecer) -->
                 @if (isMetaAberta(meta.id)) {
                 <div class="p-3 bg-white space-y-3">
+                  <!-- Botão de Avaliação Final -->
+                  <div class="flex justify-end mb-2">
+                    <button (click)="abrirAvaliacaoMeta(meta, $event)"
+                      class="text-xs font-semibold px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors duration-200 flex items-center gap-1.5 cursor-pointer shadow-sm">
+                      <svg class="w-3.5 h-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Fazer avaliação final
+                    </button>
+                  </div>
+
                   <!-- Parecer do professor sobre a meta -->
                   @if (meta.parecer) {
                   <div class="text-sm text-gray-600 italic leading-relaxed">
@@ -312,30 +301,69 @@
       </div>
       }
     </section>
-    <!-- ── Nota informativa ──────────────────────────────────────────────── -->
-    <div
-      class="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-600 leading-relaxed">
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="text-blue-500 shrink-0 mt-0.5">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-      </svg>
-      Os relatórios e planos são instrumentos de acompanhamento contínuo do desenvolvimento do
-      aluno e devem ser revisados periodicamente pela equipe pedagógica.
-    </div>
+
+    <!-- ── SEÇÃO: Estudo de Caso ──────────────────────────────────────────── -->
+    <section>
+      <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+        <h4 class="text-base font-bold font-['Sora'] text-blue-700 m-0">Estudo de Caso</h4>
+        <button id="btn-novo-estudo-caso" (click)="drawerEstudoCasoAberto.set(true)"
+          class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5 cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Estudo de Caso
+        </button>
+      </div>
+      <!-- Estado vazio de estudos de caso -->
+      <div class="text-center py-8 text-gray-400">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+          class="mx-auto mb-3 opacity-40">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+        <p class="text-sm italic">Nenhum estudo de caso registrado.</p>
+      </div>
+    </section>
+
   </div>
   }
 
-  <!-- ── Drawer de Estudo de Caso ─────────────────────────────────────── -->
+  <!-- ── Nota informativa (rodapé da aba) ────────────────────────────── -->
+  <div
+    class="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-600 leading-relaxed mt-6">
+    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500 shrink-0 mt-0.5">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    Os relatórios e planos são instrumentos de acompanhamento contínuo do desenvolvimento do
+    aluno e devem ser revisados periodicamente pela equipe pedagógica.
+  </div>
+
+  <!-- ── Modal de Estudo de Caso ───────────────────────────────────────── -->
   @if (drawerEstudoCasoAberto()) {
-    <app-estudo-de-caso-drawer
-      [estudanteId]="estudanteId()"
-      [estudanteNome]="estudanteNome()"
-      (fechar)="drawerEstudoCasoAberto.set(false)"
-    >
-    </app-estudo-de-caso-drawer>
+  <app-estudo-de-caso-drawer [estudanteId]="estudanteId()" [estudanteNome]="estudanteNome()"
+    (fechar)="drawerEstudoCasoAberto.set(false)">
+  </app-estudo-de-caso-drawer>
+  }
+
+  <!-- ── Modal de Metas do Semestre ───────────────────────────────── -->
+  @if (metasModalAberto()) {
+  <app-metas-modal [estudanteId]="estudanteId()" (fechar)="metasModalAberto.set(false)" (salvou)="carregarDados()">
+  </app-metas-modal>
+  }
+
+  <!-- ── Modal de Avaliação da Meta ───────────────────────────────── -->
+  @if (metaSelecionadaParaAvaliacao()) {
+  <app-avaliacao-meta-modal 
+    [meta]="metaSelecionadaParaAvaliacao()!" 
+    (fechar)="fecharAvaliacaoMeta()" 
+    (salvou)="carregarDados()">
+  </app-avaliacao-meta-modal>
   }
 
 </div>
