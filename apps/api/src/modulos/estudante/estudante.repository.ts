@@ -419,6 +419,18 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     });
   }
 
+  async atualizarLaudo(
+    documentoId: string,
+    dados: any,
+    urlArquivo?: string,
+  ) {
+    return this.atualizarDocumento(documentoId, {
+      tipoDocumento: dados.tipoDocumento || 'LAUDO_MEDICO',
+      dataEmissao: dados.dataEmissao,
+      linkArquivo: urlArquivo,
+    });
+  }
+
   async atualizarDocumento(
     documentoId: string,
     dados: {
@@ -434,6 +446,31 @@ export class EstudanteRepository implements IEstudanteRepositorio {
         dataEmissao: new Date(dados.dataEmissao),
         ...(dados.linkArquivo && { arquivo: dados.linkArquivo }),
       },
+    });
+  }
+
+  async criarAula(estudanteId: string, dto: any) {
+    const [inicioHora, inicioMinuto] = dto.horarioInicio.split(':').map(Number);
+    const horarioInicio = new Date(Date.UTC(1970, 0, 1, inicioHora, inicioMinuto));
+
+    const [fimHora, fimMinuto] = dto.horarioFim.split(':').map(Number);
+    const horarioFim = new Date(Date.UTC(1970, 0, 1, fimHora, fimMinuto));
+
+    return this.prisma.client.aula.create({
+      data: {
+        estudanteId,
+        educadorId: dto.educadorId,
+        titulo: dto.nome || null,
+        areaId: dto.areaId || null,
+        diaSemana: dto.diaSemana,
+        horarioInicio,
+        horarioFim,
+        isEvento: false,
+      },
+      include: {
+        educador: true,
+        area: true,
+      }
     });
   }
 

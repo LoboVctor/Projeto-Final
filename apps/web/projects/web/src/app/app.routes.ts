@@ -19,6 +19,18 @@ export const routes: Routes = [
     loadComponent: () => import('./funcionalidades/autenticacao/login/login').then(m => m.Login)
   },
 
+  {
+    path: 'esqueceu-senha',
+    canActivate: [loginGuard],
+    loadComponent: () => import('./funcionalidades/autenticacao/esqueceu-senha/esqueceu-senha').then(m => m.EsqueceuSenhaComponent)
+  },
+
+  {
+    path: 'redefinir-senha',
+    canActivate: [loginGuard],
+    loadComponent: () => import('./funcionalidades/autenticacao/redefinir-senha/redefinir-senha').then(m => m.RedefinirSenhaComponent)
+  },
+
   // ── Rotas internas (com AppShell + Sidebar) ───────────────────────────
   // authGuard aplicado no pai para proteger TODAS as rotas filhas
   {

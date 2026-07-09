@@ -10,6 +10,7 @@ import { DiaSemana, StatusAula } from '../../../../../infra/generated/prisma';
 import { ObterAgendaSemanaDto } from './dtos/obter-agenda-semana.dto.js';
 import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
 import { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
+import { CreateAulaEstudanteDto } from './dtos/create-aula.dto.js';
 
 @Injectable()
 export class EstudanteService {
@@ -17,6 +18,10 @@ export class EstudanteService {
     @Inject('IEstudanteRepositorio')
     private readonly estudanteRepositorio: IEstudanteRepositorio,
   ) {}
+
+  async adicionarAula(estudanteId: string, dto: CreateAulaEstudanteDto) {
+    return this.estudanteRepositorio.criarAula(estudanteId, dto);
+  }
 
   async getVisaoGeral(estudanteId: string) {
     const estudante =
@@ -347,10 +352,10 @@ export class EstudanteService {
         diaSemana: nomesDiasUI[diaJs],
         eventos: aulasDoDia.map((aula) => ({
           aulaId: aula.id,
-          titulo: aula.area?.nome || 'Regência',
+          titulo: aula.titulo || aula.area?.nome || 'Regência',
           educador: aula.educador?.nome || 'Não definido',
-          horarioInicio: aula.horarioInicio,
-          horarioFim: aula.horarioFim,
+          horarioInicio: this.formatTimeOnly(aula.horarioInicio),
+          horarioFim: this.formatTimeOnly(aula.horarioFim),
           tipoVisual: aula.area ? 'especializado' : 'regencia',
         })),
       });
@@ -400,6 +405,14 @@ export class EstudanteService {
   private parseTime(timeStr: string): Date {
     if (!timeStr) return new Date('1970-01-01T00:00:00.000Z');
     return new Date(`1970-01-01T${timeStr}:00.000Z`);
+  }
+
+  // Formata Date para string HH:mm (apenas o horário)
+  private formatTimeOnly(date: Date | null): string {
+    if (!date) return '';
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
   }
 
   async addMedicamento(estudanteId: string, dados: any) {

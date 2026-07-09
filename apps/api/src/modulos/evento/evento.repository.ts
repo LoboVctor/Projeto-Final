@@ -34,6 +34,8 @@ export class EventoRepository implements IEventoRepositorio {
         id: true,
         titulo: true,
         dataEvento: true,
+        horarioInicio: true,
+        horarioFim: true,
         descricao: true,
         educador: {
           select: { id: true, nome: true, escolaId: true },
@@ -44,18 +46,25 @@ export class EventoRepository implements IEventoRepositorio {
   }
 
   async criar(dto: CreateEventoDto): Promise<EventoListagem> {
+    const dataEventoDate = new Date(dto.dataEvento);
+    // Ajusta para compensar o fuso horário do Brasil (UTC-3)
+    const dataAjustada = new Date(dataEventoDate.getTime() + (3 * 60 * 60 * 1000));
     return this.prisma.client.aula.create({
       data: {
         isEvento: true,
         titulo: dto.titulo,
         descricao: dto.descricao,
-        dataEvento: new Date(dto.dataEvento),
+        dataEvento: dataAjustada,
+        horarioInicio: dataAjustada,
+        horarioFim: dataAjustada,
         educadorId: dto.educadorId,
       },
       select: {
         id: true,
         titulo: true,
         dataEvento: true,
+        horarioInicio: true,
+        horarioFim: true,
         descricao: true,
         educador: {
           select: { id: true, nome: true, escolaId: true },
@@ -65,17 +74,23 @@ export class EventoRepository implements IEventoRepositorio {
   }
 
   async atualizar(id: string, dto: UpdateEventoDto): Promise<EventoListagem> {
+    const dataEventoDate = dto.dataEvento ? new Date(dto.dataEvento) : undefined;
+    const dataAjustada = dataEventoDate ? new Date(dataEventoDate.getTime() + (3 * 60 * 60 * 1000)) : undefined;
     return this.prisma.client.aula.update({
       where: { id },
       data: {
         titulo: dto.titulo,
         descricao: dto.descricao,
-        dataEvento: dto.dataEvento ? new Date(dto.dataEvento) : undefined,
+        dataEvento: dataAjustada,
+        horarioInicio: dataAjustada,
+        horarioFim: dataAjustada,
       },
       select: {
         id: true,
         titulo: true,
         dataEvento: true,
+        horarioInicio: true,
+        horarioFim: true,
         descricao: true,
         educador: {
           select: { id: true, nome: true, escolaId: true },
@@ -86,5 +101,35 @@ export class EventoRepository implements IEventoRepositorio {
 
   async remover(id: string): Promise<void> {
     await this.prisma.client.aula.delete({ where: { id } });
+  }
+
+  async buscarProximosEventos(
+    escolaId: string,
+    limite: number,
+  ): Promise<EventoListagem[]> {
+    const agora = new Date();
+    // Normaliza para o início do dia atual (sem hora) para incluir eventos de hoje
+    const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+
+    return this.prisma.client.aula.findMany({
+      where: {
+        isEvento: true,
+        dataEvento: { gte: hoje },
+        educador: { escolaId },
+      },
+      select: {
+        id: true,
+        titulo: true,
+        dataEvento: true,
+        horarioInicio: true,
+        horarioFim: true,
+        descricao: true,
+        educador: {
+          select: { id: true, nome: true, escolaId: true },
+        },
+      },
+      orderBy: { dataEvento: 'asc' },
+      take: limite,
+    });
   }
 }

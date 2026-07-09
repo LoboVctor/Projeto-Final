@@ -51,4 +51,13 @@ export class EventoService {
       throw error;
     }
   }
+
+  async buscarProximosEventos(escolaId: string, limite: number) {
+    try {
+      return await this.eventoRepositorio.buscarProximosEventos(escolaId, limite);
+    } catch (error) {
+      this.logger.error('Erro ao buscar próximos eventos', error);
+      throw error;
+    }
+  }
 }

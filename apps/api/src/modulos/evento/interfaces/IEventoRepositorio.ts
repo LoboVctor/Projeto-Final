@@ -23,4 +23,5 @@ export interface IEventoRepositorio {
   criar(dto: CreateEventoDto): Promise<EventoListagem>;
   atualizar(id: string, dto: UpdateEventoDto): Promise<EventoListagem>;
   remover(id: string): Promise<void>;
+  buscarProximosEventos(escolaId: string, limite: number): Promise<EventoListagem[]>;
 }

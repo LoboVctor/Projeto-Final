@@ -136,7 +136,9 @@ export class CalendarioComponent implements OnInit {
     // Extrai data e hora diretamente da string ISO local (sem conversão UTC)
     const isoStr = evento.dataEvento; // ex: "2026-07-10T14:00:00"
     this.formData.set(isoStr.substring(0, 10));
-    this.formHorario.set(isoStr.substring(11, 16));
+    // Usa horarioInicio se disponível, senão extrai de dataEvento
+    const horarioStr = evento.horarioInicio ? evento.horarioInicio.substring(11, 16) : isoStr.substring(11, 16);
+    this.formHorario.set(horarioStr);
     this.formTitulo.set(evento.titulo);
     this.formDescricao.set(evento.descricao ?? '');
 
@@ -235,9 +237,10 @@ export class CalendarioComponent implements OnInit {
     const [ano, mes, dia] = this.formData().split('-').map(Number) as [number, number, number];
     const [horas, minutos] = this.formHorario().split(':').map(Number) as [number, number];
 
-    // String local sem conversão UTC → evita regressão de dia por fuso horário (Brasil UTC-3)
+    // Cria data local e ajusta para evitar problema de fuso horário
+    const dataLocal = new Date(ano, mes - 1, dia, horas, minutos, 0);
     const pad = (n: number) => n.toString().padStart(2, '0');
-    const dataEvento = `${ano}-${pad(mes)}-${pad(dia)}T${pad(horas)}:${pad(minutos)}:00`;
+    const dataEvento = `${ano}-${pad(mes)}-${pad(dia)}T${pad(horas)}:${pad(minutos)}:00.000Z`;
 
     const onSuccess = () => {
       this.salvandoEvento.set(false);

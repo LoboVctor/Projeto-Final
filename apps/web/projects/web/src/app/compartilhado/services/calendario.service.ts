@@ -7,6 +7,8 @@ export interface EventoCalendario {
   id: string;
   titulo: string;
   dataEvento: string;
+  horarioInicio?: string;
+  horarioFim?: string;
   descricao?: string;
   educador: {
     id: string;
@@ -43,6 +45,12 @@ export class CalendarioService {
 
   atualizarEvento(id: string, payload: Partial<CreateEventoPayload>): Observable<EventoCalendario> {
     return this.http.patch<EventoCalendario>(`${this.API_URL}/${id}`, payload);
+  }
+
+  buscarProximosEventos(escolaId: string, limite = 4): Observable<EventoCalendario[]> {
+    return this.http.get<EventoCalendario[]>(`${this.API_URL}/proximos`, {
+      params: { escolaId, limite }
+    });
   }
 
   removerEvento(id: string): Observable<void> {

@@ -16,9 +16,10 @@ export class SidebarComponent implements OnInit {
 
   userName = signal('Usuário');
   currentDate = signal(
-    new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }).format(
-      new Date(),
-    ),
+    (() => {
+      const raw = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+      return raw.charAt(0).toUpperCase() + raw.slice(1);
+    })(),
   );
 
   private authService = inject(AuthService);
