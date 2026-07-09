@@ -4,10 +4,21 @@ import { AuthService } from '../services/auth';
 
 /**
  * Impede que um usuário já autenticado acesse a tela de login.
- * Se estiver logado, redireciona direto para /home.
+ * Se estiver logado, redireciona para a rota correspondente ao seu papel:
+ *  - COORDENADOR → /coordenador/home
+ *  - demais → /home
  */
 export const loginGuard: CanActivateFn = () => {
-  if (!inject(AuthService).isAuthenticated()) return true;
-  inject(Router).navigate(['/home']);
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isAuthenticated()) return true;
+
+  if (authService.isCoordenador()) {
+    router.navigate(['/coordenador/home']);
+  } else {
+    router.navigate(['/home']);
+  }
+
   return false;
 };

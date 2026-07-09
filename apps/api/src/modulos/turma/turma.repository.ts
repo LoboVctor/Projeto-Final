@@ -17,14 +17,7 @@ export class TurmaRepository implements ITurmaRepositorio {
 
   async buscarTodas(educadorId?: string): Promise<TurmaLista[]> {
     return this.prisma.client.turma.findMany({
-      where: educadorId
-        ? {
-            OR: [
-              { educadorId: educadorId },
-              { aulas: { some: { educadorId } } },
-            ],
-          }
-        : undefined,
+      where: educadorId ? { educadorId } : undefined,
       select: {
         id: true,
         nome: true,

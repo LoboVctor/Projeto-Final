@@ -42,8 +42,8 @@ async function main() {
   await prisma.estudanteEspecificidade.deleteMany();
   await prisma.estudanteMedicamento.deleteMany();
   await prisma.registroDiario.deleteMany();
-  await prisma.registroAula.deleteMany(); 
-  await prisma.aula.deleteMany();        
+  await prisma.registroAula.deleteMany();
+  await prisma.aula.deleteMany();
   await prisma.estudoCaso.deleteMany();
   await prisma.pibi.deleteMany();
   await prisma.metaDesenvolvimento.deleteMany();
@@ -156,7 +156,7 @@ async function main() {
       id: '44444444-4444-4444-4444-444444444444',
       escolaId: escola.id,
       educadorId: educador.id,
-      nome: '1º Ano - Turma Alpha',
+      nome: '1º Ano A ',
       turno: Turno.MATUTINO,
       anoLetivo: 2026,
       etapa: Etapa.ETAPA_1,
@@ -169,7 +169,7 @@ async function main() {
   // POPULANDO CRONOGRAMA DE AULAS
   // ==========================================
   console.log('\nPopulando cronograma de rotina de aulas...');
-  
+
   const criarDataComHorario = (horaStr: string): Date => {
     return new Date(`1970-01-01T${horaStr}:00.000Z`);
   };
@@ -250,7 +250,7 @@ async function main() {
       id: 'b0000000-0000-0000-0000-000000000001',
       escolaId: escola.id,
       educadorId: educador.id,
-      nome: '1º Ano A',
+      nome: '1º Ano B',
       turno: Turno.VESPERTINO,
       anoLetivo: 2026,
       etapa: Etapa.ETAPA_1,
@@ -947,9 +947,9 @@ async function main() {
   const dataReferencia = new Date();
 
   const hoje = new Date(Date.UTC(
-    dataReferencia.getFullYear(), 
-    dataReferencia.getMonth(), 
-    dataReferencia.getDate(), 
+    dataReferencia.getFullYear(),
+    dataReferencia.getMonth(),
+    dataReferencia.getDate(),
     12, 0, 0
   ));
 
@@ -968,20 +968,20 @@ async function main() {
     dataRegistro.setUTCDate(hoje.getUTCDate() - i);
 
     const diaDaSemana = dataRegistro.getUTCDay();
-    
+
     if (diaDaSemana === 0 || diaDaSemana === 6) continue; // Pula fins de semana
 
     for (const estudanteId of todosEstudantesIds) {
       registrosDiariosMock.push({
         estudanteId,
-        educadorId: educador.id, 
+        educadorId: educador.id,
         data: dataRegistro,
-        scoreComportamento: gerarNotaAleatoria(3, 5),  
-        scoreInteracao: gerarNotaAleatoria(2, 5),     
-        scoreFoco: gerarNotaAleatoria(3, 5),            
-        scoreAutonomia: gerarNotaAleatoria(2, 5),       
-        statusAlimentacao: gerarNotaAleatoria(4, 5),   
-        usoBanheiro: gerarNotaAleatoria(3, 5),          
+        scoreComportamento: gerarNotaAleatoria(3, 5),
+        scoreInteracao: gerarNotaAleatoria(2, 5),
+        scoreFoco: gerarNotaAleatoria(3, 5),
+        scoreAutonomia: gerarNotaAleatoria(2, 5),
+        statusAlimentacao: gerarNotaAleatoria(4, 5),
+        usoBanheiro: gerarNotaAleatoria(3, 5),
         preenchido: true,
         anotacoes: 'Registro diário de dias úteis gerado automaticamente via seed script.',
       });
@@ -996,7 +996,7 @@ async function main() {
 
     if (aulaDoDiaId) {
       let status: StatusAula = StatusAula.REALIZADA;
-      let estevePresente = Math.random() > 0.12; 
+      let estevePresente = Math.random() > 0.12;
 
       if (i % 25 === 0) {
         status = StatusAula.FERIADO;
@@ -1008,13 +1008,13 @@ async function main() {
 
       registrosAulasMock.push({
         id: `99999999-9999-9999-9999-99998888${String(i).padStart(6, '0')}`,
-        estudanteId: lucasId,      
-        aulaId: aulaDoDiaId,       
-        data: dataRegistro,        
-        status_aula: status,       
-        presenca: estevePresente,  
+        estudanteId: lucasId,
+        aulaId: aulaDoDiaId,
+        data: dataRegistro,
+        status_aula: status,
+        presenca: estevePresente,
         scoreParticipacao: status === StatusAula.REALIZADA && estevePresente ? gerarNotaAleatoria(3, 5) : null,
-        scoreSuporte: status === StatusAula.REALIZADA && estevePresente ? gerarNotaAleatoria(1, 3) : null, 
+        scoreSuporte: status === StatusAula.REALIZADA && estevePresente ? gerarNotaAleatoria(1, 3) : null,
       });
     }
   }
@@ -1048,12 +1048,12 @@ async function main() {
         educadorId: educador.id,
         data: dataPendente,
         // Scores zerados pois a rotina ainda não foi preenchida
-        scoreComportamento: 0,  
-        scoreInteracao: 0,      
-        scoreFoco: 0,           
-        scoreAutonomia: 0,      
-        statusAlimentacao: 0,   
-        usoBanheiro: 0,         
+        scoreComportamento: 0,
+        scoreInteracao: 0,
+        scoreFoco: 0,
+        scoreAutonomia: 0,
+        statusAlimentacao: 0,
+        usoBanheiro: 0,
         preenchido: false,      // O gatilho principal para ser considerado pendente
       });
     }

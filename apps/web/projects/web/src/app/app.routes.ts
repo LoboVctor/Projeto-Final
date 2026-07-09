@@ -1,7 +1,9 @@
 import { Routes } from '@angular/router';
 import { AppShellComponent } from './layout/app-shell/app-shell.component';
+import { CoordinatorShellComponent } from './layout/coordinator-shell/coordinator-shell.component';
 import { authGuard } from './nucleo/guards/auth-guard';
 import { loginGuard } from './nucleo/guards/login-guard';
+import { coordinatorGuard } from './nucleo/guards/coordinator-guard';
 
 export const routes: Routes = [
   // ── Rota raiz: redireciona para /login ────────────────────────────────
@@ -12,7 +14,7 @@ export const routes: Routes = [
   },
 
   // ── Rota pública: login ───────────────────────────────────────────────
-  // loginGuard: usuário já autenticado é redirecionado para /home
+  // loginGuard: usuário já autenticado é redirecionado para /home ou /coordenador/home
   {
     path: 'login',
     canActivate: [loginGuard],
@@ -31,7 +33,7 @@ export const routes: Routes = [
     loadComponent: () => import('./funcionalidades/autenticacao/redefinir-senha/redefinir-senha').then(m => m.RedefinirSenhaComponent)
   },
 
-  // ── Rotas internas (com AppShell + Sidebar) ───────────────────────────
+  // ── Rotas internas do Professor (com AppShell + Sidebar) ──────────────
   // authGuard aplicado no pai para proteger TODAS as rotas filhas
   {
     path: '',
@@ -69,9 +71,40 @@ export const routes: Routes = [
     ]
   },
 
+  // ── Rotas internas do Coordenador (com CoordinatorShell + Sidebar) ────
+  // authGuard + coordinatorGuard protegem todas as rotas filhas
+  {
+    path: 'coordenador',
+    component: CoordinatorShellComponent,
+    canActivate: [authGuard, coordinatorGuard],
+    children: [
+      {
+        path: 'home',
+        loadComponent: () => import('./funcionalidades/coordenador/home/coordenador-home.component').then(m => m.CoordenadorHomeComponent)
+      },
+      {
+        path: 'alunos',
+        loadComponent: () => import('./funcionalidades/coordenador/alunos/coordenador-alunos.component').then(m => m.CoordenadorAlunosComponent)
+      },
+      {
+        path: 'turmas',
+        loadComponent: () => import('./funcionalidades/coordenador/turmas/coordenador-turmas.component').then(m => m.CoordenadorTurmasComponent)
+      },
+      {
+        path: 'professores',
+        loadComponent: () => import('./funcionalidades/coordenador/professores/coordenador-professores.component').then(m => m.CoordenadorProfessoresComponent)
+      },
+      {
+        path: 'calendario',
+        loadComponent: () => import('./funcionalidades/coordenador/calendario/coordenador-calendario.component').then(m => m.CoordenadorCalendarioComponent)
+      },
+    ]
+  },
+
   // ── Wildcard: qualquer rota desconhecida → /login ─────────────────────
   {
     path: '**',
     redirectTo: 'login',
   },
 ];
+

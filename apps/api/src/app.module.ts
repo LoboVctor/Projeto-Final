@@ -15,6 +15,8 @@ import { EstudanteModule } from './modulos/estudante/estudante.module.js';
 import { EstudoCasoModule } from './modulos/estudo-de-caso/estudo-de-caso.module.js';
 import { EventoModule } from './modulos/evento/evento.module.js';
 import { RelatorioSemestralModule } from './modulos/relatorio-semestral/relatorio-semestral.module.js';
+import { EducadorModule } from './modulos/educador/educador.module.js';
+import { AuditoriaModule } from './modulos/auditoria/auditoria.module.js';
 import * as Joi from 'joi';
 
 @Module({
@@ -39,6 +41,8 @@ import * as Joi from 'joi';
     EstudoCasoModule,
     EventoModule,
     RelatorioSemestralModule,
+    EducadorModule,
+    AuditoriaModule,
   ],
   controllers: [],
 

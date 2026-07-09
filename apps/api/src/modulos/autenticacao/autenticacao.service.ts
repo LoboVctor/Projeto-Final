@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsuarioService } from '../usuario/usuario.service.js';
 import * as bcrypt from 'bcrypt';
@@ -30,6 +30,12 @@ export class AutenticacaoService {
 
     if (!isMatch) {
       throw new UnauthorizedException('Credenciais inválidas');
+    }
+
+    if (usuario.bloqueado) {
+      throw new ForbiddenException(
+        'Seu acesso foi bloqueado. Entre em contato com a coordenação da escola.',
+      );
     }
 
     const payload = { sub: usuario.id, email: usuario.email };

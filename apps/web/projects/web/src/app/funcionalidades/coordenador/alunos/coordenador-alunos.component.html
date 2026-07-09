@@ -1,0 +1,205 @@
+<div class="page-container">
+
+  <!-- ── Cabeçalho da Tela ─────────────────────────────────────── -->
+  <header class="page-header">
+    <div class="page-header-texto">
+      <h1 class="page-titulo">Alunos</h1>
+      <p class="page-subtitulo">Consulte, filtre e gerencie todos os estudantes da escola.</p>
+    </div>
+    <button class="btn-exportar" (click)="exportarCSV()" [disabled]="!temResultados()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      Exportar CSV
+    </button>
+  </header>
+
+  <!-- ── Barra de filtros ───────────────────────────────────────── -->
+  <section class="filtros-bar" aria-label="Filtros de busca">
+    <div class="busca-wrapper">
+      <svg class="busca-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        id="coordenador-busca-alunos"
+        type="text"
+        class="busca-input"
+        placeholder="Buscar por nome ou matrícula..."
+        [value]="termoBusca()"
+        (input)="onTermoBuscaChange($any($event.target).value)"
+        aria-label="Buscar alunos por nome ou matrícula"
+      />
+      @if (termoBusca()) {
+        <button class="busca-limpar" (click)="limparFiltros()" aria-label="Limpar busca">✕</button>
+      }
+    </div>
+
+    <div class="filtro-select-wrapper">
+      <select class="filtro-select" [value]="filtroDiagnostico()" (change)="onFiltroDiagnosticoChange($any($event.target).value)" aria-label="Filtrar por diagnóstico">
+        <option value="">Todos os Diagnósticos</option>
+        @for (tipo of tiposDiagnostico; track tipo) {
+          <option [value]="tipo">{{ tipo }}</option>
+        }
+      </select>
+      <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+    </div>
+
+    <div class="filtro-select-wrapper">
+      <select class="filtro-select" [value]="filtroSexo()" (change)="onFiltroSexoChange($any($event.target).value)" aria-label="Filtrar por sexo">
+        <option value="">Todos os Sexos</option>
+        <option value="MASCULINO">Masculino</option>
+        <option value="FEMININO">Feminino</option>
+        <option value="OUTRO">Outro</option>
+      </select>
+      <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+    </div>
+
+    <div class="filtro-select-wrapper">
+      <select class="filtro-select" [value]="filtroTurmaId()" (change)="onFiltroTurmaChange($any($event.target).value)" aria-label="Filtrar por turma">
+        <option value="">Todas as Turmas</option>
+        @for (turma of turmasDisponiveis(); track turma.id) {
+          <option [value]="turma.id">{{ turma.nome }}</option>
+        }
+      </select>
+      <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+    </div>
+
+    <div class="filtro-select-wrapper">
+      <select class="filtro-select" [value]="filtroFormaComunicacao()" (change)="onFiltroFormaComunicacaoChange($any($event.target).value)" aria-label="Filtrar por forma de comunicação">
+        <option value="">Todas as Comunicações</option>
+        <option value="VERBAL">Verbal</option>
+        <option value="NAO_VERBAL">Não Verbal</option>
+      </select>
+      <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+    </div>
+
+    <div class="filtro-select-wrapper">
+      <select class="filtro-select" [value]="filtroStatus() || ''" (change)="onFiltroStatusChange($any($event.target).value)" aria-label="Filtrar por status">
+        <option value="">Todos os Status</option>
+        <option value="PENDENTE">Apenas Pendentes</option>
+        <option value="CONCLUIDO">Concluídos</option>
+      </select>
+      <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+    </div>
+
+    <div class="filtro-select-wrapper">
+      <select class="filtro-select" [value]="filtroCategoria()" (change)="onFiltroCategoriaChange($any($event.target).value)" aria-label="Filtrar por categoria de especificidade">
+        <option value="">Todas as Especificidades</option>
+        <option value="ALIMENTAR">Alimentar</option>
+        <option value="SENSORIAL">Sensorial</option>
+        <option value="MOTORA">Motora</option>
+        <option value="COMPORTAMENTAL">Comportamental</option>
+      </select>
+      <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+    </div>
+
+    <div class="filtro-idade-wrapper">
+      <span class="filtro-idade-label">Idade:</span>
+      <input id="coordenador-filtro-idade-min" type="number" class="filtro-idade-input" placeholder="Min" min="0" max="120" [value]="filtroIdadeMin() ?? ''" (change)="onFiltroIdadeMinChange($any($event.target).value)" aria-label="Idade mínima" />
+      <span class="filtro-idade-sep">–</span>
+      <input id="coordenador-filtro-idade-max" type="number" class="filtro-idade-input" placeholder="Max" min="0" max="120" [value]="filtroIdadeMax() ?? ''" (change)="onFiltroIdadeMaxChange($any($event.target).value)" aria-label="Idade máxima" />
+    </div>
+
+    <button class="btn-limpar-todos" (click)="limparFiltros()" title="Limpar todos os filtros">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+      Limpar Filtros
+    </button>
+  </section>
+
+  @if (!loading()) {
+    <p class="resultado-contador" aria-live="polite">
+      @if (total() > 0) { <strong>{{ total() }}</strong> estudante(s) encontrado(s) }
+      @else { Nenhum estudante encontrado para os filtros aplicados. }
+    </p>
+  }
+
+  @if (loading()) {
+    <div class="loading-container" aria-live="polite" aria-label="Carregando lista de alunos">
+      @for (i of [1,2,3,4,5]; track i) { <div class="skeleton-row"></div> }
+    </div>
+  }
+
+  @if (erro() && !loading()) {
+    <div class="erro-container" role="alert">
+      <span>⚠️ {{ erro() }}</span>
+      <button class="btn-tentar-novamente" (click)="limparFiltros()">Tentar novamente</button>
+    </div>
+  }
+
+  @if (!loading() && !erro() && temResultados()) {
+    <div class="tabela-wrapper" role="region" aria-label="Tabela de estudantes">
+      <table class="tabela" aria-label="Lista de alunos">
+        <thead>
+          <tr>
+            <th class="th-aluno">Aluno</th>
+            <th class="th-matricula">Matrícula</th>
+            <th class="th-turma">Turma</th>
+            <th class="th-diagnostico">Diagnóstico</th>
+            <th class="th-status">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (aluno of estudantes(); track aluno.id) {
+            <tr class="tabela-linha tabela-linha--clicavel" (click)="abrirModalAluno(aluno)"
+              [attr.aria-label]="'Ver perfil de ' + aluno.nomeCompleto" role="button"
+              tabindex="0" (keydown.enter)="abrirModalAluno(aluno)" (keydown.space)="abrirModalAluno(aluno)">
+              <td class="td-aluno">
+                <div class="aluno-info">
+                  <img [src]="getFotoUrl(aluno)" [alt]="aluno.nomeCompleto" class="aluno-foto" loading="lazy" />
+                  <span class="aluno-nome">{{ aluno.nomeCompleto }}</span>
+                </div>
+              </td>
+              <td class="td-matricula"><span class="tag-matricula">{{ aluno.matricula }}</span></td>
+              <td class="td-turma">{{ getTurmaLabel(aluno) }}</td>
+              <td class="td-diagnostico">
+                @if (aluno.diagnosticos.length > 0) {
+                  @for (d of aluno.diagnosticos; track d.diagnostico.nome) {
+                    <span [class]="'px-2 py-0.5 rounded text-[10px] font-nunito font-bold border inline-block m-0.5 ' + getCorDiagnostico(d.diagnostico.tipo)">
+                      {{ d.diagnostico.tipo | diagLabel }}
+                    </span>
+                  }
+                } @else { <span class="sem-dado">—</span> }
+              </td>
+              <td class="td-status">
+                <span class="tag-status" [class.tag-status--ativo]="aluno.statusMatricula">{{ getStatusLabel(aluno) }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPaginas() > 1) {
+      <nav class="paginacao" aria-label="Paginação de resultados">
+        <button class="pag-btn" (click)="irParaPagina(paginaAtual() - 1)" [disabled]="paginaAtual() === 1" aria-label="Página anterior">← Anterior</button>
+        <span class="pag-info">Página <strong>{{ paginaAtual() }}</strong> de <strong>{{ totalPaginas() }}</strong></span>
+        <button class="pag-btn" (click)="irParaPagina(paginaAtual() + 1)" [disabled]="paginaAtual() === totalPaginas()" aria-label="Próxima página">Próxima →</button>
+      </nav>
+    }
+  }
+
+  @if (!loading() && !erro() && !temResultados()) {
+    <div class="estado-vazio">
+      <span class="estado-vazio-icone">🔍</span>
+      <p class="estado-vazio-titulo">Nenhum aluno encontrado</p>
+      <p class="estado-vazio-subtitulo">Tente ajustar os filtros ou limpar a busca.</p>
+      <button class="btn-limpar-filtros" (click)="limparFiltros()">Limpar Filtros</button>
+    </div>
+  }
+
+</div>
+
+<app-aluno-modal
+  [isVisible]="modalAlunoAberto()"
+  [aluno]="modalAlunoData()"
+  [abaInicial]="abaSolicitada()"
+  (fecharModal)="fecharModalAluno()">
+</app-aluno-modal>
