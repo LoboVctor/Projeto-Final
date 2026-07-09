@@ -4,8 +4,11 @@ import {
   ApiOperation,
   ApiQuery,
   ApiBearerAuth,
+  ApiResponse
 } from '@nestjs/swagger';
 import { TurmaService } from './turma.service.js';
+import { KpisTurmaResponseDto } from './dtos/kpis-turma-response.dto.js'; 
+import { TurmaDashboardResponseDto } from './dtos/turma-dashboard-response.dto.js';
 
 @ApiTags('Turma')
 @ApiBearerAuth()
@@ -63,5 +66,18 @@ export class TurmaController {
   @ApiOperation({ summary: 'Retorna métricas agregadas da turma (Big Numbers + distribuições para gráficos)' })
   getMetricas(@Param('id', ParseUUIDPipe) id: string) {
     return this.turmaService.obterMetricasTurma(id);
+  }
+
+  @Get(':id/kpis') 
+  obterDashboardTurma(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('periodo') periodo?: string,
+  ): Promise<TurmaDashboardResponseDto> {
+    return this.turmaService.obterDashboardTurma(id, periodo);
+  }
+
+  @Get('home/big-numbers/:educadorId')
+  async obterBigNumbersHome(@Param('educadorId') educadorId: string) {
+    return this.turmaService.obterBigNumbersHome(educadorId);
   }
 }

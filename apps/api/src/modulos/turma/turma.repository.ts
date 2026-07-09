@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type {
   ITurmaRepositorio,
   TurmaLista,
   TurmaComEstudantes,
   TurmaParaGrafico,
-  TurmaParaMetricas
+  TurmaParaMetricas,
+  AgregacaoKpisDiarios,
+  FiltroKpisDiarios
 } from './interfaces/ITurmaRepositorio.js';
 
 @Injectable()
@@ -116,6 +119,106 @@ export class TurmaRepository implements ITurmaRepositorio {
           },
         },
       },
+    });
+  }
+
+  async buscarAgregacoesKpis(filtro?: FiltroKpisDiarios): Promise<AgregacaoKpisDiarios> {
+    const whereCondition: Prisma.RegistroDiarioWhereInput = {};
+
+    if (filtro?.turmaId) {
+      whereCondition.estudante = { turmas: { some: { id: filtro.turmaId } } };
+    } else if (filtro?.escolaId) {
+      whereCondition.estudante = { turmas: { some: { escolaId: filtro.escolaId } } };
+    }
+
+    const diariosAgregados = await this.prisma.client.registroDiario.aggregate({
+      where: whereCondition,
+      _avg: {
+        scoreComportamento: true,
+        scoreInteracao: true,
+        scoreFoco: true,
+        scoreAutonomia: true,
+        statusAlimentacao: true,
+        usoBanheiro: true,
+      },
+    });
+
+    return { diariosAgregados };
+  }
+
+  async buscarAgregacoesDiariasPorPeriodo(turmaId: string, inicio: Date, fim: Date) {
+    return this.prisma.client.registroDiario.aggregate({
+      where: {
+        estudante: { turmas: { some: { id: turmaId } } },
+        data: { gte: inicio, lte: fim },
+        preenchido: true,
+      },
+      _avg: {
+        scoreComportamento: true,
+        scoreInteracao: true,
+        scoreFoco: true,
+        scoreAutonomia: true,
+        statusAlimentacao: true,
+        usoBanheiro: true,
+      },
+    });
+  }
+
+  async buscarFrequenciaPorPeriodo(turmaId: string, inicio: Date, fim: Date) {
+    return this.prisma.client.registroAula.groupBy({
+      by: ['presenca'],
+      where: {
+        data: { gte: inicio, lte: fim },
+        
+        aula: {
+          turmaId: turmaId,
+        },
+      },
+      _count: { presenca: true },
+    });
+  }
+
+  async buscarAulasRealizadas(turmaId: string, inicio: Date, fim: Date) {
+    return this.prisma.client.registroAula.findMany({
+      where: {
+        aula: { turmaId: turmaId },
+        data: { gte: inicio, lte: fim },
+        status_aula: 'REALIZADA' 
+      },
+      select: { presenca: true }
+    });
+  }
+
+  async contarEstudantesDoEducador(educadorId: string): Promise<number> {
+    return this.prisma.client.estudante.count({
+      where: {
+        turmas: {
+          some: { educadorId: educadorId }
+        }
+      }
+    });
+  }
+  async buscarRegistrosDiariosDoEducador(educadorId: string, dataCorte?: Date) {
+    const whereCondition: any = { 
+      educadorId: educadorId,
+      preenchido: true 
+    };
+
+    if (dataCorte) {
+      whereCondition.data = { gte: dataCorte };
+    }
+
+    return this.prisma.client.registroDiario.findMany({
+      where: whereCondition,
+      select: {
+        data: true,
+        scoreComportamento: true,
+        scoreInteracao: true,
+        scoreFoco: true,
+        scoreAutonomia: true,
+        statusAlimentacao: true,
+        usoBanheiro: true
+      }
     });
   }
 }

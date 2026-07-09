@@ -8,7 +8,7 @@ import {
   signal,
   effect,
   DestroyRef, ChangeDetectionStrategy } from '@angular/core';
-import { isPlatformBrowser, DatePipe } from '@angular/common';
+import { isPlatformBrowser, DatePipe, DecimalPipe} from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   NgApexchartsModule,
@@ -34,7 +34,7 @@ export type ChartOptions = {
 
 @Component({
   selector: 'app-home',
-  imports: [NgApexchartsModule, CardAlunoComponent, AlunoModalComponent, DatePipe],
+  imports: [NgApexchartsModule, CardAlunoComponent, AlunoModalComponent, DatePipe, DecimalPipe],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush })
@@ -52,6 +52,9 @@ export class HomeComponent implements OnInit {
   registrosPendentes = signal<RegistroDiarioPendente[]>([]);
   totalEsperado = signal<number>(0);
   totalPreenchidos = signal<number>(0);
+  totalAlunosEducador = signal<number>(0);
+  scoreMedioHoje = signal<number>(0);
+  diaDaSemanaTexto = signal<string>('Hoje');
   loadingMetricas = signal<boolean>(true);
 
   turmaAtual = signal<TurmaResumo | null>(null);
@@ -104,6 +107,32 @@ export class HomeComponent implements OnInit {
 
       return;
     }
+
+    this.turmasService.getBigNumbersHome(educadorIdAtual)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (dados) => { 
+          this.totalAlunosEducador.set(dados.totalAlunos);
+          this.scoreMedioHoje.set(dados.scoreMedioDia);
+       const diasExtras = [
+          'Domingo',
+          'Segunda-feira',
+          'Terça-feira',
+          'Quarta-feira',
+          'Quinta-feira',
+          'Sexta-feira',
+          'Sábado'
+        ];
+        
+        if (dados.diaDaSemana >= 0 && dados.diaDaSemana <= 6) {
+          const diaTexto = diasExtras[dados.diaDaSemana] ?? 'Hoje';
+          this.diaDaSemanaTexto.set(diaTexto);
+        }
+      },
+        error: (err: any) => {
+          console.error('Erro ao buscar Big Numbers', err);
+        }
+      });
 
     this.registrosService
       .getAlertasPendentes(educadorIdAtual)

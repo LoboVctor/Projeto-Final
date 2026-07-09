@@ -1,3 +1,23 @@
+:host {
+  display: block;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.turma-graficos-wrapper,
+.graficos-container {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+
 /* ── Wrapper principal ─────────────────────────── */
 .turma-graficos-wrapper {
 }
@@ -15,12 +35,12 @@
 }
 
 
-/* ── Linha horizontal de gráficos ──────────────── */
+/* ── Grid 2x2 de gráficos ──────────────── */
 .graficos-row {
-  display: flex;
-  gap: 14px;
-  align-items: stretch;
-  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Cria exatamente 2 colunas */
+  gap: 20px;
+  align-items: start;
 }
 
 /* ── Card interno (sem borda própria) ───────────── */
@@ -57,8 +77,8 @@
 /* ── Canvas wrapper ─────────────────────────────── */
 .grafico-canvas-wrapper {
   position: relative;
-  flex: 1;
-  height: 150px;
+  width: 100%;
+  height: 240px; 
 }
 
 /* ── Loading skeletons ─────────────────────────── */
@@ -112,9 +132,9 @@
 }
 
 /* ── Responsividade ─────────────────────────────── */
-@media (max-width: 1100px) {
+@media (max-width: 1400px) {
   .graficos-row {
-    flex-wrap: wrap;
+    grid-template-columns: 1fr;
   }
 
   .grafico-card--rosca {

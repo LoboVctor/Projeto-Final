@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api.config';
+import { KpisTurma } from '../../compartilhado/models/kpis-turma.model';
 
 export interface DiagnosticoResumo {
   id: string;
@@ -32,6 +33,12 @@ export interface TurmaResumo {
 export interface EstudantesPorTurmaResponse {
   turma: { id: string; nome: string };
   estudantes: EstudanteResumo[];
+}
+
+export interface BigNumbersHomeResponse {
+  totalAlunos: number;
+  scoreMedioDia: number;
+  diaDaSemana: number;
 }
 
 export interface DadosGraficoTurma {
@@ -80,5 +87,15 @@ export class TurmasService {
   /** GET /turmas/:id/metricas — Big Numbers e distribuições para gráficos */
   obterMetricasTurma(turmaId: string): Observable<MetricasTurma> {
     return this.http.get<MetricasTurma>(`${this.API}/${turmaId}/metricas`);
+  }
+
+  obterKpisTurma(turmaId: string, periodo: string = 'semana'): Observable<any> {
+    const params = new HttpParams().set('periodo', periodo);
+    
+    return this.http.get<any>(`${this.API}/${turmaId}/kpis`, { params });
+  }
+
+  getBigNumbersHome(educadorId: string) {
+    return this.http.get<BigNumbersHomeResponse>(`${this.API}/home/big-numbers/${educadorId}`);
   }
 }

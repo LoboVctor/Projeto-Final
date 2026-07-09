@@ -1,5 +1,7 @@
 import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
-import type { ITurmaRepositorio, MetricasTurma } from './interfaces/ITurmaRepositorio.js';
+import type { ITurmaRepositorio, MetricasTurma, AgregacaoKpisDiarios } from './interfaces/ITurmaRepositorio.js';
+import { KpisTurmaResponseDto } from './dtos/kpis-turma-response.dto.js';
+import { TurmaDashboardResponseDto } from './dtos/turma-dashboard-response.dto.js';
 
 @Injectable()
 export class TurmaService {
@@ -9,6 +11,7 @@ export class TurmaService {
     @Inject('ITurmaRepositorio')
     private readonly turmaRepositorio: ITurmaRepositorio,
   ) {}
+  
 
   /**
    * Lista as turmas cujo educador possui pelo menos uma Aula associada.
@@ -164,6 +167,172 @@ export class TurmaService {
       distribuicaoIdade,
       distribuicaoDiagnostico,
       distribuicaoComunicacao,
+    };
+  }
+
+  async obterKpisTurma(turmaId: string): Promise<KpisTurmaResponseDto> {
+    try {
+      const turmaExists = await this.turmaRepositorio.buscarEstudantesPorTurma(turmaId);
+      if (!turmaExists) {
+        throw new NotFoundException(`Turma com id "${turmaId}" não encontrada.`);
+      }
+
+      const agregacoes = await this.turmaRepositorio.buscarAgregacoesKpis({ turmaId });
+      return this.formatarKpisResumo(agregacoes);
+    } catch (error) {
+      this.logger.error(`Erro ao processar KPIs da turma ${turmaId}`, error);
+      throw error;
+    }
+  }
+
+  async obterKpisGeraisEscola(escolaId?: string): Promise<KpisTurmaResponseDto> {
+    try {
+      const agregacoes = await this.turmaRepositorio.buscarAgregacoesKpis({ escolaId });
+      return this.formatarKpisResumo(agregacoes);
+    } catch (error) {
+      this.logger.error(`Erro ao processar KPIs da escola ${escolaId}`, error);
+      throw error;
+    }
+  }
+
+  private formatarKpisResumo(agregacoes: AgregacaoKpisDiarios): KpisTurmaResponseDto {
+    const { diariosAgregados } = agregacoes;
+
+    return {
+      mediaComportamento: Number(diariosAgregados._avg.scoreComportamento?.toFixed(1)) || 0,
+      mediaInteracao: Number(diariosAgregados._avg.scoreInteracao?.toFixed(1)) || 0,
+      mediaFoco: Number(diariosAgregados._avg.scoreFoco?.toFixed(1)) || 0,
+      mediaAutonomia: Number(diariosAgregados._avg.scoreAutonomia?.toFixed(1)) || 0,
+      mediaAlimentacao: Number(diariosAgregados._avg.statusAlimentacao?.toFixed(1)) || 0,
+      mediaBanheiro: Number(diariosAgregados._avg.usoBanheiro?.toFixed(1)) || 0,
+    };
+  }
+
+  async obterDashboardTurma(turmaId: string, periodo: string = 'semana'): Promise<TurmaDashboardResponseDto> {
+    const turmaExists = await this.turmaRepositorio.buscarEstudantesPorTurma(turmaId);
+    if (!turmaExists) throw new NotFoundException(`Turma não encontrada.`);
+
+    const { atualInicio, atualFim, anteriorInicio, anteriorFim } = this.calcularJanelasDeTempoIguaisAoAluno(periodo);
+
+    // 2. Trocamos o this.prisma por this.turmaRepositorio
+    const [diarioAtual, diarioAnterior, freqAtual, freqAnterior] = await Promise.all([
+      this.turmaRepositorio.buscarAgregacoesDiariasPorPeriodo(turmaId, atualInicio, atualFim),
+      this.turmaRepositorio.buscarAgregacoesDiariasPorPeriodo(turmaId, anteriorInicio, anteriorFim),
+      
+      this.turmaRepositorio.buscarAulasRealizadas(turmaId, atualInicio, atualFim),
+      this.turmaRepositorio.buscarAulasRealizadas(turmaId, anteriorInicio, anteriorFim)
+    ]);
+
+    const calcularMetricasFrequencia = (aulas: { presenca: boolean }[]) => {
+      if (aulas.length === 0) return 0;
+      const totaisPresencas = aulas.filter(a => a.presenca).length;
+      return (totaisPresencas / aulas.length) * 100;
+    };
+
+    const valFreqAtual = calcularMetricasFrequencia(freqAtual);
+    const valFreqAnterior = calcularMetricasFrequencia(freqAnterior);
+
+    const chaves = [
+      { key: 'Alimentacao', prop: 'statusAlimentacao' },
+      { key: 'Banheiro', prop: 'usoBanheiro' },
+      { key: 'Autonomia', prop: 'scoreAutonomia' },
+      { key: 'Comportamento', prop: 'scoreComportamento' },
+      { key: 'Interacao', prop: 'scoreInteracao' },
+      { key: 'Foco', prop: 'scoreFoco' },
+    ];
+
+    const categorias: Record<string, { valor: number; variacao: number }> = {};
+    let somaMediaGeral = 0;
+    let somaMediaGeralAnterior = 0;
+
+    for (const c of chaves) {
+      const valAtual = diarioAtual._avg[c.prop as keyof typeof diarioAtual._avg] || 0;
+      const valAnterior = diarioAnterior._avg[c.prop as keyof typeof diarioAnterior._avg] || 0;
+      
+      categorias[c.key] = {
+        valor: Number(valAtual.toFixed(1)),
+        variacao: Number((valAtual - valAnterior).toFixed(1)),
+      };
+      somaMediaGeral += valAtual;
+      somaMediaGeralAnterior += valAnterior;
+    }
+
+    const valMediaGeral = somaMediaGeral / 6;
+    const valMediaGeralAnterior = somaMediaGeralAnterior / 6;
+
+    return {
+      mediaGeral: {
+        valor: Number(valMediaGeral.toFixed(1)),
+        variacao: Number((valMediaGeral - valMediaGeralAnterior).toFixed(1)),
+      },
+      frequencia: {
+        valor: Number(valFreqAtual.toFixed(1)),
+        variacao: Number((valFreqAtual - valFreqAnterior).toFixed(1)),
+      },
+      categorias,
+    };
+  }
+
+  private calcularJanelasDeTempoIguaisAoAluno(periodo: string) {
+    const atualFim = new Date();
+    const atualInicio = new Date();
+    const anteriorFim = new Date();
+    const anteriorInicio = new Date();
+
+    if (periodo === 'semestre') {
+      atualInicio.setMonth(atualInicio.getMonth() - 6);
+      anteriorFim.setMonth(anteriorFim.getMonth() - 6);
+      anteriorInicio.setMonth(anteriorInicio.getMonth() - 12);
+    } else if (periodo === 'mes') {
+      atualInicio.setDate(atualInicio.getDate() - 30);
+      anteriorFim.setDate(anteriorFim.getDate() - 30);
+      anteriorInicio.setDate(anteriorInicio.getDate() - 60);
+    } else {
+      atualInicio.setDate(atualInicio.getDate() - 7);
+      anteriorFim.setDate(anteriorFim.getDate() - 7);
+      anteriorInicio.setDate(anteriorInicio.getDate() - 14);
+    }
+
+    return { atualInicio, atualFim, anteriorInicio, anteriorFim };
+  }
+  async obterBigNumbersHome(educadorId: string) {
+    const totalAlunos = await this.turmaRepositorio.contarEstudantesDoEducador(educadorId);
+
+    const hoje = new Date();
+    const diaDaSemanaAtual = hoje.getDay();
+    
+    const dataCorte = new Date();
+    dataCorte.setDate(dataCorte.getDate() - 90);
+
+    const registros = await this.turmaRepositorio.buscarRegistrosDiariosDoEducador(educadorId, dataCorte);
+
+    const registrosDoDia = registros.filter(r => {
+      return new Date(r.data).getDay() === diaDaSemanaAtual;
+    });
+
+    let scoreMedio = 0;
+
+    if (registrosDoDia.length > 0) {
+      let somaGeral = 0;
+      for (const r of registrosDoDia) {
+        const mediaDoRegistro = (
+          r.scoreComportamento + 
+          r.scoreInteracao + 
+          r.scoreFoco + 
+          r.scoreAutonomia + 
+          r.statusAlimentacao + 
+          r.usoBanheiro
+        ) / 6;
+        somaGeral += mediaDoRegistro;
+      }
+      // Calcula a média das médias
+      scoreMedio = Number((somaGeral / registrosDoDia.length).toFixed(1));
+    }
+
+    return {
+      totalAlunos,
+      scoreMedioDia: scoreMedio,
+      diaDaSemana: diaDaSemanaAtual
     };
   }
 }
