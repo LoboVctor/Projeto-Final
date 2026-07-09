@@ -1,224 +1,503 @@
-<div class="flex flex-col gap-4 p-4 sm:p-6 lg:p-8 bg-[#F7F5FA] min-h-screen">
+<div class="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 bg-[#F7F5FA] min-h-screen">
 
-  <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-[#E8E3EF]">
-    
-    <div class="shrink-0">
-      <h1 class="text-xl sm:text-2xl font-bold text-[#2D1E40]">Visão Geral</h1>
-      <p class="text-[#686177] mt-1 text-sm">Acompanhe as rotinas e o desempenho da sua turma.</p>
-    </div>
+  <!-- ═══ Título Principal ═══ -->
+  <div>
+    <h1 class="text-2xl sm:text-3xl font-bold text-[#6C3CC9]">Painel da Turma</h1>
+    <p class="text-[#686177] mt-1 text-sm">Acompanhe os registros, o progresso e o bem-estar da sua turma.</p>
+  </div>
 
-    <div class="flex flex-wrap items-center gap-6 sm:gap-8">
-      
-      <div class="flex items-center gap-4 border-l-4 border-[#5BBDEF] pl-4">
-        <div>
-          <p class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-1">Total de Alunos</p>
-          <div class="flex items-baseline gap-1">
-            <span class="text-3xl sm:text-4xl font-extrabold text-[#2D1E40] leading-none">{{ totalAlunosEducador() }}</span>
+  <!-- ═══ Grid Principal: Coluna Principal + Lateral (340px) ═══ -->
+  <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-6">
+
+    <!-- ─── Coluna Principal ─── -->
+    <div class="flex flex-col gap-8 h-full">
+
+      <!-- Big Numbers Refinados (Altura Aumentada e Números Coloridos) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+        <!-- Card 1: Total de Alunos (Identidade Verde) -->
+        <div
+          class="bg-gradient-to-br from-white via-emerald-50/50 to-emerald-100/40 rounded-2xl shadow-sm hover:shadow-md border border-[#E8E3EF] hover:border-emerald-400/50 py-6 px-5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 group relative overflow-hidden min-h-[144px]">
+          <!-- Efeito de fundo decorativo -->
+          <div class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-emerald-400 opacity-20 blur-2xl pointer-events-none"></div>
+          <div
+            class="w-12 h-12 rounded-2xl bg-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <div class="flex flex-col min-w-0">
+            <p class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-1">Total de Alunos</p>
+            <span class="text-5xl font-extrabold text-emerald-600 leading-none">{{ totalAlunosAnimado() }}</span>
           </div>
         </div>
-      </div>
 
-      <div class="flex items-center gap-4 border-l-4 border-[#4CAF50] pl-4">
-        <div>
-          <p class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-1">Score Médio ({{ diaDaSemanaTexto() }})</p>
-          <div class="flex items-baseline gap-1">
-            <span class="text-3xl sm:text-4xl font-extrabold text-[#2D1E40] leading-none">{{ scoreMedioHoje() | number:'1.1-1' }}</span>
-            <span class="text-sm font-bold text-gray-400">/5</span>
+        <!-- Card 2: Score Médio (Identidade Laranja com Girassol ELO Oficial) -->
+        <div
+          class="bg-gradient-to-br from-white via-orange-50/60 to-amber-100/50 rounded-2xl shadow-sm hover:shadow-md border border-[#E8E3EF] hover:border-[#F97316]/50 py-6 px-5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 group relative overflow-hidden min-h-[144px]">
+          <!-- Efeito de fundo decorativo -->
+          <div class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-orange-400 opacity-20 blur-2xl pointer-events-none"></div>
+          <div
+            class="w-12 h-12 rounded-2xl bg-orange-100/80 flex items-center justify-center text-[#F97316] shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">
+            <!-- Girassol ELO Oficial Simplificado -->
+            <svg class="w-7 h-7 drop-shadow-sm" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3.5" fill="#2D1E40" stroke="currentColor" stroke-width="2.5"></circle>
+              <path
+                d="M12 2a2.5 2.5 0 012.5 2.5v1.23a6.992 6.992 0 00-5 0V4.5A2.5 2.5 0 0112 2zm7.07 2.93a2.5 2.5 0 01.36 3.49l-1.02 1.35a6.99 6.99 0 00-4-3l1.35-1.02a2.5 2.5 0 013.31-.82zM22 12a2.5 2.5 0 01-2.5 2.5h-1.23a6.992 6.992 0 000-5h1.23A2.5 2.5 0 0122 12zm-2.93 7.07a2.5 2.5 0 01-3.49.36l-1.35-1.02a6.99 6.99 0 003-4l1.02 1.35a2.5 2.5 0 01.82 3.31zM12 22a2.5 2.5 0 01-2.5-2.5v-1.23a6.992 6.992 0 005 0V19.5A2.5 2.5 0 0112 22zm-7.07-2.93a2.5 2.5 0 01-.36-3.49l1.02-1.35a6.99 6.99 0 004 3l-1.35 1.02a2.5 2.5 0 01-3.31.82zM2 12a2.5 2.5 0 012.5-2.5h1.23a6.992 6.992 0 000 5H4.5A2.5 2.5 0 012 12zm2.93-7.07a2.5 2.5 0 013.49-.36l1.35 1.02a6.99 6.99 0 00-3 4l-1.02-1.35a2.5 2.5 0 01-.82-3.31z" />
+            </svg>
+          </div>
+          <div class="flex flex-col min-w-0">
+            <p class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-1">
+              Score Médio ({{ diaDaSemanaTexto() }})
+            </p>
+            <div class="flex items-baseline gap-1">
+              <span class="text-5xl font-extrabold text-[#F97316] leading-none">
+                {{ scoreMedioHojeAnimado() | number:'1.1-1' }}
+              </span>
+              <span class="text-sm font-bold text-gray-400">/5</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="flex items-center gap-4 border-l-4 border-[#6C3CC9] pl-4">
-        <div>
-          <p class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-1">Registros Pendentes</p>
-          <div class="flex items-baseline gap-1">
-            <span class="text-3xl sm:text-4xl font-extrabold text-[#6C3CC9] leading-none">{{ totalPendentes() }}</span>
+        <!-- Card 3: Registros Pendentes (Identidade Roxo Escuro) -->
+        <div
+          class="bg-gradient-to-br from-white via-purple-50/60 to-violet-100/50 rounded-2xl shadow-sm hover:shadow-md border border-[#E8E3EF] hover:border-[#4A248A]/50 py-6 px-5 flex items-center gap-4 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 group relative overflow-hidden min-h-[144px]"
+          (click)="abrirModal()">
+          <!-- Efeito de fundo decorativo -->
+          <div class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-purple-500 opacity-15 blur-2xl pointer-events-none"></div>
+          <div
+            class="w-12 h-12 rounded-2xl bg-[#E9D9FF]/70 flex items-center justify-center text-[#4A248A] shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="12" y1="18" x2="12" y2="12" />
+              <line x1="9" y1="15" x2="15" y2="15" />
+            </svg>
+          </div>
+          <div class="flex flex-col min-w-0">
+            <p class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-1">Registros Pendentes</p>
+            <span class="text-5xl font-extrabold text-[#4A248A] leading-none">{{ registrosPendentesAnimado() }}</span>
           </div>
         </div>
+
       </div>
 
-    </div> </div> <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-    
-    <div class="xl:col-span-2 flex flex-col gap-4">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-[#E8E3EF] flex flex-col gap-6 h-full">
-        <div class="flex items-center gap-2">
-          <h2 class="text-xl font-semibold text-[#2D1E40]">Alunos</h2>
-          @if (turmaAtual()) {
-            <span class="text-sm font-medium text-[#686177] px-2 py-1 bg-[#F7F5FA] rounded-md">
+      <!-- ─── Bloco Alunos (Altura envolvente do conteúdo) ─── -->
+      <div class="bg-white rounded-2xl shadow-sm border border-[#E8E3EF] p-6 flex flex-col gap-5">
+
+        <!-- Header do bloco -->
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div class="flex items-center gap-2">
+            <h2 class="text-xl font-semibold text-[#6C3CC9]">Alunos</h2>
+            @if (turmaAtual()) {
+            <span class="text-sm font-medium text-[#6C3CC9] px-2.5 py-1 bg-[#F0E6FF] rounded-lg">
               {{ turmaAtual()!.nome }}
             </span>
+            }
+          </div>
+
+          <!-- Controles de paginação -->
+          @if (totalPaginas() > 1) {
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-[#686177] font-medium">
+              {{ paginaAtual() + 1 }} de {{ totalPaginas() }}
+            </span>
+            <button id="btn-pagina-anterior" (click)="paginaAnterior()" [disabled]="paginaAtual() === 0"
+              class="w-8 h-8 rounded-lg bg-[#F7F5FA] border border-[#E8E3EF] flex items-center justify-center text-[#6C3CC9] hover:bg-[#F0E6FF] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <button id="btn-proxima-pagina" (click)="proximaPagina()" [disabled]="paginaAtual() >= totalPaginas() - 1"
+              class="w-8 h-8 rounded-lg bg-[#F7F5FA] border border-[#E8E3EF] flex items-center justify-center text-[#6C3CC9] hover:bg-[#F0E6FF] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
           }
         </div>
 
+        <!-- Estados do bloco de alunos -->
         @if (loadingEstudantes()) {
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="h-[120px] bg-gray-100 animate-pulse rounded-xl"></div>
-            <div class="h-[120px] bg-gray-100 animate-pulse rounded-xl"></div>
-            <div class="h-[120px] bg-gray-100 animate-pulse rounded-xl"></div>
-            <div class="h-[120px] bg-gray-100 animate-pulse rounded-xl"></div>
-          </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          @for (i of [1,2,3,4,5]; track i) {
+          <div class="h-[180px] bg-gray-100 animate-pulse rounded-xl"></div>
+          }
+        </div>
         } @else if (erroEstudantes()) {
-          <div class="flex items-center justify-center flex-1 text-red-500 py-8 text-center bg-red-50 rounded-xl">
-            <p>{{ erroEstudantes() }}</p>
-          </div>
+        <div class="flex items-center justify-center flex-1 text-red-500 py-8 text-center bg-red-50 rounded-xl">
+          <p>{{ erroEstudantes() }}</p>
+        </div>
         } @else if (!turmaAtual() || estudantes().length === 0) {
-          <div class="flex flex-col items-center justify-center flex-1 border-2 border-dashed border-[#E8E3EF] rounded-xl py-12">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#A8A2B7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-4">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            <p class="text-[#686177] font-medium">Nenhum estudante disponível nesta turma.</p>
-          </div>
+        <div
+          class="flex flex-col items-center justify-center flex-1 border-2 border-dashed border-[#E8E3EF] rounded-xl py-12">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+            stroke="#A8A2B7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-4">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          <p class="text-[#686177] font-medium">Nenhum estudante disponível nesta turma.</p>
+        </div>
         } @else {
-          <div class="flex flex-nowrap md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 pt-6 pb-10 px-4 -my-6 -mx-4 overflow-x-auto snap-x snap-mandatory hide-scrollbar">
-            @for (estudante of estudantes(); track estudante.id) {
-              <div class="flex-shrink-0 snap-start">
-                <app-card-aluno
-                  [nome]="estudante.nomeCompleto"
-                  [matricula]="estudante.matricula"
-                  [estudante]="estudante"
-                  [foto]="estudante.foto"
-                  [diagnostico]="
-                    estudante.diagnosticos.length > 0
-                      ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo'
-                      : 'Sem Laudo'
-                  "
-                  (abrirPerfil)="abrirDetalhesAluno(estudante)"
-                >
-                </app-card-aluno>
-              </div>
-            }
-          </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 aluno-page">
+          @for (estudante of alunosPaginados(); track estudante.id) {
+          <app-card-aluno [nome]="nomeCurtoAluno(estudante.nomeCompleto)" [matricula]="estudante.matricula" [estudante]="estudante"
+            [foto]="estudante.foto" [diagnostico]="
+                  estudante.diagnosticos.length > 0
+                    ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo'
+                    : 'Sem Laudo'
+                " (abrirPerfil)="abrirDetalhesAluno(estudante)">
+          </app-card-aluno>
+          }
+        </div>
+
+        <!-- Indicadores de página (dots) -->
+        @if (totalPaginas() > 1) {
+        <div class="flex items-center justify-center gap-1.5 pt-1">
+          @for (i of paginasArray(); track i) {
+          <button (click)="paginaAtual.set(i)" class="rounded-full transition-all duration-200 cursor-pointer" [class]="paginaAtual() === i
+                    ? 'w-5 h-2 bg-[#6C3CC9]'
+                    : 'w-2 h-2 bg-[#E8E3EF] hover:bg-[#B79CED]'"></button>
+          }
+        </div>
         }
+        }
+
       </div>
+
+      <!-- ═══ Footer Institucional Refinado ═══ -->
+      <div
+        class="mt-auto bg-[#F3E8FF]/60 border border-[#E8E3EF] rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow transition-shadow duration-300 relative overflow-hidden group">
+        <div
+          class="absolute right-0 top-0 w-24 h-24 bg-[#B79CED]/10 rounded-full blur-xl group-hover:scale-110 transition-transform duration-500">
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-[#6C3CC9]/10 flex items-center justify-center text-[#6C3CC9] shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </div>
+        <div class="relative z-10">
+          <p class="text-sm font-bold text-[#6C3CC9]">Acompanhar é acolher.</p>
+          <p class="text-xs text-[#6B6177] mt-0.5">Pequenas ações hoje constroem grandes conquistas amanhã.</p>
+        </div>
+      </div>
+
     </div>
 
-    <div class="flex flex-col gap-4 sm:gap-6">
-      
-      <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-[#E8E3EF] flex flex-col">
-        <h3 class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-2">Progresso do mês</h3>
-        
-        <div class="flex flex-col items-center justify-center min-h-[140px]">
-          <apx-chart class="block -mb-15" [series]="chartOptions.series" [chart]="chartOptions.chart"
+    <!-- ─── Coluna Lateral (340px) ─── -->
+    <div class="flex flex-col gap-5">
+
+      <!-- Ações Rápidas (Altura Flexível) -->
+      <div class="bg-white rounded-2xl shadow-sm border border-[#E8E3EF] p-5 flex flex-col gap-4">
+        <h3 class="text-base font-semibold text-[#6C3CC9]">Ações rápidas</h3>
+        <div class="flex flex-col gap-2.5">
+
+          <!-- Novo Relatório (Tema Azul com Hover Preenchido) -->
+          <button id="btn-acao-novo-relatorio" (click)="abrirSelecaoAluno('novo-relatorio')"
+            class="w-full flex items-center gap-3 p-3 rounded-xl bg-blue-50/15 border border-blue-200/50 hover:bg-blue-50 hover:border-blue-400 hover:shadow-[0_4px_12px_rgba(59,130,246,0.15)] transition-all duration-300 text-left group cursor-pointer h-[72px]">
+            <div
+              class="w-9 h-9 rounded-lg bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="12" y1="18" x2="12" y2="12" />
+                <line x1="9" y1="15" x2="15" y2="15" />
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-blue-900">Novo Relatório</p>
+              <p class="text-[11px] text-blue-700/80 mt-0.5 leading-tight">Registrar metas e avaliações</p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5"
+              class="shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 text-blue-400">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+
+          <!-- Score do Dia (Tema Girassol Oficial ELO com Hover Preenchido) -->
+          <button id="btn-acao-score-dia" (click)="abrirSelecaoAluno('score-dia')"
+            class="w-full flex items-center gap-3 p-3 rounded-xl bg-orange-50/15 border border-orange-200/50 hover:bg-orange-50 hover:border-orange-400 hover:shadow-[0_4px_12px_rgba(249,115,22,0.15)] transition-all duration-300 text-left group cursor-pointer h-[72px]">
+            <div
+              class="w-9 h-9 rounded-lg bg-orange-100/80 text-orange-600 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 duration-300">
+              <!-- Girassol ELO Oficial Simplificado -->
+              <svg class="w-5 h-5 drop-shadow-sm" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3.5" fill="#2D1E40" stroke="currentColor" stroke-width="2.5"></circle>
+                <path
+                  d="M12 2a2.5 2.5 0 012.5 2.5v1.23a6.992 6.992 0 00-5 0V4.5A2.5 2.5 0 0112 2zm7.07 2.93a2.5 2.5 0 01.36 3.49l-1.02 1.35a6.99 6.99 0 00-4-3l1.35-1.02a2.5 2.5 0 013.31-.82zM22 12a2.5 2.5 0 01-2.5 2.5h-1.23a6.992 6.992 0 000-5h1.23A2.5 2.5 0 0122 12zm-2.93 7.07a2.5 2.5 0 01-3.49.36l-1.35-1.02a6.99 6.99 0 003-4l1.02 1.35a2.5 2.5 0 01.82 3.31zM12 22a2.5 2.5 0 01-2.5-2.5v-1.23a6.992 6.992 0 005 0V19.5A2.5 2.5 0 0112 22zm-7.07-2.93a2.5 2.5 0 01-.36-3.49l1.02-1.35a6.99 6.99 0 004 3l-1.35 1.02a2.5 2.5 0 01-3.31.82zM2 12a2.5 2.5 0 012.5-2.5h1.23a6.992 6.992 0 000 5H4.5A2.5 2.5 0 012 12zm2.93-7.07a2.5 2.5 0 013.49-.36l1.35 1.02a6.99 6.99 0 00-3 4l-1.02-1.35a2.5 2.5 0 01-.82-3.31z" />
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-orange-900">Score do Dia</p>
+              <p class="text-[11px] text-orange-700/80 mt-0.5 leading-tight">Preencher acompanhamento diário</p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5"
+              class="shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 text-orange-400">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+
+          <!-- Dashboard do Aluno (Tema Verde com Hover Preenchido) -->
+          <button id="btn-acao-dashboard" (click)="abrirSelecaoAluno('dashboard-aluno')"
+            class="w-full flex items-center gap-3 p-3 rounded-xl bg-emerald-50/15 border border-emerald-200/50 hover:bg-emerald-50 hover:border-emerald-400 hover:shadow-[0_4px_12px_rgba(16,185,129,0.15)] transition-all duration-300 text-left group cursor-pointer h-[72px]">
+            <div
+              class="w-9 h-9 rounded-lg bg-emerald-100/80 text-emerald-600 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-emerald-900">Dashboard do Aluno</p>
+              <p class="text-[11px] text-emerald-700/80 mt-0.5 leading-tight">Visualizar indicadores do estudante</p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5"
+              class="shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 text-emerald-400">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Progresso do Mês (Altura Compacta) -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-[#E8E3EF] h-[220px] flex flex-col justify-between">
+        <h3 class="text-base font-semibold text-[#6C3CC9]">Progresso do mês</h3>
+
+        <div class="flex flex-col items-center justify-center flex-1 overflow-hidden pt-0.5">
+          <apx-chart class="block -mb-14 -mt-3 scale-90 origin-bottom" [series]="chartOptions.series" [chart]="chartOptions.chart"
             [plotOptions]="chartOptions.plotOptions" [fill]="chartOptions.fill">
           </apx-chart>
           @if (loadingMetricas()) {
-            <span class="text-sm text-gray-400 animate-pulse">
-              Carregando métricas...
-            </span>
+          <span class="text-sm text-gray-400 animate-pulse">Carregando métricas...</span>
           } @else if (totalEsperado() > 0) {
-            <span class="text-sm text-gray-700">
-              {{ totalPreenchidos() }} de {{ totalEsperado() }} registros concluídos
-            </span>
+          <span class="text-sm font-medium text-[#2D1E40]">
+            {{ totalPreenchidos() }} de {{ totalEsperado() }} registros
+          </span>
           } @else {
-            <span class="text-sm text-gray-500">
-              Nenhuma métrica para este mês
-            </span>
+          <span class="text-sm text-gray-500">Nenhuma métrica para este mês</span>
           }
         </div>
-        
+
         <button (click)="abrirModal()"
-          class="relative z-10 mt-4 w-full py-3 bg-white border-2 border-[#6C3CC9] text-[#6C3CC9] hover:bg-[#6C3CC9] hover:text-white rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer group outline-none focus:ring-4 focus:ring-[#6C3CC9]/20">
+          class="w-full py-2.5 bg-white border border-[#6C3CC9] text-[#6C3CC9] hover:bg-[#6C3CC9] hover:text-white rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer outline-none hover:shadow-sm">
           <span>Ver todos os registros</span>
-          <span class="group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
+          <span>&rarr;</span>
         </button>
       </div>
 
-      <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-[#E8E3EF] flex-1">
-        <h3 class="text-base sm:text-lg font-semibold text-[#2D1E40] mb-4">Próximos Eventos</h3>
-        <div class="space-y-3">
+      <!-- Próximos Eventos (Altura Auto) -->
+      <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-[#E8E3EF] flex flex-col">
+        <h3 class="text-base font-semibold text-[#6C3CC9] mb-2.5">Próximos Eventos</h3>
+        <div class="flex flex-col gap-1.5 flex-1">
           @if (loadingEventos()) {
-            <div class="flex flex-col gap-3">
-              @for (i of [1,2,3]; track i) {
-                <div class="h-12 bg-gray-100 animate-pulse rounded-xl"></div>
-              }
-            </div>
-          } @else if (proximosEventos().length === 0) {
-            <div class="flex flex-col items-center justify-center py-8 text-center opacity-60">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6C3CC9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <p class="text-sm text-[#686177] font-medium">Nenhum evento próximo.</p>
-            </div>
-          } @else {
-            @for (evento of proximosEventos(); track evento.id) {
-              <div class="flex gap-4 items-start border-l-4 border-[#6C3CC9] pl-3">
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-bold text-[#2D1E40] truncate">{{ evento.titulo }}</p>
-                  <p class="text-xs text-[#686177]">
-                    {{ evento.dataEvento | date:'dd/MM/yyyy':'UTC' }} às {{ evento.horarioInicio ? (evento.horarioInicio | date:'HH:mm':'UTC') : (evento.dataEvento | date:'HH:mm':'UTC') }}
-                  </p>
-                </div>
-              </div>
+          <div class="flex flex-col gap-1.5">
+            @for (i of [1,2]; track i) {
+            <div class="h-12 bg-gray-100 animate-pulse rounded-xl"></div>
             }
+          </div>
+          } @else if (proximosEventos().length === 0) {
+          <div class="flex flex-col items-center justify-center py-6 text-center opacity-60">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+              stroke="#6C3CC9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-1.5">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            <p class="text-sm text-[#686177] font-medium">Nenhum evento próximo.</p>
+          </div>
+          } @else {
+          @for (evento of eventosVisiveis(); track evento.id) {
+          <div
+            class="flex gap-2 items-center bg-[#F7F5FA] hover:bg-[#F0E6FF] border border-transparent hover:border-[#E8E3EF] rounded-xl px-2 py-1.5 hover:shadow-sm transition-all duration-300 group">
+            <!-- Bloco de data clicavel -->
+            <button type="button"
+              class="w-9 h-9 rounded-lg bg-gradient-to-b from-[#6C3CC9] to-[#4A248A] text-white flex flex-col items-center justify-center shrink-0 shadow hover:shadow-[0_0_0_2px_rgba(108,60,201,0.35)] hover:scale-105 focus:outline-none focus:shadow-[0_0_0_3px_rgba(108,60,201,0.5)] transition-all duration-200 cursor-pointer"
+              (click)="irParaCalendarioDoEvento(evento)"
+              [attr.aria-label]="'Abrir evento ' + evento.titulo + ' no calendário'">
+              <span class="text-[13px] font-black leading-none">{{ evento.dataEvento | date:'dd':'UTC' }}</span>
+              <span class="text-[7px] uppercase font-bold leading-none mt-0.5 opacity-90">
+                {{ evento.dataEvento | date:'MMM':'UTC' }}
+              </span>
+            </button>
+            <!-- Informações do evento -->
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-bold text-[#2D1E40] leading-tight group-hover:text-[#6C3CC9] transition-colors whitespace-normal break-words">{{ evento.titulo }}</p>
+              <p class="text-[11px] text-[#6B6177] mt-0.5">
+                às {{ evento.horarioInicio
+                ? (evento.horarioInicio | date:'HH:mm':'UTC')
+                : (evento.dataEvento | date:'HH:mm':'UTC') }}
+              </p>
+            </div>
+          </div>
+          }
+          <!-- Paginação discreta (só aparece com mais de 2 eventos) -->
+          @if (deveMostrarPaginacaoEventos()) {
+          <div class="flex items-center justify-center gap-2 pt-1.5">
+            <button type="button"
+              (click)="paginaAnteriorEventos()"
+              [disabled]="paginaEventosAtual() === 0"
+              class="w-6 h-6 rounded-md flex items-center justify-center text-[#6C3CC9] bg-[#F0E6FF] hover:bg-[#E0D0FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <span class="text-[11px] font-semibold text-[#6C3CC9]">
+              {{ paginaEventosAtual() + 1 }} de {{ totalPaginasEventos() }}
+            </span>
+            <button type="button"
+              (click)="proximaPaginaEventos()"
+              [disabled]="paginaEventosAtual() >= totalPaginasEventos() - 1"
+              class="w-6 h-6 rounded-md flex items-center justify-center text-[#6C3CC9] bg-[#F0E6FF] hover:bg-[#E0D0FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+          }
           }
         </div>
       </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ Modal: Alunos com Pendências (lógica preservada) ═══ -->
+@if (isModalPendenciasAberto()) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-[#2D1E40]/40 backdrop-blur-sm p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative flex flex-col max-h-[85vh]">
+
+    <button (click)="fecharModal()"
+      class="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors cursor-pointer border-none outline-none">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+
+    <div class="mb-5 pr-8">
+      <h2 class="text-xl font-bold font-sora text-[#2D1E40]">Alunos com Pendências</h2>
+      <p class="text-xs text-[#686177] mt-1">Alunos que possuem rotinas pendentes de preenchimento.</p>
+    </div>
+
+    <div class="flex flex-col gap-3 overflow-y-auto pr-2 custom-scrollbar">
+      @for (registro of registrosPendentes(); track registro.id) {
+      <div class="w-full flex justify-between items-center p-4 bg-white border border-gray-100 rounded-xl text-left">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-[#F7F5FA] flex items-center justify-center text-[#6C3CC9]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+          </div>
+          <div class="flex flex-col gap-0.5">
+            <span class="font-bold text-sm text-[#2D1E40]">
+              {{ registro.estudante.nomeCompleto }}
+            </span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-orange-500">
+              Data: {{ registro.data | date:'dd/MM/yyyy':'UTC' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      } @empty {
+      <div class="text-center py-8 flex flex-col items-center justify-center gap-2">
+        <div class="w-14 h-14 rounded-full bg-green-50 text-green-500 flex items-center justify-center mb-1">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <span class="text-sm font-bold text-[#2D1E40]">Tudo em dia!</span>
+        <span class="text-xs text-gray-500">Nenhuma rotina pendente.</span>
+      </div>
+      }
     </div>
   </div>
 </div>
-
-@if (isModalPendenciasAberto()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-[#2D1E40]/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-    
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
-      
-      <button (click)="fecharModal()" class="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors cursor-pointer border-none outline-none">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
-      </button>
-
-      <div class="mb-5 pr-8">
-        <h2 class="text-xl font-bold font-sora text-[#2D1E40]">Alunos com Pendências</h2>
-        <p class="text-xs text-[#686177] mt-1">Alunos que possuem rotinas pendentes de preenchimento.</p>
-      </div>
-
-      <div class="flex flex-col gap-3 overflow-y-auto pr-2 custom-scrollbar">
-        @for (registro of registrosPendentes(); track registro.id) {
-          
-          <div class="w-full flex justify-between items-center p-4 bg-white border border-gray-100 rounded-xl text-left">
-            
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-[#F7F5FA] flex items-center justify-center text-[#6C3CC9]">
-                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
-              </div>
-              
-              <div class="flex flex-col gap-0.5">
-                <span class="font-bold text-sm text-[#2D1E40]">
-                  {{ registro.estudante.nomeCompleto || registro.estudante.nomeCompleto || 'Estudante' }}
-                </span>
-                <span class="text-xs font-semibold uppercase tracking-wider text-orange-500">
-                  Data: {{ registro.data | date:'dd/MM/yyyy':'UTC' }}
-                </span>
-              </div>
-            </div>
-            
-          </div>
-
-        } @empty {
-          <div class="text-center py-8 flex flex-col items-center justify-center gap-2">
-            <div class="w-14 h-14 rounded-full bg-green-50 text-green-500 flex items-center justify-center mb-1">
-              <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
-            </div>
-            <span class="text-sm font-bold text-[#2D1E40]">Tudo em dia!</span>
-            <span class="text-xs text-gray-500">Nenhuma rotina pendente.</span>
-          </div>
-        }
-      </div>
-    </div>
-  </div>
 }
 
-<!-- Modal do Aluno (Renderizado apenas quando um aluno for clicado) -->
+<!-- ═══ Modal: Seleção de Aluno para Ação Rápida ═══ -->
+@if (modalSelecaoAluno()) {
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center bg-[#2D1E40]/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+  <div
+    class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 relative flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200">
+
+    <button (click)="fecharSelecaoAluno()"
+      class="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors cursor-pointer border-none outline-none">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+
+    <div class="mb-4 pr-8">
+      <h2 class="text-lg font-bold text-[#2D1E40]">Selecionar Aluno</h2>
+      <p class="text-xs text-[#686177] mt-1">Escolha um aluno para continuar.</p>
+    </div>
+
+    <div class="flex flex-col gap-2 overflow-y-auto pr-1 custom-scrollbar">
+      @if (estudantes().length === 0) {
+      <p class="text-sm text-[#686177] text-center py-6">Nenhum aluno disponível.</p>
+      }
+      @for (estudante of estudantes(); track estudante.id) {
+      <button (click)="selecionarAlunoDaAcao(estudante)"
+        class="w-full flex items-center gap-3 p-3 rounded-xl border border-[#E8E3EF] bg-white hover:bg-[#F0E6FF] hover:border-[#B79CED] transition-all text-left group cursor-pointer">
+        <!-- Avatar -->
+        @if (estudante.foto) {
+        <img [src]="estudante.foto" [alt]="estudante.nomeCompleto"
+          class="w-10 h-10 rounded-full object-cover shrink-0 border-2 border-[#E8E3EF] group-hover:border-[#B79CED]">
+        } @else {
+        <div
+          class="w-10 h-10 rounded-full bg-[#F0E6FF] flex items-center justify-center text-[#6C3CC9] font-bold text-sm shrink-0 border-2 border-[#E8E3EF] group-hover:border-[#B79CED]">
+          {{ estudante.nomeCompleto.charAt(0) }}
+        </div>
+        }
+        <!-- Informações -->
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-[#2D1E40] truncate">{{ estudante.nomeCompleto }}</p>
+          <p class="text-xs text-[#6B6177]">
+            Mat. {{ estudante.matricula }}
+            @if (estudante.diagnosticos.length > 0) {
+            · {{ estudante.diagnosticos[0]?.diagnostico?.tipo }}
+            }
+          </p>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A8A2B7"
+          stroke-width="2.5" class="shrink-0">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+      }
+    </div>
+
+  </div>
+</div>
+}
+
+<!-- ═══ Modal: Detalhes do Aluno (com suporte a abaInicial) ═══ -->
 @if (alunoEmDestaque()) {
-  <app-aluno-modal
-    [aluno]="alunoEmDestaque()!"
-    [isVisible]="true"
-    (fecharModal)="alunoEmDestaque.set(null)"
-  >
-  </app-aluno-modal>
+<app-aluno-modal [aluno]="alunoEmDestaque()!" [isVisible]="true" [abaInicial]="abaDestino()"
+  (fecharModal)="fecharAlunoModal()">
+</app-aluno-modal>
 }

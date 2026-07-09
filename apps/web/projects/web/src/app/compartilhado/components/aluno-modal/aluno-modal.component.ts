@@ -73,6 +73,8 @@ export class AlunoModalComponent implements OnChanges {
           this.abrirRelatorios();
         } else if (aba === 'visao-geral') {
           this.abrirVisaoGeral();
+        } else if (aba === 'dashboard') {
+          this.onDashboard();
         }
       }
     }, { allowSignalWrites: true }); 

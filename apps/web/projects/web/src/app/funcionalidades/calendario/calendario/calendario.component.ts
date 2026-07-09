@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed, effect, ElementRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { CalendarioService, EventoCalendario } from '../../../compartilhado/services/calendario.service';
 import { AuthService } from '../../../nucleo/services/auth';
 
@@ -30,6 +31,7 @@ interface PopupPosition {
 export class CalendarioComponent implements OnInit {
   private readonly calendarioService = inject(CalendarioService);
   private readonly authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
 
   // ─── Estados Reativos ───────────────────────────────────────────────────────
   hoje = new Date();
@@ -74,7 +76,20 @@ export class CalendarioComponent implements OnInit {
     }, { allowSignalWrites: true });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Ler query params vindos da Home (data e eventoId)
+    const params = this.route.snapshot.queryParamMap;
+    const dataParam = params.get('data');
+    if (dataParam) {
+      const partes = dataParam.split('-').map(Number);
+      const ano = partes[0];
+      const mes = partes[1];
+      if (ano && mes) {
+        this.anoAtual.set(ano);
+        this.mesAtual.set(mes - 1); // 0-indexed
+      }
+    }
+  }
 
   // ─── Carregamento ────────────────────────────────────────────────────────────
 
