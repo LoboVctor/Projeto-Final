@@ -6,15 +6,36 @@
       <h1 class="page-titulo">Alunos</h1>
       <p class="page-subtitulo">Consulte, filtre e gerencie todos os estudantes da escola.</p>
     </div>
-    <button class="btn-exportar" (click)="exportarCSV()" [disabled]="!temResultados()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-        <polyline points="7 10 12 15 17 10"></polyline>
-        <line x1="12" y1="15" x2="12" y2="3"></line>
-      </svg>
-      Exportar CSV
-    </button>
+    <div class="flex gap-2">
+      <button class="btn-importar flex items-center gap-2 px-4 py-2 bg-white text-[#6C3CC9] border border-[#E8E3EF] rounded-lg font-bold hover:bg-[#F7F5FA] transition-colors" (click)="fileInput.click()" [disabled]="isImporting()">
+        @if (isImporting()) {
+          <svg class="animate-spin h-4 w-4 text-[#6C3CC9]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Importando...
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Importar CSV
+        }
+      </button>
+      <input #fileInput type="file" accept=".csv" class="hidden" (change)="onFileSelected($event)">
+      
+      <button class="btn-exportar" (click)="exportarCSV()" [disabled]="!temResultados() || isImporting()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Exportar CSV
+      </button>
+
+      <button class="btn-cadastrar flex items-center gap-2 px-4 py-2 bg-[#6C3CC9] text-white rounded-lg font-bold hover:bg-[#5A32A8] transition-colors" (click)="abrirModalCadastrarAluno()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Cadastrar
+      </button>
+    </div>
   </header>
 
   <!-- ── Barra de filtros ───────────────────────────────────────── -->
@@ -42,7 +63,7 @@
 
     <div class="filtro-select-wrapper">
       <select class="filtro-select" [value]="filtroDiagnostico()" (change)="onFiltroDiagnosticoChange($any($event.target).value)" aria-label="Filtrar por diagnóstico">
-        <option value="">Todos os Diagnósticos</option>
+        <option value="">Diagnóstico</option>
         @for (tipo of tiposDiagnostico; track tipo) {
           <option [value]="tipo">{{ tipo }}</option>
         }
@@ -52,7 +73,7 @@
 
     <div class="filtro-select-wrapper">
       <select class="filtro-select" [value]="filtroSexo()" (change)="onFiltroSexoChange($any($event.target).value)" aria-label="Filtrar por sexo">
-        <option value="">Todos os Sexos</option>
+        <option value="">Sexo</option>
         <option value="MASCULINO">Masculino</option>
         <option value="FEMININO">Feminino</option>
         <option value="OUTRO">Outro</option>
@@ -62,7 +83,7 @@
 
     <div class="filtro-select-wrapper">
       <select class="filtro-select" [value]="filtroTurmaId()" (change)="onFiltroTurmaChange($any($event.target).value)" aria-label="Filtrar por turma">
-        <option value="">Todas as Turmas</option>
+        <option value="">Turma</option>
         @for (turma of turmasDisponiveis(); track turma.id) {
           <option [value]="turma.id">{{ turma.nome }}</option>
         }
@@ -72,7 +93,7 @@
 
     <div class="filtro-select-wrapper">
       <select class="filtro-select" [value]="filtroFormaComunicacao()" (change)="onFiltroFormaComunicacaoChange($any($event.target).value)" aria-label="Filtrar por forma de comunicação">
-        <option value="">Todas as Comunicações</option>
+        <option value="">Comunicação</option>
         <option value="VERBAL">Verbal</option>
         <option value="NAO_VERBAL">Não Verbal</option>
       </select>
@@ -81,7 +102,7 @@
 
     <div class="filtro-select-wrapper">
       <select class="filtro-select" [value]="filtroStatus() || ''" (change)="onFiltroStatusChange($any($event.target).value)" aria-label="Filtrar por status">
-        <option value="">Todos os Status</option>
+        <option value="">Status</option>
         <option value="PENDENTE">Apenas Pendentes</option>
         <option value="CONCLUIDO">Concluídos</option>
       </select>
@@ -90,7 +111,7 @@
 
     <div class="filtro-select-wrapper">
       <select class="filtro-select" [value]="filtroCategoria()" (change)="onFiltroCategoriaChange($any($event.target).value)" aria-label="Filtrar por categoria de especificidade">
-        <option value="">Todas as Especificidades</option>
+        <option value="">Especificidade</option>
         <option value="ALIMENTAR">Alimentar</option>
         <option value="SENSORIAL">Sensorial</option>
         <option value="MOTORA">Motora</option>
@@ -203,3 +224,62 @@
   [abaInicial]="abaSolicitada()"
   (fecharModal)="fecharModalAluno()">
 </app-aluno-modal>
+
+
+<!-- Modal Resumo Importação -->
+@if (importResult()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-[#2D1E40]/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+      
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+        <h3 class="font-sora font-bold text-[#4A248A] text-lg flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          Importação Concluída
+        </h3>
+        <button (click)="fecharModalImport()" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-md hover:bg-gray-100">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-6">
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex flex-col items-center text-center">
+            <span class="text-3xl font-extrabold text-emerald-600">{{ importResult()!.sucesso }}</span>
+            <span class="text-xs font-bold text-emerald-700/80 uppercase tracking-wider mt-1">Estudantes<br>Importados</span>
+          </div>
+          
+          <div class="bg-red-50 border border-red-100 rounded-xl p-4 flex flex-col items-center text-center">
+            <span class="text-3xl font-extrabold text-red-600">{{ importResult()!.falhas }}</span>
+            <span class="text-xs font-bold text-red-700/80 uppercase tracking-wider mt-1">Linhas<br>com Erro</span>
+          </div>
+        </div>
+
+        @if (importResult()!.erros && importResult()!.erros.length > 0) {
+          <div class="space-y-2">
+            <h4 class="font-bold text-gray-700 text-sm flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              Detalhes dos erros
+            </h4>
+            <div class="bg-red-50/50 border border-red-100 rounded-lg p-3 max-h-32 overflow-y-auto">
+              <ul class="space-y-1.5 text-xs text-red-700 font-medium">
+                @for (erro of importResult()!.erros; track erro) {
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-red-400 mt-0.5">•</span>
+                    {{ erro }}
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+        <button (click)="fecharModalImport()" class="px-5 py-2.5 bg-[#4A248A] text-white rounded-lg font-bold text-sm hover:bg-[#3d1e70] transition-colors shadow-sm w-full sm:w-auto">
+          Ciente e Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,155 +1,205 @@
-<div class="flex flex-col gap-4 p-4 sm:p-6 lg:p-8 bg-[#F7F5FA] min-h-screen">
+<div class="coord-home-layout">
 
-  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-[#E8E3EF]">
+  <!-- ── Cabeçalho ─────────────────────────────────────────────── -->
+  <header class="coord-home-header">
     <div>
-      <h1 class="text-xl sm:text-2xl font-bold text-[#2D1E40]">Visão Geral — Coordenador</h1>
-      <p class="text-[#686177] mt-1 text-sm">Acompanhe a escola, pendências e métricas gerais.</p>
+      <h1 class="coord-home-title">Visão Geral — Coordenador</h1>
+      <p class="coord-home-subtitle">Acompanhe a escola, pendências e métricas gerais.</p>
     </div>
 
-    <div class="flex items-center gap-4 border-l-4 border-[#6C3CC9] pl-4">
-      <div>
-        <p class="text-xs font-medium text-[#686177] uppercase tracking-wider">Registros Pendentes</p>
-        <div class="flex items-baseline gap-2">
-          <span class="text-3xl sm:text-4xl font-extrabold text-[#6C3CC9]">{{ totalPendentes() }}</span>
-        </div>
+    <div class="pendencias-badge" (click)="abrirModal()">
+      <p class="pendencias-label">Registros Pendentes</p>
+      <span class="pendencias-valor">{{ totalPendentes() }}</span>
+    </div>
+  </header>
+
+  <!-- ── Big Numbers da Escola ──────────────────────────────────── -->
+  <section class="big-numbers-row" aria-label="Totais da escola">
+    <!-- Total de Alunos -->
+    <div class="big-number-card">
+      <div class="big-number-icon big-number-icon--purple">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div class="big-number-info">
+        <span class="big-number-label">Total de Alunos</span>
+        <span class="big-number-value" [class.is-loading]="loadingDashboard()">
+          @if (!loadingDashboard()) { {{ metricasEscola()?.totalAlunos ?? '—' }} } @else { — }
+        </span>
       </div>
     </div>
-  </div>
 
-  <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-    <div class="xl:col-span-2 flex flex-col gap-4">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-[#E8E3EF] flex flex-col gap-6 h-full">
-        <div class="flex items-center gap-2">
-          <h2 class="text-xl font-semibold text-[#2D1E40]">Alunos</h2>
+    <!-- Total de Professores -->
+    <div class="big-number-card">
+      <div class="big-number-icon big-number-icon--blue">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="big-number-info">
+        <span class="big-number-label">Professores Ativos</span>
+        <span class="big-number-value" [class.is-loading]="loadingDashboard()">
+          @if (!loadingDashboard()) { {{ metricasEscola()?.totalProfessores ?? '—' }} } @else { — }
+        </span>
+      </div>
+    </div>
+
+    <!-- Total de Turmas -->
+    <div class="big-number-card">
+      <div class="big-number-icon big-number-icon--amber">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+      </div>
+      <div class="big-number-info">
+        <span class="big-number-label">Total de Turmas</span>
+        <span class="big-number-value" [class.is-loading]="loadingDashboard()">
+          @if (!loadingDashboard()) { {{ metricasEscola()?.totalTurmas ?? '—' }} } @else { — }
+        </span>
+      </div>
+    </div>
+
+    <!-- Diagnóstico Principal -->
+    <div class="big-number-card">
+      <div class="big-number-icon big-number-icon--green">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div class="big-number-info">
+        <span class="big-number-label">Diagnóstico Principal</span>
+        <span class="big-number-value big-number-value--sm" [class.is-loading]="loadingDashboard()">
+          @if (!loadingDashboard() && metricasEscola()?.diagnosticoPrincipal) {
+            {{ metricasEscola()!.diagnosticoPrincipal }}
+          } @else { — }
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Grid principal: Alunos + Sidebar com abas ─────────────── -->
+  <div class="content-grid">
+
+    <!-- Coluna Alunos -->
+    <div class="alunos-col">
+      <div class="alunos-card">
+        <div class="alunos-card-header">
+          <h2 class="alunos-card-title">Alunos</h2>
           @if (turmaAtual()) {
-            <span class="text-sm font-medium text-[#686177] px-2 py-1 bg-[#F7F5FA] rounded-md">
-              {{ turmaAtual()!.nome }}
-            </span>
+            <span class="turma-badge">{{ turmaAtual()!.nome }}</span>
           }
         </div>
 
         @if (loadingEstudantes()) {
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="h-[120px] bg-gray-100 animate-pulse rounded-xl"></div>
-            <div class="h-[120px] bg-gray-100 animate-pulse rounded-xl"></div>
-            <div class="h-[120px] bg-gray-100 animate-pulse rounded-xl"></div>
-            <div class="h-[120px] bg-gray-100 animate-pulse rounded-xl"></div>
+          <div class="skeleton-grid">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
           </div>
         } @else if (erroEstudantes()) {
-          <div class="flex items-center justify-center flex-1 text-red-500 py-8 text-center bg-red-50 rounded-xl">
-            <p>{{ erroEstudantes() }}</p>
-          </div>
+          <div class="estado-erro">{{ erroEstudantes() }}</div>
         } @else if (!turmaAtual() || estudantes().length === 0) {
-          <div class="flex flex-col items-center justify-center flex-1 border-2 border-dashed border-[#E8E3EF] rounded-xl py-12">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#A8A2B7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-4">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          <div class="estado-vazio">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#A8A2B7" stroke-width="1.5">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
-            <p class="text-[#686177] font-medium">Nenhum estudante disponível nesta turma.</p>
+            <p>Nenhum estudante disponível nesta turma.</p>
           </div>
         } @else {
-          <div class="flex flex-nowrap md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 pt-6 pb-10 px-4 -my-6 -mx-4 overflow-x-auto snap-x snap-mandatory hide-scrollbar">
+          <div class="alunos-grid">
             @for (estudante of estudantes(); track estudante.id) {
-              <div class="flex-shrink-0 snap-start">
-                <app-card-aluno
-                  [nome]="estudante.nomeCompleto"
-                  [matricula]="estudante.matricula"
-                  [estudante]="estudante"
-                  [foto]="estudante.foto"
-                  [diagnostico]="
-                    estudante.diagnosticos.length > 0
-                      ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo'
-                      : 'Sem Laudo'
-                  "
-                  (abrirPerfil)="abrirDetalhesAluno(estudante)"
-                >
-                </app-card-aluno>
-              </div>
+              <app-card-aluno
+                [nome]="estudante.nomeCompleto"
+                [matricula]="estudante.matricula"
+                [estudante]="estudante"
+                [foto]="estudante.foto"
+                [diagnostico]="estudante.diagnosticos.length > 0 ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo' : 'Sem Laudo'"
+                (abrirPerfil)="abrirDetalhesAluno(estudante)"
+              ></app-card-aluno>
             }
           </div>
         }
       </div>
     </div>
 
-    <div class="flex flex-col gap-4 sm:gap-6">
-      <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-[#E8E3EF] flex flex-col">
-        <h3 class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-2">Progresso do mês</h3>
-        <div class="flex flex-col items-center justify-center min-h-[140px]">
-          <apx-chart class="block -mb-15" [series]="chartOptions.series" [chart]="chartOptions.chart"
-            [plotOptions]="chartOptions.plotOptions" [fill]="chartOptions.fill">
+    <!-- Sidebar: Progresso + Gráficos com abas -->
+    <div class="sidebar-col">
+
+      <!-- Card Progresso do Mês -->
+      <div class="progresso-card">
+        <h3 class="progresso-titulo">Progresso do mês</h3>
+        <div class="progresso-chart-area">
+          <apx-chart class="block -mb-15"
+            [series]="chartOptions.series"
+            [chart]="chartOptions.chart"
+            [plotOptions]="chartOptions.plotOptions"
+            [fill]="chartOptions.fill">
           </apx-chart>
           @if (loadingMetricas()) {
-            <span class="text-sm text-gray-400 animate-pulse">Carregando métricas...</span>
+            <span class="progresso-loading">Carregando métricas...</span>
           } @else if (totalEsperado() > 0) {
-            <span class="text-sm text-gray-700">
-              {{ totalPreenchidos() }} de {{ totalEsperado() }} registros concluídos
-            </span>
+            <span class="progresso-texto">{{ totalPreenchidos() }} de {{ totalEsperado() }} registros concluídos</span>
           } @else {
-            <span class="text-sm text-gray-500">Nenhuma métrica para este mês</span>
+            <span class="progresso-texto">Nenhuma métrica para este mês</span>
           }
         </div>
-        <button (click)="abrirModal()"
-          class="relative z-10 mt-4 w-full py-3 bg-white border-2 border-[#6C3CC9] text-[#6C3CC9] hover:bg-[#6C3CC9] hover:text-white rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer group outline-none focus:ring-4 focus:ring-[#6C3CC9]/20">
-          <span>Ver todos os registros</span>
-          <span class="group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
+        <button class="btn-ver-registros" (click)="abrirModal()">
+          Ver todos os registros <span>→</span>
         </button>
       </div>
 
-      <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-[#E8E3EF] flex-1">
-        <h3 class="text-base sm:text-lg font-semibold text-[#2D1E40] mb-4">Próximos Eventos</h3>
-        <div class="space-y-4">
-          <div class="flex gap-4 items-start border-l-4 border-[#6C3CC9] pl-3">
-            <div>
-              <p class="text-sm font-bold text-[#2D1E40]">Reunião de Coordenação</p>
-              <p class="text-xs text-[#686177]">Hoje, 14:00 - 15:30</p>
-            </div>
+      <!-- Abas: Perfil da Turma / Métricas (dados de toda a escola) -->
+      @if (!loadingDashboard() && metricasEscola()) {
+        <div class="graficos-wrapper">
+          <div class="graficos-tabs">
+            <button class="graficos-tab" [class.ativo]="abaGraficos() === 'perfil'" (click)="trocarAbaGraficos('perfil')">
+              Perfil da Escola
+            </button>
           </div>
-          <div class="flex gap-4 items-start border-l-4 border-[#5BBDEF] pl-3">
-            <div>
-              <p class="text-sm font-bold text-[#2D1E40]">Entrega de Notas</p>
-              <p class="text-xs text-[#686177]">Sexta-feira, 08:00</p>
-            </div>
+          <div class="graficos-area">
+            @switch (abaGraficos()) {
+              @case ('perfil') {
+                <app-turma-graficos [dadosExternos]="metricasEscola()"></app-turma-graficos>
+              }
+            }
           </div>
         </div>
-      </div>
+      }
+
     </div>
   </div>
 </div>
 
+<!-- Modal: Pendências -->
 @if (isModalPendenciasAberto()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-[#2D1E40]/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
-      <button (click)="fecharModal()" class="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors cursor-pointer border-none outline-none">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+  <div class="modal-overlay" (click)="fecharModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <button class="modal-fechar" (click)="fecharModal()" aria-label="Fechar modal">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
-      <div class="mb-5 pr-8">
-        <h2 class="text-xl font-bold font-sora text-[#2D1E40]">Alunos com Pendências</h2>
-        <p class="text-xs text-[#686177] mt-1">Alunos que possuem rotinas pendentes de preenchimento.</p>
+      <div class="modal-header">
+        <h2 class="modal-titulo">Alunos com Pendências</h2>
+        <p class="modal-subtitulo">Alunos que possuem rotinas pendentes de preenchimento.</p>
       </div>
-      <div class="flex flex-col gap-3 overflow-y-auto pr-2 custom-scrollbar">
+      <div class="modal-lista">
         @for (registro of registrosPendentes(); track registro.id) {
-          <div class="w-full flex justify-between items-center p-4 bg-white border border-gray-100 rounded-xl text-left">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-[#F7F5FA] flex items-center justify-center text-[#6C3CC9]">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
-              </div>
-              <div class="flex flex-col gap-0.5">
-                <span class="font-bold text-sm text-[#2D1E40]">{{ registro.estudante.nomeCompleto }}</span>
-                <span class="text-xs font-semibold uppercase tracking-wider text-orange-500">
-                  Data: {{ registro.data | date:'dd/MM/yyyy':'UTC' }}
-                </span>
-              </div>
+          <div class="modal-item">
+            <div class="modal-item-avatar">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+            </div>
+            <div class="modal-item-info">
+              <span class="modal-item-nome">{{ registro.estudante.nomeCompleto }}</span>
+              <span class="modal-item-data">Data: {{ registro.data | date:'dd/MM/yyyy':'UTC' }}</span>
             </div>
           </div>
         } @empty {
-          <div class="text-center py-8 flex flex-col items-center justify-center gap-2">
-            <div class="w-14 h-14 rounded-full bg-green-50 text-green-500 flex items-center justify-center mb-1">
-              <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+          <div class="modal-vazio">
+            <div class="modal-vazio-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
             </div>
-            <span class="text-sm font-bold text-[#2D1E40]">Tudo em dia!</span>
-            <span class="text-xs text-gray-500">Nenhuma rotina pendente.</span>
+            <span class="modal-vazio-titulo">Tudo em dia!</span>
+            <span class="modal-vazio-subtitulo">Nenhuma rotina pendente.</span>
           </div>
         }
       </div>

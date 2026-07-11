@@ -12,6 +12,7 @@ import {
   EstudoCasoResponse,
   PaginacaoResponse,
 } from '../models/gerenciamento-alunos.model';
+import { ImportacaoRelatorio } from '../models/importacao-relatorio.model';
 
 export interface MetaDesenvolvimentoPayload {
   eixoDesenvolvimento: Eixo;
@@ -180,5 +181,10 @@ export class EstudantesService {
 
   updateAvaliacaoMeta(metaId: string, payload: AvaliacaoMetaPayload): Observable<unknown> {
     return this.http.put(`${this.baseUrl}/relatorios-semestrais/metas/${metaId}/avaliacao`, payload);
+  }
+
+  // --- IMPORTAÇÃO ---
+  importarCSV(formData: FormData): Observable<ImportacaoRelatorio> {
+    return this.http.post<ImportacaoRelatorio>(`${this.baseUrl}/estudantes/importar-csv`, formData);
   }
 }

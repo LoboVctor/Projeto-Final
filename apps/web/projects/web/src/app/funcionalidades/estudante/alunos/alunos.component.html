@@ -43,7 +43,7 @@
           (change)="onFiltroDiagnosticoChange($any($event.target).value)"
           aria-label="Filtrar por diagnóstico"
         >
-          <option value="">Todos os Diagnósticos</option>
+          <option value="">Diagnóstico</option>
           @for (tipo of tiposDiagnostico; track tipo) {
             <option [value]="tipo">{{ tipo }}</option>
           }
@@ -61,7 +61,7 @@
           (change)="onFiltroSexoChange($any($event.target).value)"
           aria-label="Filtrar por sexo"
         >
-          <option value="">Todos os Sexos</option>
+          <option value="">Sexo</option>
           <option value="MASCULINO">Masculino</option>
           <option value="FEMININO">Feminino</option>
           <option value="OUTRO">Outro</option>
@@ -79,7 +79,7 @@
           (change)="onFiltroTurmaChange($any($event.target).value)"
           aria-label="Filtrar por turma"
         >
-          <option value="">Todas as Turmas</option>
+          <option value="">Turma</option>
           @for (turma of turmasDisponiveis(); track turma.id) {
             <option [value]="turma.id">{{ turma.nome }}</option>
           }
@@ -97,7 +97,7 @@
           (change)="onFiltroFormaComunicacaoChange($any($event.target).value)"
           aria-label="Filtrar por forma de comunicação"
         >
-          <option value="">Todas as Comunicações</option>
+          <option value="">Comunicação</option>
           <option value="VERBAL">Verbal</option>
           <option value="NAO_VERBAL">Não Verbal</option>
         </select>
@@ -117,7 +117,7 @@
           (change)="onFiltroStatusChange($any($event.target).value)"
           aria-label="Filtrar por status"
         >
-          <option value="">Todos os Status</option>
+          <option value="">Status</option>
           <option value="PENDENTE">Apenas Pendentes</option>
           <option value="CONCLUIDO">Concluídos</option>
         </select>
@@ -134,7 +134,7 @@
           (change)="onFiltroCategoriaChange($any($event.target).value)"
           aria-label="Filtrar por categoria de especificidade"
         >
-          <option value="">Todas as Especificidades</option>
+          <option value="">Especificidade</option>
           <option value="ALIMENTAR">Alimentar</option>
           <option value="SENSORIAL">Sensorial</option>
           <option value="MOTORA">Motora</option>
@@ -200,14 +200,7 @@
 
   <div class="tabela-card" role="region" aria-label="Tabela de estudantes">
     @if (loading()) {
-      <div class="loading-custom-container" aria-live="polite" aria-label="Carregando lista de alunos">
-        <svg class="sunflower-spinner" style="color: #F97316;" fill="currentColor" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="3.5" fill="#2D1E40" stroke="currentColor" stroke-width="2.5"></circle>
-          <path d="M12 2a2.5 2.5 0 012.5 2.5v1.23a6.992 6.992 0 00-5 0V4.5A2.5 2.5 0 0112 2zm7.07 2.93a2.5 2.5 0 01.36 3.49l-1.02 1.35a6.99 6.99 0 00-4-3l1.35-1.02a2.5 2.5 0 013.31-.82zM22 12a2.5 2.5 0 01-2.5 2.5h-1.23a6.992 6.992 0 000-5h1.23A2.5 2.5 0 0122 12zm-2.93 7.07a2.5 2.5 0 01-3.49.36l-1.35-1.02a6.99 6.99 0 003-4l1.02 1.35a2.5 2.5 0 01.82 3.31zM12 22a2.5 2.5 0 01-2.5-2.5v-1.23a6.992 6.992 0 005 0V19.5A2.5 2.5 0 0112 22zm-7.07-2.93a2.5 2.5 0 01-.36-3.49l1.02-1.35a6.99 6.99 0 004 3l-1.35 1.02a2.5 2.5 0 01-3.31.82zM2 12a2.5 2.5 0 012.5-2.5h1.23a6.992 6.992 0 000 5H4.5A2.5 2.5 0 012 12zm2.93-7.07a2.5 2.5 0 013.49-.36l1.35 1.02a6.99 6.99 0 00-3 4l-1.02-1.35a2.5 2.5 0 01-.82-3.31z" />
-        </svg>
-        <p class="loading-titulo">Carregando alunos...</p>
-        <p class="loading-subtitulo">Buscando informações dos estudantes.</p>
-      </div>
+      <app-loading-flor titulo="Carregando alunos..." subtitulo="Buscando informações dos estudantes."></app-loading-flor>
     } @else if (erro()) {
       <div class="erro-container" role="alert">
         <span>⚠️ {{ erro() }}</span>

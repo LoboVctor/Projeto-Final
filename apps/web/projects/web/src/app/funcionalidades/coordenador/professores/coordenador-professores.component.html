@@ -6,15 +6,36 @@
       <h1 class="page-titulo">Professores</h1>
       <p class="page-subtitulo">Consulte e gerencie todos os educadores da escola.</p>
     </div>
-    <button class="btn-exportar" (click)="exportarCSV()" [disabled]="!temResultados()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-        <polyline points="7 10 12 15 17 10"></polyline>
-        <line x1="12" y1="15" x2="12" y2="3"></line>
-      </svg>
-      Exportar CSV
-    </button>
+    <div class="flex gap-2">
+      <button class="btn-importar flex items-center gap-2 px-4 py-2 bg-white text-[#6C3CC9] border border-[#E8E3EF] rounded-lg font-bold hover:bg-[#F7F5FA] transition-colors" (click)="fileInput.click()" [disabled]="isImporting()">
+        @if (isImporting()) {
+          <svg class="animate-spin h-4 w-4 text-[#6C3CC9]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Importando...
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Importar CSV
+        }
+      </button>
+      <input #fileInput type="file" accept=".csv" class="hidden" (change)="onFileSelected($event)">
+      
+      <button class="btn-exportar" (click)="exportarCSV()" [disabled]="!temResultados() || isImporting()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Exportar CSV
+      </button>
+
+      <button class="btn-cadastrar flex items-center gap-2 px-4 py-2 bg-[#6C3CC9] text-white rounded-lg font-bold hover:bg-[#5A32A8] transition-colors" (click)="abrirModalCadastrarEducador()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Cadastrar
+      </button>
+    </div>
   </header>
 
   <!-- ── Barra de filtros ───────────────────────────────────────── -->
@@ -42,7 +63,7 @@
 
     <div class="filtro-select-wrapper">
       <select class="filtro-select" [value]="filtroTipo()" (change)="onFiltroTipoChange($any($event.target).value)" aria-label="Filtrar por tipo de educador">
-        <option value="">Todos os Tipos</option>
+        <option value="">Tipo</option>
         @for (tipo of tiposEducador; track tipo) {
           <option [value]="tipo">{{ getTipoLabel(tipo) }}</option>
         }
@@ -232,30 +253,45 @@
           <h3 class="modal-secao-titulo">Turmas Atribuídas</h3>
           <p class="modal-secao-desc">Selecione as turmas em que este professor leciona:</p>
 
+          <div class="mb-4 relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input
+              type="text"
+              class="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#6C3CC9] focus:border-transparent transition-all text-sm"
+              placeholder="Buscar turma por nome..."
+              [value]="termoBuscaTurma()"
+              (input)="onTermoBuscaTurmaChange($any($event.target).value)"
+            />
+          </div>
+
           @if (turmasLoading()) {
-            <div class="turmas-loading">Carregando turmas...</div>
-          } @else if (todasTurmas().length === 0) {
-            <p class="turmas-vazio">Nenhuma turma cadastrada na escola.</p>
+            <div class="turmas-loading text-center py-4 text-gray-500 text-sm">Carregando turmas...</div>
+          } @else if (turmasFiltradas().length === 0) {
+            <p class="turmas-vazio text-center py-4 text-gray-500 text-sm">Nenhuma turma encontrada.</p>
           } @else {
-            <div class="turmas-grid">
+            <div class="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2">
               @for (turma of turmasPaginadas(); track turma.id) {
-                <label class="turma-checkbox-label" [class.turma-selecionada]="isTurmaSelecionada(turma.id)">
+                <label class="flex items-center gap-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors" [class.bg-purple-50]="isTurmaSelecionada(turma.id)" [class.border-purple-200]="isTurmaSelecionada(turma.id)">
                   <input
                     type="checkbox"
-                    class="turma-checkbox"
+                    class="w-4 h-4 text-[#6C3CC9] rounded border-gray-300 focus:ring-[#6C3CC9]"
                     [checked]="isTurmaSelecionada(turma.id)"
                     (change)="toggleTurma(turma.id)"
                   />
-                  <span class="turma-nome">{{ turma.nome }}</span>
+                  <span class="text-sm font-medium text-gray-700">{{ turma.nome }}</span>
                 </label>
               }
             </div>
 
             @if (turmasTotalPaginas() > 1) {
-              <nav class="paginacao-turmas" aria-label="Paginação de turmas">
-                <button class="pag-btn-sm" (click)="irParaPaginaTurmas(turmasPagina() - 1)" [disabled]="turmasPagina() === 1">‹</button>
-                <span class="pag-info-sm">{{ turmasPagina() }} / {{ turmasTotalPaginas() }}</span>
-                <button class="pag-btn-sm" (click)="irParaPaginaTurmas(turmasPagina() + 1)" [disabled]="turmasPagina() === turmasTotalPaginas()">›</button>
+              <nav class="flex items-center justify-between mt-4 border-t border-gray-100 pt-3" aria-label="Paginação de turmas">
+                <button class="p-1 rounded hover:bg-gray-100 text-gray-500 disabled:opacity-50" (click)="irParaPaginaTurmas(turmasPagina() - 1)" [disabled]="turmasPagina() === 1">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <span class="text-xs font-semibold text-gray-500">Página {{ turmasPagina() }} de {{ turmasTotalPaginas() }}</span>
+                <button class="p-1 rounded hover:bg-gray-100 text-gray-500 disabled:opacity-50" (click)="irParaPaginaTurmas(turmasPagina() + 1)" [disabled]="turmasPagina() === turmasTotalPaginas()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
               </nav>
             }
           }

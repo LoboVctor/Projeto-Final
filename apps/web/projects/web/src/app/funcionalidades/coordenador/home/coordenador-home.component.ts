@@ -23,10 +23,11 @@ import {
 import { RegistrosDiariosService } from '../../../compartilhado/services/registros-diarios.service';
 import { AuthService } from '../../../nucleo/services/auth';
 import { RegistroDiarioPendente } from '../../../compartilhado/models/registros-diarios.models';
-import { TurmasService, TurmaResumo, EstudanteResumo } from '../../../nucleo/services/turmas.service';
+import { TurmasService, TurmaResumo, EstudanteResumo, MetricasEscola } from '../../../nucleo/services/turmas.service';
 import { CardAlunoComponent } from '../../../compartilhado/components/card-aluno/card-aluno';
 import { AlunoModalComponent } from '../../../compartilhado/components/aluno-modal/aluno-modal.component';
 import { AlunoModalData } from '../../../compartilhado/models/aluno-modal.model';
+import { TurmaGraficosComponent } from '../../turma/components/turma-graficos/turma-graficos';
 
 export type ChartOptions = {
   series: ApexNonAxisChartSeries;
@@ -37,7 +38,13 @@ export type ChartOptions = {
 
 @Component({
   selector: 'app-coordenador-home',
-  imports: [NgApexchartsModule, CardAlunoComponent, AlunoModalComponent, DatePipe],
+  imports: [
+    NgApexchartsModule,
+    CardAlunoComponent,
+    AlunoModalComponent,
+    DatePipe,
+    TurmaGraficosComponent,
+  ],
   templateUrl: './coordenador-home.component.html',
   styleUrl: './coordenador-home.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -62,6 +69,12 @@ export class CoordenadorHomeComponent implements OnInit {
   loadingEstudantes = signal(false);
   erroEstudantes = signal<string | null>(null);
   alunoEmDestaque = signal<AlunoModalData | null>(null);
+
+  // ── Dashboard da escola (Big Numbers do Coordenador) ──────────
+  metricasEscola = signal<MetricasEscola | null>(null);
+  loadingDashboard = signal(true);
+  turmaSelecionadaId = signal<string | null>(null);
+  abaGraficos = signal<'perfil' | 'kpis'>('perfil');
 
   totalPendentes = computed(() => this.registrosPendentes().length);
 
@@ -125,6 +138,19 @@ export class CoordenadorHomeComponent implements OnInit {
         error: () => this.loadingMetricas.set(false),
       });
 
+    // ── Carrega métricas da escola para Big Numbers ────────────
+    this.turmasService
+      .getDashboardEscola()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (dados) => {
+          this.metricasEscola.set(dados);
+          this.loadingDashboard.set(false);
+        },
+        error: () => this.loadingDashboard.set(false),
+      });
+
+    // ── Carrega turmas para exibir alunos e selecionar ID para os gráficos ──
     this.carregarTurmaEEstudantes(educadorIdAtual);
   }
 
@@ -139,6 +165,7 @@ export class CoordenadorHomeComponent implements OnInit {
         next: (turmas) => {
           if (turmas.length > 0 && turmas[0]) {
             this.turmaAtual.set(turmas[0]);
+            this.turmaSelecionadaId.set(turmas[0].id);
             this.turmasService
               .getEstudantesDaTurma(turmas[0].id)
               .pipe(takeUntilDestroyed(this.destroyRef))
@@ -169,6 +196,10 @@ export class CoordenadorHomeComponent implements OnInit {
 
   fecharModal(): void {
     this.isModalPendenciasAberto.set(false);
+  }
+
+  trocarAbaGraficos(aba: 'perfil' | 'kpis'): void {
+    this.abaGraficos.set(aba);
   }
 
   abrirDetalhesAluno(estudante: EstudanteResumo): void {

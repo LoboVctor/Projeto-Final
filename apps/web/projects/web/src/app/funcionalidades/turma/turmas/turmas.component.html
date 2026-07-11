@@ -72,10 +72,10 @@
             </svg>
           </div>
           <div class="big-number-info">
-            <span class="big-number-label">Idade Média</span>
+            <span class="big-number-label">Idade Predominante</span>
             <span class="big-number-value" [class.is-loading]="loadingEstudantes()">
-              @if (metricas()?.idadeMedia !== null && metricas()?.idadeMedia !== undefined) {
-                {{ metricas()!.idadeMedia }} anos
+              @if (metricas()?.idadePredominante !== null && metricas()?.idadePredominante !== undefined) {
+                {{ metricas()!.idadePredominante }} anos
               } @else { — }
             </span>
           </div>

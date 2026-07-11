@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, Inject, BadRequestException } from '@nestjs/common';
+import * as Papa from 'papaparse';
 import type {
   IEstudanteRepositorio,
   EstudanteVisaoGeral,
@@ -6,7 +7,7 @@ import type {
   EstudantePedagogico,
 } from './interfaces/IEstudanteRepositorio.js';
 import { EspecificidadeDto } from './dtos/create.especifidades.dto.js';
-import { DiaSemana, StatusAula } from '../../../../../infra/generated/prisma';
+import { DiaSemana, StatusAula, Sexo, Fcom, Prisma } from '../../../../../infra/generated/prisma';
 import { ObterAgendaSemanaDto } from './dtos/obter-agenda-semana.dto.js';
 import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
 import { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
@@ -32,6 +33,62 @@ export class EstudanteService {
     }
 
     return this.mapearRetornoVisaoGeral(estudante);
+  }
+
+  async importarCSV(arquivo: Express.Multer.File, logadoId: string) {
+    const csvData = arquivo.buffer.toString('utf-8');
+    
+    const result = Papa.parse(csvData, {
+      header: true,
+      skipEmptyLines: true,
+    });
+
+    if (result.errors.length > 0) {
+      throw new BadRequestException('Erro ao processar o CSV: ' + JSON.stringify(result.errors));
+    }
+
+    let sucesso = 0;
+    let falhas = 0;
+    const erros = [];
+
+    for (const [index, row] of result.data.entries()) {
+      try {
+        const rowData = row as any;
+        
+        if (!rowData.nome || !rowData.matricula || !rowData.cpf || !rowData.data_nascimento || !rowData.sexo || !rowData.forma_comunicacao) {
+           throw new Error('Campos obrigatórios ausentes: nome, matricula, cpf, data_nascimento, sexo ou forma_comunicacao.');
+        }
+
+        const sexoValido = Object.values(Sexo).includes(rowData.sexo as Sexo);
+        if (!sexoValido) throw new Error(`Sexo inválido: ${rowData.sexo}`);
+
+        const comunicacaoValida = Object.values(Fcom).includes(rowData.forma_comunicacao as Fcom);
+        if (!comunicacaoValida) throw new Error(`Forma de comunicação inválida: ${rowData.forma_comunicacao}`);
+
+        // Note: IEstudanteRepositorio.criarEstudante doesn't do Prisma error handling out of the box (P2002 for unique)
+        // Let's rely on try-catch
+        const criarDados = {
+          nomeCompleto: rowData.nome,
+          matricula: rowData.matricula,
+          cpf: rowData.cpf,
+          dataNascimento: new Date(rowData.data_nascimento),
+          sexo: rowData.sexo as Sexo,
+          formaComunicacao: rowData.forma_comunicacao as Fcom,
+        };
+
+        await this.estudanteRepositorio.criarEstudante(criarDados);
+        sucesso++;
+      } catch (err: any) {
+        falhas++;
+        if (err.code === 'P2002') {
+          erros.push(`Linha ${index + 2}: Matrícula ou CPF já cadastrados.`);
+        } else {
+          erros.push(`Linha ${index + 2}: ${err.message || 'Erro desconhecido'}`);
+        }
+      }
+    }
+
+    return { sucesso, falhas, erros };
   }
 
   /**
@@ -352,7 +409,7 @@ export class EstudanteService {
         diaSemana: nomesDiasUI[diaJs],
         eventos: aulasDoDia.map((aula) => ({
           aulaId: aula.id,
-          titulo: aula.titulo || aula.area?.nome || 'Regência',
+          titulo: aula.titulo || aula.area?.nome || 'Aula',
           educador: aula.educador?.nome || 'Não definido',
           horarioInicio: this.formatTimeOnly(aula.horarioInicio),
           horarioFim: this.formatTimeOnly(aula.horarioFim),

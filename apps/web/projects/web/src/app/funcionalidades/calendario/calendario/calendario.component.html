@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-4 p-4 sm:p-6 lg:p-8 bg-[#F7F5FA] h-screen relative" (click)="fecharPopup()">
+<div class="flex flex-col gap-4 p-4 sm:p-6 lg:p-8 bg-[#F7F5FA] h-full overflow-y-auto relative" (click)="fecharPopup()">
 
   <!-- ── Cabeçalho ──────────────────────────────────────────────────────────── -->
   <header class="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-[#E8E3EF]">
@@ -37,7 +37,7 @@
   </header>
 
   <!-- ── Grade do Calendário ──────────────────────────────────────────────────── -->
-  <div class="bg-white rounded-2xl shadow-sm border border-[#E8E3EF] flex-1 flex flex-col overflow-hidden">
+  <div class="bg-white rounded-2xl shadow-sm border border-[#E8E3EF] overflow-y-auto">
 
     <!-- Cabeçalho dos dias da semana -->
     <div class="grid grid-cols-7 border-b border-[#E8E3EF] bg-[#F7F5FA]">
@@ -49,11 +49,11 @@
     </div>
 
     <!-- Células dos dias -->
-    <div class="grid grid-cols-7 flex-1 auto-rows-fr">
+    <div class="grid grid-cols-7">
       @for (dia of diasDoCalendario(); track dia.data.toISOString()) {
 
       <div
-        class="min-h-[110px] p-2.5 border-b border-r border-[#E8E3EF]/60 transition-all duration-200 hover:bg-[#F3EEFF]/40 flex flex-col gap-1 cursor-pointer group relative overflow-hidden"
+        class="min-h-[100px] p-2.5 border-b border-r border-[#E8E3EF]/60 transition-all duration-200 hover:bg-[#F3EEFF]/40 flex flex-col gap-1 cursor-pointer group relative overflow-hidden"
         [class.bg-gray-50]="!dia.isMesAtual" [class.opacity-40]="!dia.isMesAtual" (click)="abrirModal(dia.data)">
         <!-- Número do dia -->
         <div class="flex justify-between items-center">

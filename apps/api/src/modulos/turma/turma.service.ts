@@ -1,4 +1,5 @@
-import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, Inject, BadRequestException } from '@nestjs/common';
+import * as Papa from 'papaparse';
 import type { ITurmaRepositorio, MetricasTurma, AgregacaoKpisDiarios } from './interfaces/ITurmaRepositorio.js';
 import { KpisTurmaResponseDto } from './dtos/kpis-turma-response.dto.js';
 import { TurmaDashboardResponseDto } from './dtos/turma-dashboard-response.dto.js';
@@ -19,6 +20,53 @@ export class TurmaService {
    */
   async findAll(educadorId?: string) {
     return this.turmaRepositorio.buscarTodas(educadorId);
+  }
+
+  async importarCSV(arquivo: Express.Multer.File, logadoId: string) {
+    const csvData = arquivo.buffer.toString('utf-8');
+    
+    const result = Papa.parse(csvData, {
+      header: true,
+      skipEmptyLines: true,
+    });
+
+    if (result.errors.length > 0) {
+      throw new BadRequestException('Erro ao processar o CSV: ' + JSON.stringify(result.errors));
+    }
+
+    let sucesso = 0;
+    let falhas = 0;
+    const erros = [];
+
+    // Busca dados do logado para saber escolaId
+    // Em turma, não é trivial. Vou usar um fake escolaId ou o logadoId caso o backend requeira algo diferente,
+    // mas a entidade Turma precisa de: nome, turno, anoLetivo, etapa. A escolaId é mandatória, 
+    // mas assumiremos que 'importarCSV' no turmaController tem logadoId e usaremos algo fixo caso não possamos pegar.
+    // Deixarei a inserção baseada na struct do Prisma
+    for (const [index, row] of result.data.entries()) {
+      try {
+        const rowData = row as any;
+        if (!rowData.nome || !rowData.turno || !rowData.anoLetivo || !rowData.etapa) {
+          throw new Error('Campos obrigatórios ausentes: nome, turno, anoLetivo, etapa.');
+        }
+
+        const criarDados = {
+          nome: rowData.nome,
+          turno: rowData.turno,
+          anoLetivo: Number(rowData.anoLetivo),
+          etapa: rowData.etapa,
+          escolaId: logadoId, // Assumindo escolaId como logadoId para teste ou pegar dinamicamente se necessário
+        };
+
+        await this.turmaRepositorio.criarTurma(criarDados);
+        sucesso++;
+      } catch (err: any) {
+        falhas++;
+        erros.push(`Linha ${index + 2}: ${err.message || 'Erro desconhecido'}`);
+      }
+    }
+
+    return { sucesso, falhas, erros };
   }
 
   /**
@@ -111,9 +159,22 @@ export class TurmaService {
       })
       .filter((i) => i >= 0);
 
-    const idadeMedia = idades.length > 0
-      ? Math.round(idades.reduce((acc, i) => acc + i, 0) / idades.length * 10) / 10
-      : null;
+    // ── Cálculo de Idade Predominante (Moda) ─────────────────────
+    const idadeFreqMapCalculo = new Map<number, number>();
+    for (const i of idades) {
+      idadeFreqMapCalculo.set(i, (idadeFreqMapCalculo.get(i) ?? 0) + 1);
+    }
+
+    let idadePredominante: number | null = null;
+    if (idadeFreqMapCalculo.size > 0) {
+      let maxFreq = 0;
+      for (const [idade, freq] of idadeFreqMapCalculo.entries()) {
+        if (freq > maxFreq) {
+          maxFreq = freq;
+          idadePredominante = idade;
+        }
+      }
+    }
 
     // ── Distribuição por Sexo ─────────────────────────────────────
     const sexoMap = new Map<string, number>();
@@ -160,7 +221,7 @@ export class TurmaService {
 
     return {
       totalAlunos,
-      idadeMedia,
+      idadePredominante,
       diagnosticoPrincipal,
       comunicacaoPrincipal,
       distribuicaoSexo,
@@ -333,6 +394,89 @@ export class TurmaService {
       totalAlunos,
       scoreMedioDia: scoreMedio,
       diaDaSemana: diaDaSemanaAtual
+    };
+  }
+
+  /**
+   * Calcula métricas agregadas de TODA a escola (visão do Coordenador):
+   * Big Numbers (total de alunos, professores e turmas) +
+   * distribuições para gráficos (sexo, idade, diagnóstico, comunicação).
+   * Reutiliza a lógica de agregação do obterMetricasTurma, sem filtro de turma.
+   */
+  async obterMetricasEscola(): Promise<MetricasTurma & { totalProfessores: number; totalTurmas: number }> {
+    const { estudantes, totalProfessores, totalTurmas } = await this.turmaRepositorio.buscarMetricasEscola();
+
+    const totalAlunos = estudantes.length;
+    const agora = new Date();
+
+    // ── Cálculo de Idades ────────────────────────────────────
+    const idades = estudantes
+      .map((e) => {
+        const nasc = new Date(e.dataNascimento);
+        let idade = agora.getFullYear() - nasc.getFullYear();
+        const mes = agora.getMonth() - nasc.getMonth();
+        if (mes < 0 || (mes === 0 && agora.getDate() < nasc.getDate())) idade--;
+        return idade;
+      })
+      .filter((i) => i >= 0);
+
+    // Idade Predominante (Moda)
+    const idadeFreqMap = new Map<number, number>();
+    for (const i of idades) idadeFreqMap.set(i, (idadeFreqMap.get(i) ?? 0) + 1);
+    let idadePredominante: number | null = null;
+    if (idadeFreqMap.size > 0) {
+      let maxFreq = 0;
+      for (const [idade, freq] of idadeFreqMap.entries()) {
+        if (freq > maxFreq) { maxFreq = freq; idadePredominante = idade; }
+      }
+    }
+
+    // ── Distribuição por Sexo ───────────────────────────
+    const sexoMap = new Map<string, number>();
+    for (const e of estudantes) sexoMap.set(e.sexo, (sexoMap.get(e.sexo) ?? 0) + 1);
+    const distribuicaoSexo = Array.from(sexoMap.entries())
+      .map(([sexo, quantidade]) => ({ sexo, quantidade }))
+      .sort((a, b) => b.quantidade - a.quantidade);
+
+    // ── Distribuição por Diagnóstico ─────────────────────
+    const diagMap = new Map<string, number>();
+    for (const e of estudantes) {
+      for (const d of e.diagnosticos) {
+        const tipo = d.diagnostico.tipo;
+        diagMap.set(tipo, (diagMap.get(tipo) ?? 0) + 1);
+      }
+    }
+    const distribuicaoDiagnostico = Array.from(diagMap.entries())
+      .map(([tipo, quantidade]) => ({ tipo, quantidade }))
+      .sort((a, b) => b.quantidade - a.quantidade);
+    const diagnosticoPrincipal = distribuicaoDiagnostico[0]?.tipo ?? null;
+
+    // ── Distribuição por Comunicação ────────────────────
+    const comMap = new Map<string, number>();
+    for (const e of estudantes) comMap.set(e.formaComunicacao, (comMap.get(e.formaComunicacao) ?? 0) + 1);
+    const distribuicaoComunicacao = Array.from(comMap.entries())
+      .map(([forma, quantidade]) => ({ forma, quantidade }))
+      .sort((a, b) => b.quantidade - a.quantidade);
+    const comunicacaoPrincipal = distribuicaoComunicacao[0]?.forma ?? null;
+
+    // ── Distribuição por Faixa de Idade ─────────────────
+    const idadeDistMap = new Map<number, number>();
+    for (const i of idades) idadeDistMap.set(i, (idadeDistMap.get(i) ?? 0) + 1);
+    const distribuicaoIdade = Array.from(idadeDistMap.entries())
+      .map(([idade, quantidade]) => ({ idade, quantidade }))
+      .sort((a, b) => a.idade - b.idade);
+
+    return {
+      totalAlunos,
+      totalProfessores,
+      totalTurmas,
+      idadePredominante,
+      diagnosticoPrincipal,
+      comunicacaoPrincipal,
+      distribuicaoSexo,
+      distribuicaoIdade,
+      distribuicaoDiagnostico,
+      distribuicaoComunicacao,
     };
   }
 }

@@ -1,7 +1,7 @@
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { API_BASE_URL } from '../config/api.config';
 
@@ -43,13 +43,8 @@ export class AuthService {
   }
 
 
-  private tokenSubject!: BehaviorSubject<string | null>;
-  private usuarioSubject!: BehaviorSubject<UsuarioLogado | null>;
-
-  constructor() {
-    this.tokenSubject = new BehaviorSubject<string | null>(this.getInitialToken());
-    this.usuarioSubject = new BehaviorSubject<UsuarioLogado | null>(this.getInitialUser());
-  }
+  private tokenSubject = signal<string | null>(this.getInitialToken());
+  private usuarioSubject = signal<UsuarioLogado | null>(this.getInitialUser());
 
   private getInitialToken(): string | null {
     if (isPlatformBrowser(this.platformId)) {
@@ -73,14 +68,14 @@ export class AuthService {
         const usuario = response?.usuario;
 
         if (token) {
-          this.tokenSubject.next(token);
+          this.tokenSubject.set(token);
           if (isPlatformBrowser(this.platformId)) {
             localStorage.setItem('access_token', token);
           }
         }
 
         if (usuario) {
-          this.usuarioSubject.next(usuario);
+          this.usuarioSubject.set(usuario);
           if (isPlatformBrowser(this.platformId)) {
             localStorage.setItem('usuario_logado', JSON.stringify(usuario));
           }
@@ -90,20 +85,15 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return this.tokenSubject.value;
+    return this.tokenSubject();
   }
 
   isAuthenticated(): boolean {
-    return !!this.tokenSubject.value;
+    return !!this.tokenSubject();
   }
 
-
-  /**
-   * Retorna o ID do perfil de ação do usuário logado
-   * (educadorId tem prioridade sobre responsavelId).
-   */
   getLoggedUserId(): string | null {
-    const user = this.usuarioSubject.value;
+    const user = this.usuarioSubject();
     if (!user) return null;
 
     if (user.educador?.id) return user.educador.id;
@@ -114,25 +104,25 @@ export class AuthService {
   }
 
   getRole(): string | null {
-    return this.usuarioSubject.value?.role ?? null;
+    return this.usuarioSubject()?.role ?? null;
   }
 
   isCoordenador(): boolean {
-    return this.usuarioSubject.value?.role === 'COORDENADOR';
+    return this.usuarioSubject()?.role === 'COORDENADOR';
   }
 
   isProfessor(): boolean {
-    const role = this.usuarioSubject.value?.role;
+    const role = this.usuarioSubject()?.role;
     return role === 'PROFESSOR_REGENTE' || role === 'PROFESSOR_ATENDIMENTO';
   }
 
   getEscolaId(): string | null {
-    const user = this.usuarioSubject.value;
+    const user = this.usuarioSubject();
     return user?.escolaId ?? (user?.educador as any)?.escolaId ?? null;
   }
 
   getLoggedUserName(): string {
-    const user = this.usuarioSubject.value;
+    const user = this.usuarioSubject();
     if (!user) return 'Usuário';
 
     if (user.educador?.nome) return user.educador.nome;
@@ -143,8 +133,8 @@ export class AuthService {
   }
 
   logout(): void {
-    this.tokenSubject.next(null);
-    this.usuarioSubject.next(null);
+    this.tokenSubject.set(null);
+    this.usuarioSubject.set(null);
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('usuario_logado');

@@ -157,6 +157,7 @@ export interface IEstudanteRepositorio {
   buscarVisaoGeral(estudanteId: string): Promise<EstudanteVisaoGeral | null>;
   buscarSaude(estudanteId: string): Promise<EstudanteSaude | null>;
   buscarPedagogico(estudanteId: string): Promise<EstudantePedagogico | null>;
+  criarEstudante(dados: any): Promise<any>;
   buscarComFiltros(
     query: BuscarEstudantesQueryDto,
   ): Promise<EstudanteListagemPaginado>;

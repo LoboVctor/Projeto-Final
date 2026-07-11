@@ -5,9 +5,7 @@
 
 @if (gerandoPdf()) {
 <div class="fixed inset-0 z-[9999] bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center animate-fade-in">
-  <div class="w-16 h-16 border-4 border-elo-roxo-principal border-t-transparent rounded-full animate-spin"></div>
-  <p class="mt-4 text-elo-roxo-principal font-bold text-lg font-sora">Gerando Relatório PDF...</p>
-  <p class="text-sm text-gray-500">Isso pode levar alguns segundos.</p>
+  <app-loading-flor titulo="Gerando Relatório PDF..." subtitulo="Isso pode levar alguns segundos."></app-loading-flor>
 </div>
 }
 

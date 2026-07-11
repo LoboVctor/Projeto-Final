@@ -24,6 +24,12 @@ import type { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto
 export class EstudanteRepository implements IEstudanteRepositorio {
   constructor(private prisma: PrismaService) {}
 
+  async criarEstudante(dados: any): Promise<any> {
+    return this.prisma.client.estudante.create({
+      data: dados,
+    });
+  }
+
   async buscarVisaoGeral(
     estudanteId: string,
   ): Promise<EstudanteVisaoGeral | null> {
@@ -154,7 +160,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
 
     const where = {
       ...(query.nome && {
-        nomeCompleto: { contains: query.nome, mode: 'insensitive' as const },
+        nomeCompleto: { startsWith: query.nome, mode: 'insensitive' as const },
       }),
       ...(query.matricula && {
         matricula: { contains: query.matricula, mode: 'insensitive' as const },

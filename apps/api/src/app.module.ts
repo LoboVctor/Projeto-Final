@@ -17,6 +17,7 @@ import { EventoModule } from './modulos/evento/evento.module.js';
 import { RelatorioSemestralModule } from './modulos/relatorio-semestral/relatorio-semestral.module.js';
 import { EducadorModule } from './modulos/educador/educador.module.js';
 import { AuditoriaModule } from './modulos/auditoria/auditoria.module.js';
+import { ResponsavelModule } from './modulos/responsavel/responsavel.module.js';
 import * as Joi from 'joi';
 
 @Module({
@@ -43,6 +44,7 @@ import * as Joi from 'joi';
     RelatorioSemestralModule,
     EducadorModule,
     AuditoriaModule,
+    ResponsavelModule,
   ],
   controllers: [],
 

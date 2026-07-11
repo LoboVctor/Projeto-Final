@@ -49,13 +49,19 @@ export interface DadosGraficoTurma {
 /** Métricas calculadas para Big Numbers e gráficos da turma */
 export interface MetricasTurma {
   totalAlunos: number;
-  idadeMedia: number | null;
+  idadePredominante: number | null;
   diagnosticoPrincipal: string | null;
   comunicacaoPrincipal: string | null;
   distribuicaoSexo: { sexo: string; quantidade: number }[];
   distribuicaoIdade: { idade: number; quantidade: number }[];
   distribuicaoDiagnostico: { tipo: string; quantidade: number }[];
   distribuicaoComunicacao: { forma: string; quantidade: number }[];
+}
+
+/** Métricas da escola inteira (Home do Coordenador) — estende MetricasTurma */
+export interface MetricasEscola extends MetricasTurma {
+  totalProfessores: number;
+  totalTurmas: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -97,5 +103,13 @@ export class TurmasService {
 
   getBigNumbersHome(educadorId: string) {
     return this.http.get<BigNumbersHomeResponse>(`${this.API}/home/big-numbers/${educadorId}`);
+  }
+
+  /**
+   * GET /turmas/metricas-escola
+   * Retorna Big Numbers e distribuições globais para a Home do Coordenador.
+   */
+  getDashboardEscola(): Observable<MetricasEscola> {
+    return this.http.get<MetricasEscola>(`${this.API}/metricas-escola`);
   }
 }

@@ -31,6 +31,10 @@ export class BlocoVisaoGeralComponent {
   // TODO: Substituir pela injeção de AuthService
   userRole: 'PROFESSOR' | 'COORDENADOR' = 'PROFESSOR';
 
+  editarInformacoes(): void {
+    alert('Funcionalidade de edição de Informações Gerais em desenvolvimento.');
+  }
+
   get especificidadesFiltradas(): EspecificidadeVisaoGeral[] {
     const visaoGeralData = this.visaoGeralData();
     if (!visaoGeralData?.especificidades) return [];

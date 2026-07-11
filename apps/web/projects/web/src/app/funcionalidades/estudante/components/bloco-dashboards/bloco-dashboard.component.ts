@@ -9,11 +9,12 @@ import { AuthService } from '../../../../nucleo/services/auth';
 import Chart from 'chart.js/auto';
 import { jsPDF } from 'jspdf';
 import { toPng } from 'html-to-image';
+import { LoadingFlorComponent } from '../../../../compartilhado/components/loading-flor/loading-flor.component';
 
 @Component({
   selector: 'app-bloco-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LoadingFlorComponent],
   templateUrl: './bloco-dashboard.component.html',
   styleUrls: ['./bloco-dashboard.component.css']
 })

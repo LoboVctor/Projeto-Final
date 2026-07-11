@@ -75,7 +75,11 @@ const FCOM_LABEL: Record<string, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TurmaGraficosComponent implements OnDestroy {
-  readonly turmaId = input.required<string>();
+  /** ID da turma para buscar métricas da API. Opcional se `dadosExternos` for fornecido. */
+  readonly turmaId = input<string | null>(null);
+
+  /** Dados pré-carregados (ex: métricas globais da escola). Se fornecido, não busca da API. */
+  readonly dadosExternos = input<MetricasTurma | null>(null);
 
   @ViewChild('canvasSexo', { static: false }) canvasSexo?: ElementRef<HTMLCanvasElement>;
   @ViewChild('canvasIdade', { static: false }) canvasIdade?: ElementRef<HTMLCanvasElement>;
@@ -92,7 +96,18 @@ export class TurmaGraficosComponent implements OnDestroy {
   private graficosInstancias: Record<string, Chart> = {};
 
   constructor() {
+    // Reage a dados externos (ex: Home do Coordenador com métricas globais)
     effect(() => {
+      const externos = this.dadosExternos();
+      if (externos) {
+        untracked(() => {
+          this.metricas.set(externos);
+          this.loading.set(false);
+          requestAnimationFrame(() => this.renderizarTodos(externos));
+        });
+        return;
+      }
+      // Caso contrário, busca da API usando turmaId
       const id = this.turmaId();
       if (id) {
         untracked(() => this.carregarMetricas());
@@ -101,13 +116,15 @@ export class TurmaGraficosComponent implements OnDestroy {
   }
 
   carregarMetricas(): void {
+    const id = this.turmaId();
+    if (!id) return;
     if (!this.metricas()) {
       this.loading.set(true);
     }
     this.erro.set(null);
 
     this.turmasService
-      .obterMetricasTurma(this.turmaId())
+      .obterMetricasTurma(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (dados) => {

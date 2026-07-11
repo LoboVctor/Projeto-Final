@@ -1,0 +1,10 @@
+<div class="loading-custom-container" aria-live="polite" [attr.aria-label]="titulo()">
+  <svg class="sunflower-spinner" [style.color]="cor()" fill="currentColor" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="3.5" fill="#2D1E40" stroke="currentColor" stroke-width="2.5"></circle>
+    <path d="M12 2a2.5 2.5 0 012.5 2.5v1.23a6.992 6.992 0 00-5 0V4.5A2.5 2.5 0 0112 2zm7.07 2.93a2.5 2.5 0 01.36 3.49l-1.02 1.35a6.99 6.99 0 00-4-3l1.35-1.02a2.5 2.5 0 013.31-.82zM22 12a2.5 2.5 0 01-2.5 2.5h-1.23a6.992 6.992 0 000-5h1.23A2.5 2.5 0 0122 12zm-2.93 7.07a2.5 2.5 0 01-3.49.36l-1.35-1.02a6.99 6.99 0 003-4l1.02 1.35a2.5 2.5 0 01.82 3.31zM12 22a2.5 2.5 0 01-2.5-2.5v-1.23a6.992 6.992 0 005 0V19.5A2.5 2.5 0 0112 22zm-7.07-2.93a2.5 2.5 0 01-.36-3.49l1.02-1.35a6.99 6.99 0 004 3l-1.35 1.02a2.5 2.5 0 01-3.31.82zM2 12a2.5 2.5 0 012.5-2.5h1.23a6.992 6.992 0 000 5H4.5A2.5 2.5 0 012 12zm2.93-7.07a2.5 2.5 0 013.49-.36l1.35 1.02a6.99 6.99 0 00-3 4l-1.02-1.35a2.5 2.5 0 01-.82-3.31z" />
+  </svg>
+  <p class="loading-titulo">{{ titulo() }}</p>
+  @if (subtitulo()) {
+    <p class="loading-subtitulo">{{ subtitulo() }}</p>
+  }
+</div>

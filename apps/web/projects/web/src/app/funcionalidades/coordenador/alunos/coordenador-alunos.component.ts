@@ -22,6 +22,9 @@ import type {
 import type { AlunoModalData } from '../../../compartilhado/models/aluno-modal.model';
 import { DiagLabelPipe } from '../../../compartilhado/pipes/student.pipes';
 import { AuditoriaService } from '../../../nucleo/services/auditoria.service';
+import { HttpClient } from '@angular/common/http';
+import { API_BASE_URL } from '../../../nucleo/config/api.config';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-coordenador-alunos',
@@ -38,6 +41,8 @@ export class CoordenadorAlunosComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = inject(API_BASE_URL);
 
   abaSolicitada = signal<string | null>(null);
   resposta = signal<PaginacaoResponse<EstudanteListagemItem> | null>(null);
@@ -69,14 +74,16 @@ export class CoordenadorAlunosComponent implements OnInit {
   readonly temResultados = computed(() => this.estudantes().length > 0);
 
   readonly tiposDiagnostico = [
-    'TEA',
     'TDAH',
-    'SINDROME DOWN',
-    'PARALISIA CEREBRAL',
-    'DEFICIENCIA INTELECTUAL',
-    'DEFICIENCIA MULTIPLA',
+    'AUTISMO',
+    'DISLEXIA',
+    'SINDROME_DE_DOWN',
+    'DEFICIENCIA_INTELECTUAL',
     'OUTRO',
   ];
+
+  isImporting = signal(false);
+  importResult = signal<{ sucesso: number; falhas: number; erros: string[] } | null>(null);
 
   readonly categoriaEspecificidade = ['ALIMENTAR', 'SENSORIAL', 'MOTORA', 'COMPORTAMENTAL'];
 
@@ -272,4 +279,45 @@ export class CoordenadorAlunosComponent implements OnInit {
   }
 
   private dispararBusca(): void { this.busca$.next(); }
+
+  abrirModalCadastrarAluno() {
+    alert('Funcionalidade de cadastro manual em desenvolvimento.');
+  }
+
+  onFileSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      this.importarCSV(file);
+    }
+    // reset file input
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  importarCSV(arquivo: File) {
+    const formData = new FormData();
+    formData.append('arquivo', arquivo);
+
+    this.isImporting.set(true);
+    this.importResult.set(null);
+
+    this.http.post<any>(`${this.baseUrl}/estudantes/importar-csv`, formData)
+      .pipe(finalize(() => this.isImporting.set(false)))
+      .subscribe({
+        next: (res) => {
+          this.importResult.set({
+            sucesso: res.sucesso || 0,
+            falhas: res.falhas || 0,
+            erros: res.erros || []
+          });
+          this.dispararBusca();
+        },
+        error: (err) => {
+          alert('Erro ao importar CSV: ' + (err.error?.message || err.message));
+        }
+      });
+  }
+
+  fecharModalImport() {
+    this.importResult.set(null);
+  }
 }

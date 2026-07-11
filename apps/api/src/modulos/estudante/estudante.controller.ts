@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards, Query, UseInterceptors, UploadedFile, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards, Query, UseInterceptors, UploadedFile, HttpCode, HttpStatus, Request, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { EstudanteService } from './estudante.service.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
@@ -18,6 +18,21 @@ import { CreateAulaEstudanteDto } from './dtos/create-aula.dto.js';
 @UseGuards(JwtAuthGuard)
 export class EstudantesController {
   constructor(private readonly estudanteService: EstudanteService) {}
+
+  /**
+   * POST /estudantes/importar-csv
+   * Importa estudantes em lote a partir de um arquivo CSV.
+   */
+  @Post('importar-csv')
+  @ApiOperation({ summary: 'Importa estudantes via arquivo CSV' })
+  @UseInterceptors(FileInterceptor('arquivo'))
+  async importarCSV(@UploadedFile() arquivo: Express.Multer.File, @Request() req: any) {
+    if (!arquivo) {
+      throw new BadRequestException('Arquivo não enviado');
+    }
+    const logadoId = req.user.educadorId;
+    return this.estudanteService.importarCSV(arquivo, logadoId);
+  }
 
   /**
    * Lista todos os estudantes com filtros opcionais (nome, matrícula, diagnóstico) e paginação.

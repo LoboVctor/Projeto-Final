@@ -1,0 +1,19 @@
+<section class="big-numbers-row" aria-label="Indicadores numéricos">
+  @for (card of cards(); track card.label) {
+    <div class="big-number-card">
+      <div class="big-number-icon" [class]="'big-number-icon--' + card.cor">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [innerHTML]="iconHtml(card)"></svg>
+      </div>
+      <div class="big-number-info">
+        <span class="big-number-label">{{ card.label }}</span>
+        <span class="big-number-value" [class.big-number-value--sm]="card.pequeno" [class.is-loading]="card.loading">
+          @if (!card.loading) {
+            {{ card.valor ?? '—' }}
+          } @else {
+            —
+          }
+        </span>
+      </div>
+    </div>
+  }
+</section>

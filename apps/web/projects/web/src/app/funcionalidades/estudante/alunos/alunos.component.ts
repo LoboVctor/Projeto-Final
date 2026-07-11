@@ -14,6 +14,7 @@ import { Subject, debounceTime, switchMap } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EstudantesService } from '../../../compartilhado/services/estudantes.service';
 import { AlunoModalComponent } from '../../../compartilhado/components/aluno-modal/aluno-modal.component';
+import { LoadingFlorComponent } from '../../../compartilhado/components/loading-flor/loading-flor.component';
 import { calcularIdade } from '../../../compartilhado/utils/date.utils';
 
 import { TurmasService, TurmaResumo } from '../../../nucleo/services/turmas.service';
@@ -28,7 +29,7 @@ import { AuditoriaService } from '../../../nucleo/services/auditoria.service';
 @Component({
   selector: 'app-alunos',
   standalone: true,
-  imports: [CommonModule, FormsModule, AlunoModalComponent, DiagLabelPipe],
+  imports: [CommonModule, FormsModule, AlunoModalComponent, DiagLabelPipe, LoadingFlorComponent],
   templateUrl: './alunos.component.html',
   styleUrls: ['./alunos.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,7 +60,7 @@ export class AlunosComponent implements OnInit {
   filtroIdadeMin = signal<number | undefined>(undefined);
   filtroIdadeMax = signal<number | undefined>(undefined);
   paginaAtual = signal(1);
-  readonly limitePorPagina = 7;
+  readonly limitePorPagina = 6;
 
   // ─── Turmas disponíveis (para o filtro de turma) ──────────────
   turmasDisponiveis = signal<TurmaResumo[]>([]);

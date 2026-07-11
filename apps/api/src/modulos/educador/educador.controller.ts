@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Delete,
   Param,
@@ -10,7 +11,12 @@ import {
   DefaultValuePipe,
   HttpCode,
   HttpStatus,
+  Request,
+  UnauthorizedException,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
@@ -20,6 +26,7 @@ import {
 } from '@nestjs/swagger';
 import { EducadorService } from './educador.service.js';
 import { AtualizarEducadorDto } from './dtos/atualizar-educador.dto.js';
+import { CriarEducadorDto } from './dtos/criar-educador.dto.js';
 import { TipoEducador } from '@prisma/client';
 
 @ApiTags('Educadores')
@@ -27,6 +34,38 @@ import { TipoEducador } from '@prisma/client';
 @Controller('educadores')
 export class EducadorController {
   constructor(private readonly educadorService: EducadorService) {}
+
+  /**
+   * POST /educadores
+   * Cria um novo educador e um usuário associado a ele.
+   */
+  @Post()
+  @ApiOperation({ summary: 'Cria um novo educador' })
+  async criar(@Body() dto: CriarEducadorDto, @Request() req: any) {
+    const logadoId = req.user.educadorId;
+    if (!logadoId) {
+      throw new UnauthorizedException('Educador logado não encontrado no token');
+    }
+    return this.educadorService.criar(dto, logadoId);
+  }
+
+  /**
+   * POST /educadores/importar-csv
+   * Importa educadores em lote a partir de um arquivo CSV.
+   */
+  @Post('importar-csv')
+  @ApiOperation({ summary: 'Importa educadores via arquivo CSV' })
+  @UseInterceptors(FileInterceptor('arquivo'))
+  async importarCSV(@UploadedFile() arquivo: Express.Multer.File, @Request() req: any) {
+    const logadoId = req.user.educadorId;
+    if (!logadoId) {
+      throw new UnauthorizedException('Educador logado não encontrado no token');
+    }
+    if (!arquivo) {
+      throw new UnauthorizedException('Arquivo CSV não enviado.');
+    }
+    return this.educadorService.importarCSV(arquivo, logadoId);
+  }
 
   /**
    * GET /educadores

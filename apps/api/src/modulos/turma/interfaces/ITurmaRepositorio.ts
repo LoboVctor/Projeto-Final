@@ -69,7 +69,7 @@ export type TurmaParaMetricas = Prisma.TurmaGetPayload<{
 /** Resultado do endpoint GET /turmas/:id/metricas */
 export interface MetricasTurma {
   totalAlunos: number;
-  idadeMedia: number | null;
+  idadePredominante: number | null;
   diagnosticoPrincipal: string | null;
   comunicacaoPrincipal: string | null;
   distribuicaoSexo: { sexo: string; quantidade: number }[];
@@ -104,7 +104,20 @@ export interface ITurmaRepositorio {
     assiduidade: { presenca: boolean | null; _count: { presenca: number } }[];
   }>;
   buscarMetricasTurma(turmaId: string): Promise<TurmaParaMetricas | null>;
+  buscarMetricasEscola(): Promise<{
+    estudantes: {
+      id: string;
+      dataNascimento: Date;
+      sexo: string;
+      formaComunicacao: string;
+      diagnosticos: { diagnostico: { tipo: string } }[];
+    }[];
+    totalProfessores: number;
+    totalTurmas: number;
+  }>;
   
+  criarTurma(dados: any): Promise<any>;
+
   // NOVO MÉTODO
   buscarAgregacoesKpis(filtro?: FiltroKpisDiarios): Promise<AgregacaoKpisDiarios>;
 

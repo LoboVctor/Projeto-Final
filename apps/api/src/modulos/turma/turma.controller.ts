@@ -6,6 +6,8 @@ import {
   ApiBearerAuth,
   ApiResponse
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UseInterceptors, UploadedFile, Request, Post, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { TurmaService } from './turma.service.js';
 import { KpisTurmaResponseDto } from './dtos/kpis-turma-response.dto.js'; 
 import { TurmaDashboardResponseDto } from './dtos/turma-dashboard-response.dto.js';
@@ -32,6 +34,24 @@ export class TurmaController {
   })
   findAll(@Query('educadorId') educadorId?: string) {
     return this.turmaService.findAll(educadorId);
+  }
+
+  /**
+   * POST /turmas/importar-csv
+   * Importa turmas em lote a partir de um arquivo CSV.
+   */
+  @Post('importar-csv')
+  @ApiOperation({ summary: 'Importa turmas via arquivo CSV' })
+  @UseInterceptors(FileInterceptor('arquivo'))
+  async importarCSV(@UploadedFile() arquivo: Express.Multer.File, @Request() req: any) {
+    const logadoId = req.user.educadorId;
+    if (!logadoId) {
+      throw new UnauthorizedException('Educador logado não encontrado no token');
+    }
+    if (!arquivo) {
+      throw new BadRequestException('Arquivo CSV não enviado.');
+    }
+    return this.turmaService.importarCSV(arquivo, logadoId);
   }
 
   /**
@@ -79,5 +99,16 @@ export class TurmaController {
   @Get('home/big-numbers/:educadorId')
   async obterBigNumbersHome(@Param('educadorId') educadorId: string) {
     return this.turmaService.obterBigNumbersHome(educadorId);
+  }
+
+  /**
+   * GET /turmas/metricas-escola
+   * Retorna Big Numbers e distribuições globais de toda a escola (Visão Coordenador).
+   */
+  @Get('metricas-escola')
+  @ApiOperation({ summary: 'Retorna métricas agregadas de toda a escola (Big Numbers do Coordenador)' })
+  @ApiResponse({ status: 200, description: 'Métricas da escola retornadas com sucesso.' })
+  getMetricasEscola() {
+    return this.turmaService.obterMetricasEscola();
   }
 }

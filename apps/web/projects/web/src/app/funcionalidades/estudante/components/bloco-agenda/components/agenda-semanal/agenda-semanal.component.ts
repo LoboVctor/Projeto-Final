@@ -19,7 +19,7 @@ export class AgendaSemanalComponent implements OnInit {
   agenda = signal<any[]>([]);
 
   dataBase = signal<Date>(new Date());
-  visaoAtiva = signal<'dia' | 'semana' | 'mes'>('semana');
+  visaoAtiva = signal<'dia' | 'semana'>('semana');
 
   agendaFiltrada = computed(() => {
     const visao = this.visaoAtiva();
@@ -67,11 +67,8 @@ export class AgendaSemanalComponent implements OnInit {
 
     if (visao === 'dia') {
       novaData.setDate(novaData.getDate() + direcao);
-    } else if (visao === 'semana') {
-      novaData.setDate(novaData.getDate() + direcao * 7);
     } else {
-      // Mês: avança/recua para o mesmo dia no próximo/anterior mês
-      novaData.setMonth(novaData.getMonth() + direcao);
+      novaData.setDate(novaData.getDate() + direcao * 7);
     }
 
     this.dataBase.set(novaData);
@@ -83,7 +80,7 @@ export class AgendaSemanalComponent implements OnInit {
     this.carregarAgenda();
   }
 
-  mudarVisao(visao: 'dia' | 'semana' | 'mes') {
+  mudarVisao(visao: 'dia' | 'semana') {
     this.visaoAtiva.set(visao);
     this.carregarAgenda();
   }

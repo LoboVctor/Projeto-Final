@@ -20,6 +20,7 @@ import { BlocoSaudeComponent } from '../../../funcionalidades/estudante/componen
 import { BlocoRelatoriosComponent } from '../../../funcionalidades/estudante/components/bloco-relatorios/bloco-relatorios';
 import { BlocoAgendaComponent } from '../../../funcionalidades/estudante/components/bloco-agenda/bloco-agenda.component';
 import { BlocoDashboardComponent } from '../../../funcionalidades/estudante/components/bloco-dashboards/bloco-dashboard.component';
+import { CadastroResponsavelComponent } from '../../../funcionalidades/estudante/cadastro-responsavel/cadastro-responsavel.component';
 
 @Component({
   selector: 'app-aluno-modal',
@@ -29,7 +30,8 @@ import { BlocoDashboardComponent } from '../../../funcionalidades/estudante/comp
     BlocoSaudeComponent,
     BlocoRelatoriosComponent,
     BlocoAgendaComponent,
-    BlocoDashboardComponent
+    BlocoDashboardComponent,
+    CadastroResponsavelComponent
   ],
   templateUrl: './aluno-modal.component.html',
   styleUrls: ['./aluno-modal.component.css'],
@@ -54,6 +56,7 @@ export class AlunoModalComponent implements OnChanges {
   isRelatoriosExpanded = signal(false);
   isAgendaExpanded = signal(false);
   isDashboardExpanded = signal(false);
+  isResponsavelExpanded = signal(false);
 
   visaoGeralData = signal<EstudanteVisaoGeral | null>(null);
   loadingVisaoGeral = signal(false);
@@ -93,6 +96,7 @@ export class AlunoModalComponent implements OnChanges {
     this.isRelatoriosExpanded.set(false);
     this.isAgendaExpanded.set(false);
     this.isDashboardExpanded.set(false);
+    this.isResponsavelExpanded.set(false);
     this.isInfoGeraisOpen.set(false);
     this.visaoGeralData.set(null);
     this.fecharModal.emit();
@@ -108,6 +112,7 @@ export class AlunoModalComponent implements OnChanges {
     this.isRelatoriosExpanded.set(false);
     this.isAgendaExpanded.set(false);
     this.isDashboardExpanded.set(false);
+    this.isResponsavelExpanded.set(false);
     this.isVisaoGeralExpanded.set(true);
 
     if (this.visaoGeralData()?.id === this.aluno.id) {
@@ -123,6 +128,7 @@ export class AlunoModalComponent implements OnChanges {
     this.isRelatoriosExpanded.set(false);
     this.isAgendaExpanded.set(false);
     this.isDashboardExpanded.set(false);
+    this.isResponsavelExpanded.set(false);
     this.isSaudeExpanded.set(true);
   }
 
@@ -132,6 +138,7 @@ export class AlunoModalComponent implements OnChanges {
     this.isSaudeExpanded.set(false);
     this.isAgendaExpanded.set(false);
     this.isDashboardExpanded.set(false);
+    this.isResponsavelExpanded.set(false);
     this.isRelatoriosExpanded.set(true);
   }
 
@@ -141,12 +148,19 @@ export class AlunoModalComponent implements OnChanges {
     this.isDashboardExpanded.set(true);
   }
 
+  abrirResponsavel(): void {
+    if (!this.aluno) return;
+    this.recolherPaineis();
+    this.isResponsavelExpanded.set(true);
+  }
+
   recolherPaineis(): void {
     this.isVisaoGeralExpanded.set(false);
     this.isSaudeExpanded.set(false);
     this.isRelatoriosExpanded.set(false);
     this.isAgendaExpanded.set(false);
     this.isDashboardExpanded.set(false);
+    this.isResponsavelExpanded.set(false);
   }
 
   carregarVisaoGeral(): void {

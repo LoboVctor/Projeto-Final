@@ -4,6 +4,17 @@
 /* ── Linha inativa ──────────────────────────────────────────────── */
 .linha-inativa { opacity: 0.55; }
 
+/* ── Filtros Bar Horizontal ─────────────────────────────────────── */
+.filtros-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: transparent;
+  padding: 0;
+}
+
 /* ── Status extra ───────────────────────────────────────────────── */
 .tag-status--inativo   { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
 .tag-status--bloqueado { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }

@@ -13,6 +13,9 @@ import { CardAlunoComponent } from '../../../compartilhado/components/card-aluno
 import { AlunoModalData } from '../../../compartilhado/models/aluno-modal.model';
 import { AlunoModalComponent } from '../../../compartilhado/components/aluno-modal/aluno-modal.component';
 import { TurmaGraficosComponent } from '../../turma/components/turma-graficos/turma-graficos';
+import { HttpClient } from '@angular/common/http';
+import { API_BASE_URL } from '../../../nucleo/config/api.config';
+import { finalize } from 'rxjs';
 
 type ViewMode = 'grid' | 'list';
 
@@ -44,6 +47,12 @@ export class CoordenadorTurmasComponent implements OnInit {
   loadingEstudantes = signal(false);
   error = signal<string | null>(null);
   alunoEmDestaque = signal<AlunoModalData | null>(null);
+
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = inject(API_BASE_URL);
+  
+  isImporting = signal(false);
+  importResult = signal<{ sucesso: number; falhas: number; erros: string[] } | null>(null);
 
   readonly diagnosticoPrincipalLabel = computed(() => {
     const d = this.metricas()?.diagnosticoPrincipal;
@@ -114,5 +123,45 @@ export class CoordenadorTurmasComponent implements OnInit {
       nivelSuporte: 'Nível 1 de Suporte',
       foto: estudante.foto || `https://ui-avatars.com/api/?name=${estudante.nomeCompleto}&background=F0E6FF&color=4A148C`,
     });
+  }
+
+  abrirModalCadastrarTurma(): void {
+    alert('Funcionalidade de cadastro de turma em desenvolvimento.');
+  }
+
+  onFileSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      this.importarCSVTurmas(file);
+    }
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  importarCSVTurmas(arquivo: File) {
+    const formData = new FormData();
+    formData.append('arquivo', arquivo);
+
+    this.isImporting.set(true);
+    this.importResult.set(null);
+
+    this.http.post<any>(`${this.baseUrl}/turmas/importar-csv`, formData)
+      .pipe(finalize(() => this.isImporting.set(false)))
+      .subscribe({
+        next: (res) => {
+          this.importResult.set({
+            sucesso: res.sucesso || 0,
+            falhas: res.falhas || 0,
+            erros: res.erros || []
+          });
+          this.carregarTurmas();
+        },
+        error: (err) => {
+          alert('Erro ao importar CSV: ' + (err.error?.message || err.message));
+        }
+      });
+  }
+
+  fecharModalImport() {
+    this.importResult.set(null);
   }
 }

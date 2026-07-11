@@ -1,6 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { TipoEducador } from '@prisma/client';
+import { TipoEducador, Role } from '@prisma/client';
+
+const MAPA_TIPO_PARA_ROLE: Record<TipoEducador, Role> = {
+  [TipoEducador.REGENTE]: Role.PROFESSOR_REGENTE,
+  [TipoEducador.ATENDIMENTO]: Role.PROFESSOR_ATENDIMENTO,
+  [TipoEducador.COORDENADOR]: Role.COORDENADOR,
+};
 
 export interface FiltrosEducador {
   nome?: string;
@@ -17,6 +23,17 @@ export interface AtualizarEducadorDados {
   telefone?: string;
   tipo?: TipoEducador;
   dataContratacao?: string;
+  turmaIds?: string[];
+}
+
+export interface CriarEducadorDados {
+  nome: string;
+  matricula: string;
+  cpf: string;
+  email: string;
+  telefone: string;
+  tipo: TipoEducador;
+  dataContratacao: string;
   turmaIds?: string[];
 }
 
@@ -88,6 +105,52 @@ export class EducadorRepository {
         ativo: true,
         turmas: { select: { id: true, nome: true } },
         usuario: { select: { id: true, bloqueado: true } },
+      },
+    });
+  }
+
+  async criar(dados: CriarEducadorDados, logadoId: string, hashSenha: string) {
+    const { turmaIds, email, ...camposScalares } = dados;
+
+    const logado = await this.prisma.client.educador.findUnique({
+      where: { id: logadoId },
+      select: { escolaId: true },
+    });
+
+    if (!logado) {
+      throw new UnauthorizedException('Educador logado não encontrado');
+    }
+
+    return this.prisma.client.educador.create({
+      data: {
+        ...camposScalares,
+        dataContratacao: new Date(camposScalares.dataContratacao),
+        escolaId: logado.escolaId,
+        // Cria também as turmas, se enviadas
+        ...(turmaIds?.length
+          ? {
+              turmas: {
+                connect: turmaIds.map((tid) => ({ id: tid })),
+              },
+            }
+          : {}),
+        // Cria o Usuário vinculado
+        usuario: {
+          create: {
+            email,
+            senha: hashSenha,
+            role: MAPA_TIPO_PARA_ROLE[camposScalares.tipo],
+            bloqueado: false,
+          },
+        },
+      },
+      select: {
+        id: true,
+        nome: true,
+        tipo: true,
+        telefone: true,
+        ativo: true,
+        turmas: { select: { id: true, nome: true } },
       },
     });
   }

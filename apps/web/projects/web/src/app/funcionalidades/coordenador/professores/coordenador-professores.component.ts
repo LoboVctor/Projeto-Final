@@ -65,6 +65,9 @@ export class CoordenadorProfessoresComponent implements OnInit {
   loading = signal(false);
   erro = signal<string | null>(null);
 
+  isImporting = signal(false);
+  importResult = signal<{ sucesso: number; falhas: number; erros: string[] } | null>(null);
+
   termoBusca = signal('');
   filtroTipo = signal('');
   filtroStatus = signal('ativos');
@@ -82,7 +85,6 @@ export class CoordenadorProfessoresComponent implements OnInit {
   readonly statusOpcoes = [
     { value: 'ativos', label: 'Ativos' },
     { value: 'inativos', label: 'Inativos' },
-    { value: 'todos', label: 'Todos' },
   ];
 
   // ─── Menu de Ações (dropdown de 3 pontos) ────────────────────────────────
@@ -109,15 +111,24 @@ export class CoordenadorProfessoresComponent implements OnInit {
   turmasLoading = signal(false);
   // IDs das turmas selecionadas
   turmasSelecionadas = signal<Set<string>>(new Set());
+  
+  // Lógica de busca de turmas
+  termoBuscaTurma = signal('');
+  readonly turmasFiltradas = computed(() => {
+    const termo = this.termoBuscaTurma().toLowerCase();
+    if (!termo) return this.todasTurmas();
+    return this.todasTurmas().filter(t => t.nome.toLowerCase().includes(termo));
+  });
+
   // Paginação das turmas no modal
   turmasPagina = signal(1);
-  readonly turmasPorPagina = 6;
+  readonly turmasPorPagina = 10;
   readonly turmasPaginadas = computed(() => {
     const inicio = (this.turmasPagina() - 1) * this.turmasPorPagina;
-    return this.todasTurmas().slice(inicio, inicio + this.turmasPorPagina);
+    return this.turmasFiltradas().slice(inicio, inicio + this.turmasPorPagina);
   });
   readonly turmasTotalPaginas = computed(() =>
-    Math.max(1, Math.ceil(this.todasTurmas().length / this.turmasPorPagina))
+    Math.max(1, Math.ceil(this.turmasFiltradas().length / this.turmasPorPagina))
   );
 
   abrirModalEditar(prof: EducadorListagemItem): void {
@@ -359,6 +370,52 @@ export class CoordenadorProfessoresComponent implements OnInit {
     if (this.filtroTipo()) filtros.push(`tipo=${this.filtroTipo()}`);
     if (this.filtroStatus()) filtros.push(`status=${this.filtroStatus()}`);
     return filtros.length > 0 ? filtros.join('; ') : 'sem filtros';
+  }
+
+  abrirModalCadastrarEducador() {
+    alert('Funcionalidade de cadastro manual em desenvolvimento.');
+  }
+
+  onTermoBuscaTurmaChange(termo: string): void {
+    this.termoBuscaTurma.set(termo);
+    this.turmasPagina.set(1);
+  }
+
+  onFileSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      this.importarCSVEducadores(file);
+    }
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  importarCSVEducadores(arquivo: File) {
+    const formData = new FormData();
+    formData.append('arquivo', arquivo);
+
+    this.isImporting.set(true);
+    this.importResult.set(null);
+
+    this.http.post<any>(`${this.apiUrl}/importar-csv`, formData)
+      .subscribe({
+        next: (res) => {
+          this.isImporting.set(false);
+          this.importResult.set({
+            sucesso: res.sucesso || 0,
+            falhas: res.falhas || 0,
+            erros: res.erros || []
+          });
+          this.dispararBusca();
+        },
+        error: (err) => {
+          this.isImporting.set(false);
+          alert('Erro ao importar CSV: ' + (err.error?.message || err.message));
+        }
+      });
+  }
+
+  fecharModalImport() {
+    this.importResult.set(null);
   }
 
   private dispararBusca(): void { this.busca$.next(); }

@@ -15,6 +15,12 @@ import type {
 export class TurmaRepository implements ITurmaRepositorio {
   constructor(private readonly prisma: PrismaService) {}
 
+  async criarTurma(dados: any): Promise<any> {
+    return this.prisma.client.turma.create({
+      data: dados
+    });
+  }
+
   async buscarTodas(educadorId?: string): Promise<TurmaLista[]> {
     return this.prisma.client.turma.findMany({
       where: educadorId ? { educadorId } : undefined,
@@ -192,7 +198,7 @@ export class TurmaRepository implements ITurmaRepositorio {
     });
   }
   async buscarRegistrosDiariosDoEducador(educadorId: string, dataCorte?: Date) {
-    const whereCondition: any = { 
+    const whereCondition: { educadorId: string; preenchido: boolean; data?: { gte: Date } } = { 
       educadorId: educadorId,
       preenchido: true 
     };
@@ -213,5 +219,32 @@ export class TurmaRepository implements ITurmaRepositorio {
         usoBanheiro: true
       }
     });
+  }
+
+  /**
+   * Busca todos os estudantes da escola com os dados necessários
+   * para calcular métricas e distribuições agregadas (visão do Coordenador).
+   * Também conta o total de professores e turmas da escola.
+   */
+  async buscarMetricasEscola() {
+    const [estudantes, totalProfessores, totalTurmas] = await Promise.all([
+      this.prisma.client.estudante.findMany({
+        select: {
+          id: true,
+          dataNascimento: true,
+          sexo: true,
+          formaComunicacao: true,
+          diagnosticos: {
+            select: {
+              diagnostico: { select: { tipo: true } },
+            },
+          },
+        },
+      }),
+      this.prisma.client.educador.count({ where: { ativo: true } }),
+      this.prisma.client.turma.count(),
+    ]);
+
+    return { estudantes, totalProfessores, totalTurmas };
   }
 }
