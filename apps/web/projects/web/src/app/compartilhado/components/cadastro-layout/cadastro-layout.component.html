@@ -2,9 +2,20 @@
   class="bg-white p-8 rounded-2xl shadow-xl shadow-elo-roxo-profundo/5 max-w-2xl w-full mx-auto mt-6 border border-elo-borda"
 >
   <div class="mb-8">
-    <h2 class="text-3xl font-bold text-elo-roxo-profundo tracking-tight font-sora">
-      {{ titulo() }}
-    </h2>
+    <div class="flex items-center gap-3">
+      <h2 class="text-3xl font-bold text-elo-roxo-profundo tracking-tight font-sora">
+        {{ tituloResolvido() }}
+      </h2>
+      @if (modoEdicao()) {
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+          Edição
+        </span>
+      }
+    </div>
     <p class="text-elo-roxo-profundo/60 mt-2 font-medium">{{ subtitulo() }}</p>
   </div>
 

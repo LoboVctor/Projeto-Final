@@ -17,8 +17,10 @@ export class SidebarComponent implements OnInit {
   userName = signal('Usuário');
   currentDate = signal(
     (() => {
+      // Formato pt-BR: "11 de julho de 2026" → capitaliza só o mês (índice 2)
       const raw = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
       const partes = raw.split(' ');
+      // partes = ['11', 'de', 'julho', 'de', '2026']
       if (partes[2]) {
         partes[2] = partes[2].charAt(0).toUpperCase() + partes[2].slice(1);
       }

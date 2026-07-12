@@ -3,7 +3,7 @@
   <!-- ── Cabeçalho ──────────────────────────────────────────────────────────── -->
   <header class="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-[#E8E3EF]">
     <div>
-      <h1 class="text-2xl font-bold text-[#2D1E40] capitalize">{{ nomeDoMes() }}</h1>
+      <h1 class="text-2xl font-bold text-[#2D1E40]">{{ nomeDoMes() }}</h1>
       <p class="text-[#686177] mt-0.5 text-sm">Gerencie eventos e datas importantes da escola.</p>
     </div>
     <div class="flex items-center gap-3">
@@ -97,7 +97,7 @@
           </div>
           <div>
             <label class="block text-xs font-bold text-[#2D1E40] mb-1.5">Descrição <span class="text-[#686177] font-normal">(Opcional)</span></label>
-            <textarea [ngModel]="formDescricao()" (ngModelChange)="formDescricao.set($event)" rows="3" placeholder="Detalhes do evento..." class="w-full px-4 py-2.5 bg-[#F7F5FA] border border-[#E8E3EF] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6C3CC9]/25 focus:border-[#6C3CC9] transition-all text-[#2D1E40] text-sm resize-none placeholder-gray-400"></textarea>
+            <textarea [ngModel]="formDescricao()" (ngModelChange)="formDescricao.set($event)" rows="3" placeholder="Detalhes do evento" class="w-full px-4 py-2.5 bg-[#F7F5FA] border border-[#E8E3EF] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6C3CC9]/25 focus:border-[#6C3CC9] transition-all text-[#2D1E40] text-sm resize-none placeholder-gray-400"></textarea>
           </div>
         </div>
         <div class="flex justify-end gap-3 px-6 pb-6">

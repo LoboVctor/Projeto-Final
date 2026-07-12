@@ -51,7 +51,7 @@
         id="coordenador-busca-professores"
         type="text"
         class="busca-input"
-        placeholder="Buscar por nome ou matrícula..."
+        placeholder="Buscar por nome ou matrícula"
         [value]="termoBusca()"
         (input)="onTermoBuscaChange($any($event.target).value)"
         aria-label="Buscar professor por nome"
@@ -161,14 +161,14 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
-                        Editar Professor
+                        Editar 
                       </button>
                       @if (prof.ativo) {
                         <button class="acoes-item acoes-item--danger" role="menuitem" (click)="confirmarDesativacao(prof)">
                           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/>
                           </svg>
-                          Desativar Professor
+                          Desativar
                         </button>
                       } @else {
                         <button class="acoes-item acoes-item--success" role="menuitem" (click)="reativarProfessor(prof)">
@@ -215,7 +215,7 @@
   <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-editar-titulo" (click)="fecharModalEditar()">
     <div class="modal-container modal-container--grande" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2 id="modal-editar-titulo" class="modal-titulo">Editar Professor</h2>
+        <h2 id="modal-editar-titulo" class="modal-titulo">Editar</h2>
         <button class="modal-fechar" (click)="fecharModalEditar()" aria-label="Fechar modal">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -227,7 +227,7 @@
           <h3 class="modal-secao-titulo">Dados Pessoais</h3>
           <div class="modal-grid">
             <div class="campo-grupo campo-grupo--full">
-              <label class="campo-label" for="edit-nome">Nome completo</label>
+              <label class="campo-label" for="edit-nome">Nome Completo <span class="text-red-500">*</span></label>
               <input id="edit-nome" class="campo-input" type="text" formControlName="nome" placeholder="Nome do professor" />
               @if (editarForm.get('nome')?.invalid && editarForm.get('nome')?.touched) {
                 <span class="campo-erro">Nome é obrigatório (mínimo 3 caracteres).</span>
@@ -265,7 +265,7 @@
           </div>
 
           @if (turmasLoading()) {
-            <div class="turmas-loading text-center py-4 text-gray-500 text-sm">Carregando turmas...</div>
+            <div class="turmas-loading text-center py-4 text-gray-500 text-sm">Carregando...</div>
           } @else if (turmasFiltradas().length === 0) {
             <p class="turmas-vazio text-center py-4 text-gray-500 text-sm">Nenhuma turma encontrada.</p>
           } @else {

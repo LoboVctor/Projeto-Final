@@ -63,11 +63,12 @@ export class CalendarioComponent implements OnInit {
   });
 
   nomeDoMes = computed(() => {
-    return new Date(this.anoAtual(), this.mesAtual()).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+    const raw = new Date(this.anoAtual(), this.mesAtual()).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
   });
 
   tituloModal = computed(() =>
-    this.modoEdicao() ? 'Editar Evento' : 'Criar Novo Evento'
+    this.modoEdicao() ? 'Editar' : 'Criar'
   );
 
   constructor() {
@@ -331,8 +332,8 @@ export class CalendarioComponent implements OnInit {
 
   private criarDia(data: Date, isMesAtual: boolean, eventos: EventoCalendario[]): DiaCalendario {
     const isHoje = data.getDate() === this.hoje.getDate() &&
-                   data.getMonth() === this.hoje.getMonth() &&
-                   data.getFullYear() === this.hoje.getFullYear();
+      data.getMonth() === this.hoje.getMonth() &&
+      data.getFullYear() === this.hoje.getFullYear();
 
     const eventosDoDia = eventos.filter(e => {
       // Extrai ano, mês e dia direto da string ISO sem conversão de fuso horário
@@ -341,8 +342,8 @@ export class CalendarioComponent implements OnInit {
       const eMes = partes[1]! - 1; // 0-indexed
       const eDia = partes[2]!;
       return eDia === data.getDate() &&
-             eMes === data.getMonth() &&
-             eAno === data.getFullYear();
+        eMes === data.getMonth() &&
+        eAno === data.getFullYear();
     });
 
     return { data, isMesAtual, isHoje, eventos: eventosDoDia };

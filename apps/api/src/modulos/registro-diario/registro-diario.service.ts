@@ -176,7 +176,7 @@ export class RegistroDiarioService {
 
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async gerarRegistrosDiariosAutomaticamente() {
-    this.logger.log('Iniciando rotina de geração de Registos Diários...');
+    this.logger.log('Iniciando rotina de geração de Registos Diários');
 
     try {
       const estudantesAtivos =

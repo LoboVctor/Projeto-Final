@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber } from 'class-validator';
 
 export class KpisTurmaResponseDto {
-  @ApiProperty({ description: 'Média do score de comportamento diário' })
+  @ApiProperty({ description: 'Média do score de comportamento' })
   @IsNumber()
   mediaComportamento!: number;
 
