@@ -3,6 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EstudantesService } from '../../../../../compartilhado/services/estudantes.service';
 
+
+export interface MedicamentoEstudante {
+  medicamentoId: number;
+  nome: string;
+  dosagem: number;
+  unidadeMedida: string;
+}
+
 @Component({
   selector: 'app-modal-medicamentos',
   standalone: true,
@@ -30,38 +38,25 @@ export class ModalMedicamentosComponent implements OnInit {
       // Dados da relação do estudante com o medicamento
       dosagem: [null, [Validators.required, Validators.min(0.1)]],
       unidadeMedida: ['MG', Validators.required], // MG, ML, GOTAS, etc.
-      administradoNaEscola: [false],
-      
-      intervaloAdministracao: [null], 
-      horarioAdministracao: ['']
     });
   }
 
   ngOnInit(): void {}
 
-  selecionarParaEdicao(relacaoMedicamento: any): void {
-    this.editingMedicamentoId = relacaoMedicamento.id_medicamento;
-
-    let horarioFormatado = '';
-    if (relacaoMedicamento.horarioAdministrado) {
-      horarioFormatado = new Date(relacaoMedicamento.horarioAdministrado).toISOString().substring(11, 16);
-    }
+  selecionarParaEdicao(med: MedicamentoEstudante): void {
+    this.editingMedicamentoId = med.medicamentoId;
     
     this.medicamentoForm.patchValue({
-      nomeMedicamento: relacaoMedicamento.medicamento?.nome_medicamento,
-      dosagem: relacaoMedicamento.dosagem,
-      unidadeMedida: relacaoMedicamento.unidadeMedida,
-      administradoNaEscola: relacaoMedicamento.administrado_na_escola,
-      intervaloAdministracao: relacaoMedicamento.intervaloAdministracao,
-      horarioAdministracao: horarioFormatado
+      nomeMedicamento: med.nome,
+      dosagem: med.dosagem,
+      unidadeMedida: med.unidadeMedida
     });
   }
 
   cancelarEdicao(): void {
     this.editingMedicamentoId = null;
     this.medicamentoForm.reset({ 
-      unidadeMedida: 'MG', 
-      administradoNaEscola: false 
+      unidadeMedida: 'MG' 
     });
   }
 

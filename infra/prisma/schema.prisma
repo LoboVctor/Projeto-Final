@@ -154,9 +154,9 @@ model EstudanteMedicamento {
 
   dosagem                Float
   unidadeMedida          UnidadeM
-  intervaloAdministracao Int
-  horarioAdministrado    DateTime @db.Time
-  administradoEscola     Boolean
+  intervaloAdministracao Int?
+  horarioAdministrado    DateTime? @db.Time
+  administradoEscola     Boolean? @default(false)
 
   estudante   Estudante   @relation(fields: [estudanteId], references: [id])
   medicamento Medicamento @relation(fields: [medicamentoId], references: [id])
@@ -349,7 +349,7 @@ enum Role {
 enum Sexo {
   MASCULINO
   FEMININO
-  OUTRO
+  PREFIRO_NAO_INFORMAR
 }
 
 enum Fcom {
@@ -388,6 +388,7 @@ enum TipoEspecificidade {
   RESTRICAO
   COMPORTAMENTO_ATIPICO
   GATILHO_CRISE
+  CONTENCAO
 }
 
 enum CategoriaEspecificidade {

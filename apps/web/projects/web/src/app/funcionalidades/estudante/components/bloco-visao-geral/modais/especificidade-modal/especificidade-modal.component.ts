@@ -52,8 +52,8 @@ export class EspecificidadeModalComponent implements OnInit {
         return 'Ex: Sons altos e inesperados';
       case 'COMPORTAMENTO_ATIPICO':
         return 'Ex: Dificuldade em manter contato visual';
-      case 'RESTRICAO':
-        return 'Ex: Redirecionamento para ambiente tranquilo';
+      case 'CONTENCAO':
+        return 'Ex: Redirecionamento para ambiente tranquilo com baixa luminosidade';
       default:
         return 'Ex: Sons altos e inesperados';
     }

@@ -42,8 +42,7 @@ export class BlocoVisaoGeralComponent {
       (e) =>
         e.tipo === 'GATILHO_CRISE' ||
         e.tipo === 'COMPORTAMENTO_ATIPICO' ||
-        (e.tipo === 'RESTRICAO' && e.categoria === 'COMPORTAMENTAL'),
-    );
+        e.tipo === 'CONTENCAO');
   }
 
   get gatilhos(): EspecificidadeVisaoGeral[] {
@@ -55,9 +54,7 @@ export class BlocoVisaoGeralComponent {
   }
 
   get protocolosContencao(): EspecificidadeVisaoGeral[] {
-    return this.especificidadesFiltradas.filter(
-      (e) => e.tipo === 'RESTRICAO' && e.categoria === 'COMPORTAMENTAL',
-    );
+    return this.especificidadesFiltradas.filter((e) => e.tipo === 'CONTENCAO');
   }
 
   getDisplayTipo(tipo: string): string {
@@ -66,11 +63,17 @@ export class BlocoVisaoGeralComponent {
         return 'Gatilho';
       case 'COMPORTAMENTO_ATIPICO':
         return 'Comportamento Atípico';
-      case 'RESTRICAO':
+      case 'CONTENCAO':
         return 'Protocolo de Contenção';
       default:
         return tipo;
     }
+  }
+
+  formatarEtapa(etapa: string | undefined | null): string {
+    if (!etapa) return 'Sem Etapa';
+    const etapaLimpa = etapa.replace('_', ' ');
+    return etapaLimpa.charAt(0).toUpperCase() + etapaLimpa.slice(1).toLowerCase();
   }
 
   onRecolher(): void {

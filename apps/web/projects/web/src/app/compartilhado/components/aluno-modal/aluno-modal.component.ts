@@ -181,6 +181,13 @@ export class AlunoModalComponent implements OnChanges {
     });
   }
 
+  formatarEtapa(etapa: string | undefined | null): string {
+    if (!etapa) return 'Sem Etapa';
+    
+    const etapaLimpa: string = etapa.replace('_', ' ');
+    return etapaLimpa.charAt(0).toUpperCase() + etapaLimpa.slice(1).toLowerCase();
+  }
+
   forceReloadVisaoGeral(): void {
     this.visaoGeralData.set(null);
     this.carregarVisaoGeral();
