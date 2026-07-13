@@ -3,8 +3,7 @@
   (click)="onFechar()">
 
   <!-- Painel do modal (stopPropagation evita fechar ao clicar dentro) -->
-  <div
-    class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-gray-100"
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-gray-100"
     role="dialog" aria-modal="true" [attr.aria-label]="'Estudo de Caso — ' + estudanteNome"
     (click)="$event.stopPropagation()">
 
@@ -95,7 +94,8 @@
             </span>
             <span class="flex-1 truncate">{{ educador.nome }}</span>
             @if (isEducadorSelecionado(educador.id)) {
-            <svg class="w-3.5 h-3.5 text-purple-600 ml-auto shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-3.5 h-3.5 text-purple-600 ml-auto shrink-0" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
             </svg>
             }
@@ -115,7 +115,8 @@
 
           @if (totalPaginas() > 1) {
           <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg p-0.5 shadow-sm">
-            <button type="button" (click)="paginaAnterior()" [disabled]="paginaEducadores() === 0 || loading() || sucesso()"
+            <button type="button" (click)="paginaAnterior()"
+              [disabled]="paginaEducadores() === 0 || loading() || sucesso()"
               class="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-white hover:shadow-xs disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:shadow-none transition-all cursor-pointer disabled:cursor-not-allowed">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -124,7 +125,8 @@
             <span class="text-[10px] text-slate-500 font-bold tracking-wider px-1">
               {{ paginaEducadores() + 1 }}/{{ totalPaginas() }}
             </span>
-            <button type="button" (click)="proximaPagina()" [disabled]="paginaEducadores() === totalPaginas() - 1 || loading() || sucesso()"
+            <button type="button" (click)="proximaPagina()"
+              [disabled]="paginaEducadores() === totalPaginas() - 1 || loading() || sucesso()"
               class="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-white hover:shadow-xs disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:shadow-none transition-all cursor-pointer disabled:cursor-not-allowed">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -154,7 +156,7 @@
         </svg>
         Salvando...
         } @else {
-        Registrar Ocorrência
+        Salvar
         }
       </button>
     </div>

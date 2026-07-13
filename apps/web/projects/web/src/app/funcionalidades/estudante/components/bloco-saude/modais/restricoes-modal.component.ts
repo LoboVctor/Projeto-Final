@@ -31,7 +31,7 @@ export class ModalEspecificidadesComponent implements OnInit {
 
   constructor() {
     this.especificidadeForm = this.fb.group({
-      tipo: [{ value: 'RESTRICAO', disabled: true }, Validators.required],
+      tipo: ['RESTRICAO', Validators.required],
       categoria: ['ALIMENTAR', Validators.required],
       descricao: ['', [Validators.required, Validators.minLength(3)]],
       observacao: ['', Validators.required] });

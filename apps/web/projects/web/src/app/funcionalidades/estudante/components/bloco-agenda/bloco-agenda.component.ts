@@ -316,7 +316,6 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
       month: 'long',
       year: 'numeric'
     });
-    // Capitaliza apenas a primeira letra (dia da semana)
     return raw.charAt(0).toUpperCase() + raw.slice(1);
   }
 
