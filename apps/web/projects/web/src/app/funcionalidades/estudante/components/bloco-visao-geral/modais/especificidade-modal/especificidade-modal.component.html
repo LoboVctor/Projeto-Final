@@ -29,7 +29,11 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-bold text-slate-600 font-['Sora']">Tipo de Registro <span class="text-red-500">*</span></label>
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Tipo de Registro
+            @if (deveMostrarObrigatorio(especificidadeForm.get('tipo'))) {
+              <span class="text-red-500">*</span>
+            }
+          </label>
           <select formControlName="tipo"
             class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium">
             <option value="" disabled selected>Selecione um tipo</option>
@@ -40,7 +44,11 @@
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-bold text-slate-600 font-['Sora']">Categoria <span class="text-red-500">*</span></label>
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Categoria
+            @if (deveMostrarObrigatorio(especificidadeForm.get('categoria'))) {
+              <span class="text-red-500">*</span>
+            }
+          </label>
           <select formControlName="categoria"
             class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium">
             <option value="" disabled selected>Selecione uma categoria</option>
@@ -52,48 +60,78 @@
         </div>
       </div>
 
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-bold text-slate-600 font-['Sora']">Título / Descrição Curta <span class="text-red-500">*</span></label>
-        <input type="text" formControlName="descricao" [placeholder]="getPlaceholderDescricao()"
-          [maxlength]="DESCRICAO_MAX"
-          class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm" />
-        <div class="flex justify-end">
-          <span class="text-[10px] font-medium"
-            [class.text-red-500]="descricaoLength >= DESCRICAO_MAX"
-            [class.text-amber-500]="descricaoLength >= DESCRICAO_MAX * 0.85 && descricaoLength < DESCRICAO_MAX"
-            [class.text-slate-400]="descricaoLength < DESCRICAO_MAX * 0.85">
-            {{ descricaoLength }}/{{ DESCRICAO_MAX }}
-          </span>
+      <div class="flex flex-col gap-1.5">
+        <div class="flex justify-between items-center">
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Título / Descrição Curta
+            @if (deveMostrarObrigatorio(especificidadeForm.get('descricao'))) {
+              <span class="text-red-500">*</span>
+            }
+          </label>
+          <span class="text-[10px] font-semibold text-slate-400">{{ especificidadeForm.get('descricao')?.value?.length || 0 }}/80</span>
         </div>
+        <input type="text" formControlName="descricao" maxlength="80" [placeholder]="getPlaceholderDescricao()"
+          class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
+          [class.border-red-300]="especificidadeForm.get('descricao')?.invalid && especificidadeForm.get('descricao')?.touched" />
+        @if (especificidadeForm.get('descricao')?.invalid && especificidadeForm.get('descricao')?.touched) {
+          <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+            @if (especificidadeForm.get('descricao')?.hasError('required')) {
+              O título é obrigatório.
+            }
+            @if (especificidadeForm.get('descricao')?.hasError('soEspacos')) {
+              O título não pode conter apenas espaços em branco.
+            }
+            @if (especificidadeForm.get('descricao')?.hasError('soNumeros')) {
+              O título não pode conter apenas números.
+            }
+            @if (especificidadeForm.get('descricao')?.hasError('soHifens')) {
+              O título não pode conter apenas hífens.
+            }
+          </div>
+        }
       </div>
 
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-bold text-slate-600 font-['Sora']">Observações e Procedimentos <span class="text-red-500">*</span></label>
-        <textarea formControlName="observacao" rows="3" placeholder="Descreva os detalhes da reação e o protocolo"
-          [maxlength]="OBSERVACAO_MAX"
-          class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm resize-none"></textarea>
-        <div class="flex justify-end">
-          <span class="text-[10px] font-medium"
-            [class.text-red-500]="observacaoLength >= OBSERVACAO_MAX"
-            [class.text-amber-500]="observacaoLength >= OBSERVACAO_MAX * 0.85 && observacaoLength < OBSERVACAO_MAX"
-            [class.text-slate-400]="observacaoLength < OBSERVACAO_MAX * 0.85">
-            {{ observacaoLength }}/{{ OBSERVACAO_MAX }}
-          </span>
+      <div class="flex flex-col gap-1.5">
+        <div class="flex justify-between items-center">
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Observações e Procedimentos
+            @if (deveMostrarObrigatorio(especificidadeForm.get('observacao'))) {
+              <span class="text-red-500">*</span>
+            }
+          </label>
+          <span class="text-[10px] font-semibold text-slate-400">{{ especificidadeForm.get('observacao')?.value?.length || 0 }}/500</span>
         </div>
+        <textarea formControlName="observacao" rows="3" maxlength="500" placeholder="Descreva os detalhes da reação e o protocolo"
+          class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm resize-none"
+          [class.border-red-300]="especificidadeForm.get('observacao')?.invalid && especificidadeForm.get('observacao')?.touched"></textarea>
+        @if (especificidadeForm.get('observacao')?.invalid && especificidadeForm.get('observacao')?.touched) {
+          <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+            @if (especificidadeForm.get('observacao')?.hasError('required')) {
+              As observações são obrigatórias.
+            }
+            @if (especificidadeForm.get('observacao')?.hasError('soEspacos')) {
+              As observações não podem conter apenas espaços em branco.
+            }
+            @if (especificidadeForm.get('observacao')?.hasError('soNumeros')) {
+              As observações não podem conter apenas números.
+            }
+            @if (especificidadeForm.get('observacao')?.hasError('soHifens')) {
+              As observações não podem conter apenas hífens.
+            }
+          </div>
+        }
       </div>
 
 
       <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
         @if (editingEspecificidadeId) {
         <button type="button" (click)="cancelarEdicao()"
-          class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+          class="px-5 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
           Cancelar
         </button>
         }
         @if (!editingEspecificidadeId) {
         <button type="button" (click)="emitirFechar()" [disabled]="loading"
           class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
-          Fechar
+          Cancelar
         </button>
         }
         <button type="submit" [disabled]="especificidadeForm.invalid || loading"

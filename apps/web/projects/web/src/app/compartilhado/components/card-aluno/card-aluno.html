@@ -23,7 +23,7 @@
       </span>
 
       <div class="flex flex-col mb-2 w-full px-1">
-        <h3 class="text-sm font-sora font-bold text-[#4A248A] line-clamp-2 m-0 leading-tight" [title]="nome()">
+        <h3 class="text-sm font-sora font-bold text-[#4A248A] whitespace-nowrap m-0 leading-tight" [title]="nome()">
           {{ nome() }}
         </h3>
         @if (idade()) {
@@ -33,10 +33,13 @@
         }
       </div>
 
-      <span
-        [class]="'px-2 py-0.5 rounded text-[10px] font-nunito font-bold border ' + classeCorTag()">
-        {{ diagnostico() | diagLabel }}
-      </span>
+      <div class="flex flex-wrap gap-1 justify-center w-full px-1">
+        @for (tag of tagsDeDiagnostico(); track tag.tipo) {
+          <span [class]="'px-2 py-0.5 rounded text-[10px] font-nunito font-bold border ' + tag.classe">
+            {{ tag.tipo | diagLabel }}
+          </span>
+        }
+      </div>
     </div>
   </div>
 </div>

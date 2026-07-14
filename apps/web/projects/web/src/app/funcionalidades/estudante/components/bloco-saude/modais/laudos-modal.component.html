@@ -3,7 +3,7 @@
     
     <div class="flex items-center justify-between p-5 border-b border-gray-100 bg-slate-50">
       <div>
-        <h3 class="text-lg font-bold font-['Sora'] text-slate-700 m-0">Novo Laudo / Diagnóstico</h3>
+        <h3 class="text-lg font-bold font-['Sora'] text-slate-700 m-0">{{ editandoId() ? 'Editar Laudo / Diagnóstico' : 'Novo Laudo / Diagnóstico' }}</h3>
         <p class="text-xs text-slate-500 m-0 mt-0.5">Anexe os documentos médicos oficiais do estudante.</p>
       </div>
       <button (click)="emitirFechar()" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
@@ -17,7 +17,11 @@
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-bold text-slate-600 font-['Sora']">Diagnóstico Clínico <span class="text-red-500">*</span></label>
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Diagnóstico Clínico
+            @if (deveMostrarObrigatorio(laudoForm.get('tipoDiagnostico'))) {
+              <span class="text-red-500">*</span>
+            }
+          </label>
           <select 
             formControlName="tipoDiagnostico"
             class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium text-slate-700">
@@ -32,7 +36,11 @@
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-bold text-slate-600 font-['Sora']">Tipo de Documento <span class="text-red-500">*</span></label>
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Tipo de Documento
+            @if (deveMostrarObrigatorio(laudoForm.get('tipoDocumento'))) {
+              <span class="text-red-500">*</span>
+            }
+          </label>
           <select 
             formControlName="tipoDocumento"
             class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium text-slate-700">
@@ -45,7 +53,11 @@
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-bold text-slate-600 font-['Sora']">Data de Emissão <span class="text-red-500">*</span></label>
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Data de Emissão
+            @if (deveMostrarObrigatorio(laudoForm.get('dataEmissao'))) {
+              <span class="text-red-500">*</span>
+            }
+          </label>
           <input 
             type="date" 
             formControlName="dataEmissao"
@@ -75,9 +87,20 @@
       </div>
 
       <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
-        <button type="button" (click)="emitirFechar()" class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
-          Cancelar
-        </button>
+        @if (editandoId()) {
+          <button
+            type="button"
+            (click)="cancelarEdicao()"
+            class="px-5 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+          >
+            Cancelar
+          </button>
+        }
+        @if (!editandoId()) {
+          <button type="button" (click)="emitirFechar()" class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+            Cancelar
+          </button>
+        }
         <button 
           type="submit" 
           [disabled]="laudoForm.invalid || (!editandoId() && !arquivoSelecionado) || enviando()" 
@@ -90,7 +113,7 @@
             </svg>
             Salvando...
           } @else {
-            {{ editandoId() ? 'Atualizar Documento' : 'Fazer Upload e Salvar' }}
+            {{ editandoId() ? 'Atualizar' : 'Adicionar' }}
           }
         </button>
       </div>
@@ -122,16 +145,16 @@
               </div>
               
               <div class="flex items-center gap-2 shrink-0">
-                <a [href]="laudo.urlArquivo" target="_blank" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Abrir Laudo">
-                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                <a [href]="laudo.urlArquivo" target="_blank" class="p-1.5 text-amber-500 hover:bg-amber-50 rounded-md transition-colors" title="Abrir Laudo">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                 </a>
                 
-                <button type="button" (click)="editar(laudo)" class="p-1.5 text-amber-500 hover:bg-amber-50 rounded-md transition-colors" title="Editar">
-                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                <button type="button" (click)="editar(laudo)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer" title="Editar">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                 </button>
                 
-                <button type="button" (click)="excluir(laudo.id)" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors" title="Excluir">
-                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                <button type="button" (click)="excluir(laudo.id)" class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer" title="Excluir">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
               </div>
 

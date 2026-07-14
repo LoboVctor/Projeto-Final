@@ -3,6 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalendarioService, EventoCalendario } from '../../../compartilhado/services/calendario.service';
 import { AuthService } from '../../../nucleo/services/auth';
+import { ConfirmacaoService } from '../../../compartilhado/services/confirmacao.service';
 
 interface DiaCalendario {
   data: Date;
@@ -27,6 +28,7 @@ interface PopupPosition {
 export class CoordenadorCalendarioComponent implements OnInit {
   private readonly calendarioService = inject(CalendarioService);
   private readonly authService = inject(AuthService);
+  private readonly confirmacaoService = inject(ConfirmacaoService);
 
   hoje = new Date();
   mesAtual = signal<number>(this.hoje.getMonth());
@@ -148,7 +150,15 @@ export class CoordenadorCalendarioComponent implements OnInit {
     }
   }
 
-  excluirEvento(id: string): void {
+  async excluirEvento(id: string): Promise<void> {
+    const confirmado = await this.confirmacaoService.confirmar({
+      titulo: 'Excluir compromisso',
+      mensagem: 'Tem certeza que deseja excluir este compromisso do calendário?',
+      textoConfirmar: 'Excluir',
+      textoCancelar: 'Cancelar',
+      variante: 'danger' });
+    if (!confirmado) return;
+
     this.calendarioService.removerEvento(id).subscribe({
       next: () => { this.fecharPopup(); this.carregarEventos(this.mesAtual(), this.anoAtual()); },
       error: () => alert('Erro ao excluir o evento. Tente novamente.'),

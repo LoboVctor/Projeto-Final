@@ -132,9 +132,17 @@
           <div class="students-area">
             
             @if (viewMode() === 'grid') {
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-start items-start students-container-transition" [class.is-loading-students]="loadingEstudantes()">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 justify-center justify-items-center students-container-transition" [class.is-loading-students]="loadingEstudantes()">
                 @for (estudante of estudantes(); track estudante.id) {
-                  <app-card-aluno [nome]="estudante.nomeCompleto" [matricula]="estudante.matricula" [foto]="estudante.foto" [estudante]="estudante" [diagnostico]="estudante.diagnosticos.length > 0 ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo' : 'Sem Laudo'" (abrirPerfil)="abrirDetalhesAluno(estudante)"></app-card-aluno>
+                  <app-card-aluno
+                    [nome]="nomeCurtoAluno(estudante.nomeCompleto)"
+                    [matricula]="estudante.matricula"
+                    [foto]="estudante.foto"
+                    [estudante]="estudante"
+                    [diagnostico]="estudante.diagnosticos.length > 0 ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo' : 'Sem Laudo'"
+                    [diagnosticos]="estudante.diagnosticos.length > 0 ? estudante.diagnosticos.map(d => d.diagnostico.tipo) : []"
+                    (abrirPerfil)="abrirDetalhesAluno(estudante)"
+                  ></app-card-aluno>
                 }
                 @if (estudantes().length === 0) {
                   <div class="state-empty col-span-full text-center py-8 text-gray-500">Nenhum estudante nesta turma.</div>

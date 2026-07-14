@@ -7,12 +7,26 @@ import {
   OnDestroy,
   inject,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { EstudantesService } from '../../../../../../compartilhado/services/estudantes.service';
 import { EspecificidadeVisaoGeral } from '../../../../../../compartilhado/models/estudante-visao-geral.model';
+import { ConfirmacaoService } from '../../../../../../compartilhado/services/confirmacao.service';
+
+export function textoInvalidoValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (!value) return null;
+    
+    const normalizado = String(value).trim();
+    if (!normalizado) return { soEspacos: true };
+    if (/^\d+$/.test(normalizado)) return { soNumeros: true };
+    if (/^-+$/.test(normalizado)) return { soHifens: true };
+    
+    return null;
+  };
+}
 
 @Component({
   selector: 'app-especificidade-modal',
@@ -23,7 +37,7 @@ import { EspecificidadeVisaoGeral } from '../../../../../../compartilhado/models
 export class EspecificidadeModalComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private estudantesService = inject(EstudantesService);
-  private cdr = inject(ChangeDetectorRef);
+  private confirmacaoService = inject(ConfirmacaoService);
 
   readonly estudanteId = input.required<string>();
   @Input() especificidades: EspecificidadeVisaoGeral[] = [];
@@ -35,12 +49,6 @@ export class EspecificidadeModalComponent implements OnInit, OnDestroy {
   erro = '';
   editingEspecificidadeId: number | null = null;
 
-  /** Limite de caracteres dos campos */
-  readonly DESCRICAO_MAX = 100;
-  readonly OBSERVACAO_MAX = 500;
-
-  private formSub?: import('rxjs').Subscription;
-
   ngOnInit() {
     this.initForm();
   }
@@ -50,27 +58,11 @@ export class EspecificidadeModalComponent implements OnInit, OnDestroy {
     this.especificidadeForm = this.fb.group({
       tipo: [esp?.tipo || '', Validators.required],
       categoria: [esp?.categoria || '', Validators.required],
-      descricao: [esp?.descricao || '', [Validators.required, Validators.maxLength(this.DESCRICAO_MAX)]],
-      observacao: [esp?.observacao || '', [Validators.maxLength(this.OBSERVACAO_MAX)]] });
-
-    // Notifica o CD para atualizar os contadores em tempo real (OnPush)
-    this.formSub?.unsubscribe();
-    this.formSub = this.especificidadeForm.valueChanges.subscribe(() => this.cdr.markForCheck());
+      descricao: [esp?.descricao || '', [Validators.required, Validators.maxLength(80), textoInvalidoValidator()]],
+      observacao: [esp?.observacao || '', [Validators.required, Validators.maxLength(500), textoInvalidoValidator()]] });
   }
 
-  ngOnDestroy() {
-    this.formSub?.unsubscribe();
-  }
-
-  /** Comprimento atual do campo descricao */
-  get descricaoLength(): number {
-    return this.especificidadeForm?.get('descricao')?.value?.length ?? 0;
-  }
-
-  /** Comprimento atual do campo observacao */
-  get observacaoLength(): number {
-    return this.especificidadeForm?.get('observacao')?.value?.length ?? 0;
-  }
+  ngOnDestroy() {}
 
   getPlaceholderDescricao(): string {
     const tipo = this.especificidadeForm?.get('tipo')?.value;
@@ -94,8 +86,15 @@ export class EspecificidadeModalComponent implements OnInit, OnDestroy {
     this.initForm(esp);
   }
 
-  excluir(id: number) {
-    if (!confirm('Deseja realmente excluir esta especificidade?')) return;
+  async excluir(id: number) {
+    const confirmado = await this.confirmacaoService.confirmar({
+      titulo: 'Excluir especificidade',
+      mensagem: 'Tem certeza que deseja remover esta especificidade da ficha do estudante?',
+      textoConfirmar: 'Excluir',
+      textoCancelar: 'Cancelar',
+      variante: 'danger' });
+    if (!confirmado) return;
+
     this.loading = true;
     this.estudantesService.deleteEspecificidade(this.estudanteId(), id).subscribe({
       next: () => {
@@ -137,6 +136,13 @@ export class EspecificidadeModalComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.erro = '';
     const payload = this.especificidadeForm.value;
+    payload.descricao = payload.descricao?.trim();
+    payload.observacao = payload.observacao?.trim();
+    
+    if (!payload.descricao || !payload.observacao) {
+      this.loading = false;
+      return;
+    }
 
     const request$ = this.editingEspecificidadeId
       ? this.estudantesService.updateEspecificidade(
@@ -161,5 +167,10 @@ export class EspecificidadeModalComponent implements OnInit, OnDestroy {
           this.erro = 'Ocorreu um erro ao salvar a especificidade.';
         }
       } });
+  }
+
+  deveMostrarObrigatorio(control: AbstractControl | null): boolean {
+    if (!control) return true;
+    return control.invalid;
   }
 }

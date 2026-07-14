@@ -78,8 +78,8 @@ export class BlocoRelatoriosComponent implements OnInit, OnChanges {
   /** Controla abertura do dropdown principal do bloco */
   isDropdownOpen = false;
 
-  /** Índice do relatório semestral expandido no accordion interno (-1 = nenhum) */
-  relatorioAberto: number = 0;
+  /** Índice do relatório semestral expandido no accordion interno (-1 = nenhum, estado inicial) */
+  relatorioAberto: number = -1;
 
   /** Conjunto dos IDs de metas com corpo expandido */
   metasAbertas = new Set<string>();
@@ -95,7 +95,7 @@ export class BlocoRelatoriosComponent implements OnInit, OnChanges {
 
       this.dados = null;
       this.erroCarregamento = false;
-      this.relatorioAberto = 0;
+      this.relatorioAberto = -1; // Garante que todos os dropdowns iniciem fechados ao trocar de aluno
       this.metasAbertas.clear();
       this.carregarDados();
     }

@@ -1,7 +1,35 @@
 import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { EstudantesService } from '../../../../../compartilhado/services/estudantes.service';
+import { ConfirmacaoService } from '../../../../../compartilhado/services/confirmacao.service';
+
+function textoInvalidoValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (!value) return null;
+
+    const normalizado = String(value).trim();
+    if (!normalizado) return { soEspacos: true };
+    if (/^\d+$/.test(normalizado)) return { soNumeros: true };
+    if (/^-+$/.test(normalizado)) return { soHifens: true };
+
+    return null;
+  };
+}
+
+export interface MedicamentoModal {
+  medicamentoId?: number;
+  id_medicamento?: number;
+  nome?: string;
+  medicamento?: { nome_medicamento: string };
+  dosagem: number;
+  unidadeMedida: string;
+  administradoEscola?: boolean;
+  administrado_na_escola?: boolean;
+  intervaloAdministracao?: number | null;
+  horarioAdministrado?: string | null;
+}
 
 
 export interface MedicamentoEstudante {
@@ -19,44 +47,58 @@ export interface MedicamentoEstudante {
 })
 export class ModalMedicamentosComponent implements OnInit {
   @Input() estudanteId!: string;
-  @Input() medicamentos: any[] = []; 
-  
+  @Input() medicamentos: MedicamentoModal[] = [];
+
   @Output() fechar = new EventEmitter<void>();
   @Output() salvo = new EventEmitter<void>();
 
   medicamentoForm: FormGroup;
-  editingMedicamentoId: number | null = null; 
+  editingMedicamentoId: number | null = null;
 
   private fb = inject(FormBuilder);
   private estudantesService = inject(EstudantesService);
+  private confirmacaoService = inject(ConfirmacaoService);
 
   constructor() {
     this.medicamentoForm = this.fb.group({
       // Dados do medicamento
-      nomeMedicamento: ['', [Validators.required, Validators.minLength(2)]],
-      
+      nomeMedicamento: ['', [Validators.required, Validators.maxLength(80), textoInvalidoValidator()]],
+
       // Dados da relação do estudante com o medicamento
       dosagem: [null, [Validators.required, Validators.min(0.1)]],
       unidadeMedida: ['MG', Validators.required], // MG, ML, GOTAS, etc.
+      administradoNaEscola: [false],
+
+      intervaloAdministracao: [null],
+      horarioAdministracao: ['']
     });
   }
 
   ngOnInit(): void {}
 
-  selecionarParaEdicao(med: MedicamentoEstudante): void {
-    this.editingMedicamentoId = med.medicamentoId;
-    
+  selecionarParaEdicao(relacaoMedicamento: MedicamentoModal): void {
+    this.editingMedicamentoId = relacaoMedicamento.id_medicamento || relacaoMedicamento.medicamentoId || null;
+
+    let horarioFormatado = '';
+    if (relacaoMedicamento.horarioAdministrado) {
+      horarioFormatado = new Date(relacaoMedicamento.horarioAdministrado).toISOString().substring(11, 16);
+    }
+
     this.medicamentoForm.patchValue({
-      nomeMedicamento: med.nome,
-      dosagem: med.dosagem,
-      unidadeMedida: med.unidadeMedida
+      nomeMedicamento: relacaoMedicamento.medicamento?.nome_medicamento || relacaoMedicamento.nome,
+      dosagem: relacaoMedicamento.dosagem,
+      unidadeMedida: relacaoMedicamento.unidadeMedida,
+      administradoNaEscola: relacaoMedicamento.administrado_na_escola || relacaoMedicamento.administradoEscola || false,
+      intervaloAdministracao: relacaoMedicamento.intervaloAdministracao,
+      horarioAdministracao: horarioFormatado
     });
   }
 
   cancelarEdicao(): void {
     this.editingMedicamentoId = null;
-    this.medicamentoForm.reset({ 
-      unidadeMedida: 'MG' 
+    this.medicamentoForm.reset({
+      unidadeMedida: 'MG',
+      administradoNaEscola: false
     });
   }
 
@@ -64,8 +106,11 @@ export class ModalMedicamentosComponent implements OnInit {
     if (this.medicamentoForm.invalid) return;
 
     const dados = this.medicamentoForm.getRawValue();
-    
-    const acao = this.editingMedicamentoId 
+    dados.nomeMedicamento = dados.nomeMedicamento?.trim();
+
+    if (!dados.nomeMedicamento) return;
+
+    const acao = this.editingMedicamentoId
       ? this.estudantesService.updateMedicamento(this.estudanteId, this.editingMedicamentoId, dados)
       : this.estudantesService.saveMedicamento(this.estudanteId, dados);
 
@@ -79,13 +124,25 @@ export class ModalMedicamentosComponent implements OnInit {
     });
   }
 
-  excluir(medicamentoId: number): void {
-    if (confirm('Tem certeza que deseja remover este medicamento da ficha do estudante?')) {
-      this.estudantesService.deleteMedicamento(this.estudanteId, medicamentoId).subscribe({
-        next: () => this.salvo.emit(),
-        error: (err: unknown) => console.error('Erro ao excluir medicamento:', err)
-      });
-    }
+  async excluir(medicamentoId: number | undefined): Promise<void> {
+    if (!medicamentoId) return;
+    const confirmado = await this.confirmacaoService.confirmar({
+      titulo: 'Excluir medicamento',
+      mensagem: 'Tem certeza que deseja remover este medicamento da ficha do estudante?',
+      textoConfirmar: 'Excluir',
+      textoCancelar: 'Cancelar',
+      variante: 'danger' });
+    if (!confirmado) return;
+
+    this.estudantesService.deleteMedicamento(this.estudanteId, medicamentoId).subscribe({
+      next: () => this.salvo.emit(),
+      error: (err: unknown) => console.error('Erro ao excluir medicamento:', err)
+    });
+  }
+
+  deveMostrarObrigatorio(control: AbstractControl | null): boolean {
+    if (!control) return true;
+    return control.invalid;
   }
 
   emitirFechar(): void {
