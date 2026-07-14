@@ -128,7 +128,7 @@
 
       <!-- Card Progresso do Mês -->
       <div class="progresso-card">
-        <h3 class="progresso-titulo">Progresso do mês</h3>
+        <h3 class="progresso-titulo">Progresso do Mês</h3>
         <div class="progresso-chart-area">
           <apx-chart class="block -mb-15"
             [series]="chartOptions.series"
@@ -137,7 +137,7 @@
             [fill]="chartOptions.fill">
           </apx-chart>
           @if (loadingMetricas()) {
-            <span class="progresso-loading">Carregando métricas...</span>
+            <span class="progresso-loading">Carregando...</span>
           } @else if (totalEsperado() > 0) {
             <span class="progresso-texto">{{ totalPreenchidos() }} de {{ totalEsperado() }} registros concluídos</span>
           } @else {

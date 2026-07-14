@@ -49,14 +49,17 @@ export class CoordenadorCalendarioComponent implements OnInit {
   popupPos = signal<PopupPosition | null>(null);
 
   diasDoCalendario = computed(() => this.gerarGrade(this.anoAtual(), this.mesAtual(), this.eventosDoMes()));
-  nomeDoMes = computed(() => new Date(this.anoAtual(), this.mesAtual()).toLocaleString('pt-BR', { month: 'long', year: 'numeric' }));
+  nomeDoMes = computed(() => {
+    const raw = new Date(this.anoAtual(), this.mesAtual()).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  });
   tituloModal = computed(() => this.modoEdicao() ? 'Editar Evento' : 'Criar Novo Evento');
 
   constructor() {
     effect(() => { this.carregarEventos(this.mesAtual(), this.anoAtual()); }, { allowSignalWrites: true });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   carregarEventos(mes: number, ano: number): void {
     const escolaId = this.authService.getEscolaId();

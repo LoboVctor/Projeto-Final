@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { TipoEducador, Role } from '@prisma/client';
 
+
 const MAPA_TIPO_PARA_ROLE: Record<TipoEducador, Role> = {
   [TipoEducador.REGENTE]: Role.PROFESSOR_REGENTE,
   [TipoEducador.ATENDIMENTO]: Role.PROFESSOR_ATENDIMENTO,

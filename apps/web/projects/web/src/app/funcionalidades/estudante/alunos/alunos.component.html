@@ -25,7 +25,7 @@
           id="busca-alunos"
           type="text"
           class="busca-input"
-          placeholder="Buscar por nome ou matrícula..."
+          placeholder="Buscar por nome ou matrícula"
           [value]="termoBusca()"
           (input)="onTermoBuscaChange($any($event.target).value)"
           aria-label="Buscar alunos por nome ou matrícula"
@@ -200,7 +200,7 @@
 
   <div class="tabela-card" role="region" aria-label="Tabela de estudantes">
     @if (loading()) {
-      <app-loading-flor titulo="Carregando alunos..." subtitulo="Buscando informações dos estudantes."></app-loading-flor>
+      <app-loading-flor titulo="Carregando..." subtitulo="Buscando informações dos estudantes."></app-loading-flor>
     } @else if (erro()) {
       <div class="erro-container" role="alert">
         <span>⚠️ {{ erro() }}</span>

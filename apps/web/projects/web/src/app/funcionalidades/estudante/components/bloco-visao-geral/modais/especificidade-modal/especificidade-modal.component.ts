@@ -4,8 +4,10 @@ import {
   Input,
   Output,
   OnInit,
+  OnDestroy,
   inject,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -18,9 +20,10 @@ import { EspecificidadeVisaoGeral } from '../../../../../../compartilhado/models
   templateUrl: './especificidade-modal.component.html',
   styleUrls: ['./especificidade-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush })
-export class EspecificidadeModalComponent implements OnInit {
+export class EspecificidadeModalComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private estudantesService = inject(EstudantesService);
+  private cdr = inject(ChangeDetectorRef);
 
   readonly estudanteId = input.required<string>();
   @Input() especificidades: EspecificidadeVisaoGeral[] = [];
@@ -32,6 +35,12 @@ export class EspecificidadeModalComponent implements OnInit {
   erro = '';
   editingEspecificidadeId: number | null = null;
 
+  /** Limite de caracteres dos campos */
+  readonly DESCRICAO_MAX = 100;
+  readonly OBSERVACAO_MAX = 500;
+
+  private formSub?: import('rxjs').Subscription;
+
   ngOnInit() {
     this.initForm();
   }
@@ -41,8 +50,26 @@ export class EspecificidadeModalComponent implements OnInit {
     this.especificidadeForm = this.fb.group({
       tipo: [esp?.tipo || '', Validators.required],
       categoria: [esp?.categoria || '', Validators.required],
-      descricao: [esp?.descricao || '', Validators.required],
-      observacao: [esp?.observacao || ''] });
+      descricao: [esp?.descricao || '', [Validators.required, Validators.maxLength(this.DESCRICAO_MAX)]],
+      observacao: [esp?.observacao || '', [Validators.maxLength(this.OBSERVACAO_MAX)]] });
+
+    // Notifica o CD para atualizar os contadores em tempo real (OnPush)
+    this.formSub?.unsubscribe();
+    this.formSub = this.especificidadeForm.valueChanges.subscribe(() => this.cdr.markForCheck());
+  }
+
+  ngOnDestroy() {
+    this.formSub?.unsubscribe();
+  }
+
+  /** Comprimento atual do campo descricao */
+  get descricaoLength(): number {
+    return this.especificidadeForm?.get('descricao')?.value?.length ?? 0;
+  }
+
+  /** Comprimento atual do campo observacao */
+  get observacaoLength(): number {
+    return this.especificidadeForm?.get('observacao')?.value?.length ?? 0;
   }
 
   getPlaceholderDescricao(): string {
@@ -85,8 +112,27 @@ export class EspecificidadeModalComponent implements OnInit {
     this.fechar.emit();
   }
 
+  /** Verifica localmente se já existe uma especificidade com mesmo tipo+categoria (exceto a sendo editada) */
+  private verificarDuplicataLocal(): boolean {
+    const tipo = this.especificidadeForm.get('tipo')?.value;
+    const categoria = this.especificidadeForm.get('categoria')?.value;
+
+    return this.especificidades.some(
+      (e) =>
+        e.tipo === tipo &&
+        e.categoria === categoria &&
+        e.especificidadeId !== this.editingEspecificidadeId,
+    );
+  }
+
   salvar() {
     if (this.especificidadeForm.invalid || this.loading) return;
+
+    // Validação local antes de ir ao servidor
+    if (this.verificarDuplicataLocal()) {
+      this.erro = `Já existe uma especificidade do tipo "${this.especificidadeForm.get('tipo')?.value}" com a categoria "${this.especificidadeForm.get('categoria')?.value}" para este estudante. Edite o registro existente ou escolha outra combinação.`;
+      return;
+    }
 
     this.loading = true;
     this.erro = '';
@@ -108,7 +154,12 @@ export class EspecificidadeModalComponent implements OnInit {
       },
       error: (err: any) => {
         this.loading = false;
-        this.erro = 'Ocorreu um erro ao salvar a especificidade.';
+        // Trata 409 Conflict (duplicata detectada pelo backend)
+        if (err?.status === 409) {
+          this.erro = err?.error?.message || 'Já existe uma especificidade com a mesma categoria para este estudante.';
+        } else {
+          this.erro = 'Ocorreu um erro ao salvar a especificidade.';
+        }
       } });
   }
 }

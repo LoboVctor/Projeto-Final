@@ -2,14 +2,14 @@
   <app-cadastro-layout
     titulo="Cadastro de Educador"
     subtitulo="Insira as informações profissionais e pessoais do educador."
-    [textSubmit]="isLoading ? 'Carregando...' : 'Cadastrar Educador'"
+    [textSubmit]="isLoading ? 'Carregando...' : 'Cadastrar'"
     [formInvalid]="form.invalid || isLoading"
     (submitClicked)="onSubmit()"
   >
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Nome -->
       <div class="flex flex-col space-y-1">
-        <label for="nome" class="text-sm font-semibold text-elo-roxo-profundo">Nome Completo</label>
+        <label for="nome" class="text-sm font-semibold text-elo-roxo-profundo">Nome Completo <span class="text-red-500">*</span></label>
         <input
           id="nome"
           type="text"
@@ -27,7 +27,7 @@
 
       <!-- CPF -->
       <div class="flex flex-col space-y-1">
-        <label for="cpf" class="text-sm font-semibold text-elo-roxo-profundo">CPF</label>
+        <label for="cpf" class="text-sm font-semibold text-elo-roxo-profundo">CPF <span class="text-red-500">*</span></label>
         <input
           id="cpf"
           type="text"
@@ -48,7 +48,7 @@
       <!-- Especialidade -->
       <div class="flex flex-col space-y-1">
         <label for="especialidade" class="text-sm font-semibold text-elo-roxo-profundo"
-          >Especialidade / Tipo</label
+          >Especialidade / Tipo <span class="text-red-500">*</span></label
         >
         <input
           id="especialidade"
@@ -66,7 +66,7 @@
 
       <!-- Telefone -->
       <div class="flex flex-col space-y-1">
-        <label for="telefone" class="text-sm font-semibold text-elo-roxo-profundo">Telefone</label>
+        <label for="telefone" class="text-sm font-semibold text-elo-roxo-profundo">Telefone <span class="text-red-500">*</span></label>
         <input
           id="telefone"
           type="text"
@@ -87,7 +87,7 @@
       <!-- Data de Contratação -->
       <div class="flex flex-col space-y-1">
         <label for="dataContratacao" class="text-sm font-semibold text-elo-roxo-profundo"
-          >Data de Contratação</label
+          >Data de Contratação <span class="text-red-500">*</span></label
         >
         <input
           id="dataContratacao"
@@ -96,13 +96,13 @@
           class="border border-elo-borda rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-elo-girassol focus:border-transparent transition-all bg-white"
         />
         @if (form.get('dataContratacao')?.invalid && form.get('dataContratacao')?.touched) {
-          <span class="text-red-500 text-xs font-medium mt-1">Informe a data de contratação.</span>
+          <span class="text-red-500 text-xs font-medium mt-1">Informe a Data de Contratação.</span>
         }
       </div>
 
       <!-- Sexo -->
       <div class="flex flex-col space-y-1">
-        <label for="sexo" class="text-sm font-semibold text-elo-roxo-profundo">Sexo</label>
+        <label for="sexo" class="text-sm font-semibold text-elo-roxo-profundo">Sexo <span class="text-red-500">*</span></label>
         <select
           id="sexo"
           formControlName="sexo"

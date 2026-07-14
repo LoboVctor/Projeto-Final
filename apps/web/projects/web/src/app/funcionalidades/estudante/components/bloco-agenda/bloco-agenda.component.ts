@@ -212,7 +212,7 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
     console.log('Data enviada ao backend:', dataFormatada);
 
     const atual = this.registroDoDia();
-    
+
     // Removemos a propriedade id explicitamente para o backend não rejeitar o payload
     const { id, ...scoresSemId } = novosScores as any;
 
@@ -310,12 +310,13 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
   }
 
   get dataFormatada(): string {
-    return this.dataSelecionada().toLocaleDateString('pt-BR', {
+    const raw = this.dataSelecionada().toLocaleDateString('pt-BR', {
       weekday: 'long',
       day: '2-digit',
       month: 'long',
       year: 'numeric'
     });
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
   }
 
   get dataInputValue(): string {

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Inject, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, BadRequestException, ConflictException } from '@nestjs/common';
 import * as Papa from 'papaparse';
 import type {
   IEstudanteRepositorio,
@@ -235,6 +235,19 @@ export class EstudanteService {
   }
 
   async createEspecificidade(estudanteId: string, dto: EspecificidadeDto) {
+    // Verifica duplicata: mesmo tipo + categoria para este estudante
+    const duplicata = await this.estudanteRepositorio.buscarVinculoPorTipoCategoria(
+      estudanteId,
+      dto.tipo,
+      dto.categoria,
+    );
+
+    if (duplicata) {
+      throw new ConflictException(
+        `Este estudante já possui uma especificidade do tipo "${dto.tipo}" com a categoria "${dto.categoria}". Edite o registro existente ou escolha outra combinação.`,
+      );
+    }
+
     let especificidade =
       await this.estudanteRepositorio.buscarEspecificidadeExata(
         dto.tipo,
@@ -288,6 +301,20 @@ export class EstudanteService {
     especificidadeIdAntiga: number,
     dto: EspecificidadeDto,
   ) {
+    // Verifica duplicata: mesmo tipo + categoria para este estudante (excluindo o vínculo atual)
+    const duplicata = await this.estudanteRepositorio.buscarVinculoPorTipoCategoria(
+      estudanteId,
+      dto.tipo,
+      dto.categoria,
+      especificidadeIdAntiga,
+    );
+
+    if (duplicata) {
+      throw new ConflictException(
+        `Este estudante já possui outra especificidade do tipo "${dto.tipo}" com a categoria "${dto.categoria}". Não é possível ter duas com a mesma combinação.`,
+      );
+    }
+
     let novaEspecificidade =
       await this.estudanteRepositorio.buscarEspecificidadeExata(
         dto.tipo,

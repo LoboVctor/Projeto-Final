@@ -248,6 +248,28 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     });
   }
 
+  /**
+   * Verifica se o estudante já possui um vínculo de especificidade com o mesmo tipo + categoria.
+   * Usado para prevenir duplicatas (ex: dois Gatilhos Sensoriais para o mesmo aluno).
+   * Se `excluirEspecificidadeId` for informado, ignora aquele vínculo (útil no update).
+   */
+  async buscarVinculoPorTipoCategoria(
+    estudanteId: string,
+    tipo: TipoEspecificidade,
+    categoria: CategoriaEspecificidade,
+    excluirEspecificidadeId?: number,
+  ): Promise<EstudanteEspecificidade | null> {
+    return this.prisma.client.estudanteEspecificidade.findFirst({
+      where: {
+        estudanteId,
+        especificidade: { tipo, categoria },
+        ...(excluirEspecificidadeId !== undefined
+          ? { NOT: { especificidadeId: excluirEspecificidadeId } }
+          : {}),
+      },
+    });
+  }
+
   async buscarAulasDoEstudante(estudanteId: string): Promise<AulaAgenda[]> {
     return this.prisma.client.aula.findMany({
       where: {

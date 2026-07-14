@@ -9,7 +9,8 @@ import { AuthService } from '../../nucleo/services/auth'; // Ajuste o caminho se
   imports: [RouterLink, RouterLinkActive, NgClass],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush })
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
 export class SidebarComponent implements OnInit {
   readonly menu = input<MenuItem[]>(DEFAULT_MENU);
   logout = LOGOUT_ITEM;

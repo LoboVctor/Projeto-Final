@@ -142,6 +142,40 @@ export class AgendaSemanalComponent implements OnInit {
       return;
     }
 
+    // Validar nome
+    if (!this.novoNomeAula().trim()) {
+      this.erroAdicionar.set('O nome da aula é obrigatório.');
+      return;
+    }
+
+    const inicio = this.novoHorarioInicio();
+    const fim = this.novoHorarioFim();
+
+    // Validar que fim > inicio
+    if (fim <= inicio) {
+      this.erroAdicionar.set('O horário de fim deve ser após o horário de início.');
+      return;
+    }
+
+    // Validar horário duplicado: checar se já existe aula no mesmo dia com sobreposicão
+    const diaSelecionado = this.novoDiaSemana();
+    const diasAgenda = this.agenda();
+    const diaEncontrado = diasAgenda.find((d: any) => d.diaSemana === diaSelecionado);
+    if (diaEncontrado && diaEncontrado.eventos && diaEncontrado.eventos.length > 0) {
+      const conflito = diaEncontrado.eventos.find((e: any) => {
+        const eInicio = e.horarioInicio;
+        const eFim = e.horarioFim;
+        // Sobreposicão: novo inicio < fim existente E novo fim > inicio existente
+        return inicio < eFim && fim > eInicio;
+      });
+      if (conflito) {
+        this.erroAdicionar.set(
+          `Conflito de horário: já existe a aula "${conflito.titulo}" entre ${conflito.horarioInicio}–${conflito.horarioFim} nesse dia.`
+        );
+        return;
+      }
+    }
+
     this.salvandoAula.set(true);
     this.erroAdicionar.set(null);
 
@@ -149,8 +183,8 @@ export class AgendaSemanalComponent implements OnInit {
       educadorId,
       nome: this.novoNomeAula(),
       diaSemana: this.novoDiaSemana(),
-      horarioInicio: this.novoHorarioInicio(),
-      horarioFim: this.novoHorarioFim()
+      horarioInicio: inicio,
+      horarioFim: fim
     };
 
     this.http.post(`${this.baseUrl}/estudantes/${this.estudanteId()}/aulas`, payload)

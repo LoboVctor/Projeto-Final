@@ -17,7 +17,7 @@
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-bold text-slate-600 font-['Sora']">Diagnóstico Clínico *</label>
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Diagnóstico Clínico <span class="text-red-500">*</span></label>
           <select 
             formControlName="tipoDiagnostico"
             class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium text-slate-700">
@@ -32,7 +32,7 @@
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-bold text-slate-600 font-['Sora']">Tipo de Documento *</label>
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Tipo de Documento <span class="text-red-500">*</span></label>
           <select 
             formControlName="tipoDocumento"
             class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium text-slate-700">
@@ -45,7 +45,7 @@
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-bold text-slate-600 font-['Sora']">Data de Emissão *</label>
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Data de Emissão <span class="text-red-500">*</span></label>
           <input 
             type="date" 
             formControlName="dataEmissao"
@@ -54,7 +54,7 @@
       </div>
 
       <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-bold text-slate-600 font-['Sora']">Documento (PDF, JPG, PNG) <span *ngIf="!editandoId">*</span></label>
+        <label class="text-xs font-bold text-slate-600 font-['Sora']">Documento (PDF, JPG, PNG) @if (!editandoId) { <span class="text-red-500">*</span> }</label>
         <input 
           type="file" 
           (change)="onFileChange($event)"
@@ -75,13 +75,11 @@
       </div>
 
       <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
-        <button type="button" (click)="emitirFechar()" class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">
+        <button type="button" (click)="emitirFechar()" class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
           Cancelar
         </button>
-        <button 
-          type="submit" 
-          [disabled]="laudoForm.invalid || (!editandoId && !arquivoSelecionado) || enviando" 
-          class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xs flex items-center gap-2">
+        <button type="submit" [disabled]="laudoForm.invalid || (!editandoId && !arquivoSelecionado) || enviando" 
+          class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm flex items-center gap-2 cursor-pointer">
           
           @if (enviando) {
             <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

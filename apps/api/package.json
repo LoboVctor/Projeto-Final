@@ -19,7 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma:migrate": "prisma migrate dev --schema=../../infra/prisma/schema.prisma",
-    "prisma:generate": "prisma generate --schema=../../infra/prisma/schema.prisma",
+    "prisma:generate": "prisma generate --schema=../../infra/prisma/schema.prisma && node -e \"const fs=require('fs'),p=require('path'),r=p.resolve(process.cwd(),'../../'),d=p.join(r,'node_modules/.prisma/client');fs.mkdirSync(d,{recursive:true});fs.writeFileSync(p.join(d,'default.js'),'module.exports=require(String.raw`../../../infra/generated/prisma/index.js`);\\n');console.log('Prisma bridge OK');\"",
     "prisma:seed": "tsx ../../infra/prisma/seed/index.ts",
     "prisma:studio": "prisma studio --schema=../../infra/prisma/schema.prisma"
   },

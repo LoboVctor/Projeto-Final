@@ -38,7 +38,7 @@ export class ScoreDiarioComponent implements OnChanges {
     { key: 'statusAlimentacao', label: 'Alimentação' },
     { key: 'usoBanheiro', label: 'Banheiro' },
     { key: 'scoreAutonomia', label: 'Autonomia' },
-    { key: 'scoreComportamento', label: 'Comportamento Diário' },
+    { key: 'scoreComportamento', label: 'Comportamento' },
     { key: 'scoreInteracao', label: 'Interação Social' },
     { key: 'scoreFoco', label: 'Foco nas Atividades' }
   ];

@@ -3,7 +3,7 @@
   <!-- ── Cabeçalho ──────────────────────────────────────────────────────────── -->
   <header class="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-[#E8E3EF]">
     <div>
-      <h1 class="text-2xl font-bold text-[#2D1E40] capitalize">{{ nomeDoMes() }}</h1>
+      <h1 class="text-2xl font-bold text-[#2D1E40]">{{ nomeDoMes() }}</h1>
       <p class="text-[#686177] mt-0.5 text-sm">Gerencie eventos e datas importantes da escola.</p>
     </div>
 
@@ -167,7 +167,7 @@
             Descrição <span class="text-[#686177] font-normal">(Opcional)</span>
           </label>
           <textarea [ngModel]="formDescricao()" (ngModelChange)="formDescricao.set($event)" rows="3"
-            placeholder="Detalhes do evento..."
+            placeholder="Detalhes do evento"
             class="w-full px-4 py-2.5 bg-[#F7F5FA] border border-[#E8E3EF] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6C3CC9]/25 focus:border-[#6C3CC9] transition-all text-[#2D1E40] text-sm resize-none placeholder-gray-400"></textarea>
         </div>
       </div>
@@ -193,15 +193,9 @@
           </svg>
           Salvando...
           } @else if (modoEdicao()) {
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-          </svg>
-          Salvar Alterações
+          Salvar
           } @else {
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-          </svg>
-          Salvar Evento
+          Salvar
           }
         </button>
       </div>
@@ -269,7 +263,8 @@
               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span class="text-xs font-medium text-[#2D1E40]">
-            {{ eventoSelecionado()!.horarioInicio ? (eventoSelecionado()!.horarioInicio | date:'HH:mm':'UTC') : (eventoSelecionado()!.dataEvento | date:'HH:mm':'UTC') }}
+            {{ eventoSelecionado()!.horarioInicio ? (eventoSelecionado()!.horarioInicio | date:'HH:mm':'UTC') :
+            (eventoSelecionado()!.dataEvento | date:'HH:mm':'UTC') }}
           </span>
         </div>
 
@@ -285,7 +280,8 @@
         <button (click)="excluirEvento(eventoSelecionado()!.id)"
           class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 active:scale-95 transition-all border border-red-100 cursor-pointer">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
           Excluir
         </button>

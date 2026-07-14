@@ -175,6 +175,12 @@ export interface IEstudanteRepositorio {
     estudanteId: string,
     especificidadeId: number,
   ): Promise<EstudanteEspecificidade | null>;
+  buscarVinculoPorTipoCategoria(
+    estudanteId: string,
+    tipo: TipoEspecificidade,
+    categoria: CategoriaEspecificidade,
+    excluirEspecificidadeId?: number,
+  ): Promise<EstudanteEspecificidade | null>;
   criarVinculoEspecificidade(
     estudanteId: string,
     especificidadeId: number,
