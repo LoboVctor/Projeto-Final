@@ -1,6 +1,14 @@
 import { Component, EventEmitter, inject, input, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { EstudantesService, UpsertRelatorioSemestralPayload } from '../../../../../compartilhado/services/estudantes.service';
 import { Eixo, Semestre } from '../../../../../compartilhado/models/estudante-pedagogico.model';
 
@@ -12,6 +20,27 @@ const EIXO_LABEL: Record<Eixo, string> = {
   LINGUAGEM: 'Linguagem',
   SOCIOEMOCIONAL: 'Socioemocional',
   AUTONOMIA: 'Autonomia',
+};
+
+/** Validador customizado: rejeita strings compostas apenas por dígitos */
+const naoApenasNumeros: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const val: string = (control.value ?? '') as string;
+  if (val.trim().length === 0) return null; // deixa o 'required' tratar o campo vazio
+  return /^\d+$/.test(val.trim()) ? { apenasNumeros: true } : null;
+};
+
+/** Validador customizado: rejeita strings compostas apenas por espaços em branco */
+const naoApenasEspacos: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const val: string = (control.value ?? '') as string;
+  if (val.length === 0) return null; // deixa o 'required' tratar o campo vazio
+  return val.trim().length === 0 ? { apenasEspacos: true } : null;
+};
+
+/** Validador customizado: rejeita strings compostas apenas por hífens */
+const naoApenasHifens: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const val: string = (control.value ?? '') as string;
+  if (val.trim().length === 0) return null; // deixa o 'required' tratar o campo vazio
+  return /^-+$/.test(val.trim()) ? { apenasHifens: true } : null;
 };
 
 @Component({
@@ -35,15 +64,25 @@ export class MetasModalComponent {
   enviando = signal(false);
   erro = signal<string | null>(null);
 
+  /** Validadores aplicados ao campo descrição de cada eixo */
+  private readonly descricaoValidators = [
+    Validators.required,
+    Validators.minLength(10),
+    Validators.maxLength(80),
+    naoApenasNumeros,
+    naoApenasEspacos,
+    naoApenasHifens,
+  ];
+
   form: FormGroup = this.fb.group({
     ano: [new Date().getFullYear(), [Validators.required, Validators.min(2000), Validators.max(2100)]],
     semestre: ['PRIMEIRO' as Semestre, Validators.required],
-    // Sub-grupos para cada eixo
-    COGNITIVO: this.fb.group({ descricao: ['', Validators.required] }),
-    MOTOR: this.fb.group({ descricao: ['', Validators.required] }),
-    LINGUAGEM: this.fb.group({ descricao: ['', Validators.required] }),
-    SOCIOEMOCIONAL: this.fb.group({ descricao: ['', Validators.required] }),
-    AUTONOMIA: this.fb.group({ descricao: ['', Validators.required] }),
+    // Sub-grupos para cada eixo com validações completas
+    COGNITIVO: this.fb.group({ descricao: ['', this.descricaoValidators] }),
+    MOTOR: this.fb.group({ descricao: ['', this.descricaoValidators] }),
+    LINGUAGEM: this.fb.group({ descricao: ['', this.descricaoValidators] }),
+    SOCIOEMOCIONAL: this.fb.group({ descricao: ['', this.descricaoValidators] }),
+    AUTONOMIA: this.fb.group({ descricao: ['', this.descricaoValidators] }),
   });
 
   eixoChipClass(e: Eixo): string {
@@ -76,7 +115,7 @@ export class MetasModalComponent {
       ano: Number(v.ano),
       metas: EIXOS.map(eixo => ({
         eixoDesenvolvimento: eixo,
-        descricao: v[eixo].descricao as string,
+        descricao: (v[eixo].descricao as string || '').trim(),
         scoreFinal: 0,
         parecer: '',
       })),
@@ -90,7 +129,17 @@ export class MetasModalComponent {
       },
       error: (err: unknown) => {
         this.enviando.set(false);
-        const msg = (err as { error?: { message?: string } })?.error?.message;
+        const httpError = err as { status?: number; error?: { message?: string } };
+
+        // Trata o erro 409 (duplicidade) com mensagem específica — sem fechar o modal
+        if (httpError?.status === 409) {
+          this.erro.set(
+            'Este aluno já possui metas cadastradas para este semestre. A criação de novas metas não é permitida para evitar substituição dos registros existentes.',
+          );
+          return;
+        }
+
+        const msg = httpError?.error?.message;
         this.erro.set(typeof msg === 'string' ? msg : 'Erro ao salvar as metas. Tente novamente.');
       },
     });

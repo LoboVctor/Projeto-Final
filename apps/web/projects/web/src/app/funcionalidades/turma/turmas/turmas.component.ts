@@ -140,4 +140,12 @@ export class TurmasComponent implements OnInit {
     this.alunoEmDestaque.set(dadosParaModal);
   }
 
+  /** Exibe apenas primeiro nome + último sobrenome, sem "..." — igual ao comportamento da Home */
+  nomeCurtoAluno(nomeCompleto: string): string {
+    if (!nomeCompleto) return '';
+    const partes = nomeCompleto.trim().split(/\s+/);
+    if (partes.length <= 2) return nomeCompleto;
+    return `${partes[0]} ${partes[partes.length - 1]}`;
+  }
+
 }

@@ -1,8 +1,8 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
   <div
-    class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-gray-100 max-h-[90vh]">
+    class="bg-white rounded-2xl shadow-2xl w-full max-w-xl flex flex-col overflow-hidden border border-gray-100 max-h-[80vh]">
 
-    <!-- Cabeçalho -->
+    <!-- Cabeçalho (fixo) -->
     <div class="flex items-center justify-between p-5 border-b border-gray-100 bg-slate-50 shrink-0">
       <div>
         <h3 class="text-lg font-bold font-['Sora'] text-slate-700 m-0">Metas do Semestre</h3>
@@ -15,14 +15,17 @@
       </button>
     </div>
 
-    <!-- Formulário com scroll -->
+    <!-- Formulário com scroll interno -->
     <form [formGroup]="form" (ngSubmit)="salvar()" class="flex flex-col flex-1 overflow-hidden">
+      <!-- Corpo com scroll -->
       <div class="overflow-y-auto flex-1 p-6 space-y-6">
 
         <!-- Ano e Semestre -->
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-bold text-slate-600 font-['Sora']">Ano *</label>
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">
+              Ano <span class="text-red-500">*</span>
+            </label>
             <input type="number" formControlName="ano" min="2000" max="2100"
               class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium text-slate-700" />
             @if (form.get('ano')?.invalid && form.get('ano')?.touched) {
@@ -30,7 +33,9 @@
             }
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-bold text-slate-600 font-['Sora']">Semestre *</label>
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">
+              Semestre <span class="text-red-500">*</span>
+            </label>
             <select formControlName="semestre"
               class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium text-slate-700">
               <option value="PRIMEIRO">1º Semestre</option>
@@ -51,13 +56,41 @@
           <!-- Campos -->
           <div class="p-4 space-y-3">
             <!-- Descrição da meta -->
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-bold text-slate-500 font-['Sora']">Descrição da meta *</label>
+             <div class="flex flex-col gap-1">
+              <div class="flex justify-between items-center">
+                <label class="text-xs font-bold text-slate-500 font-['Sora']">
+                  Descrição da meta <span class="text-red-500">*</span>
+                </label>
+                <span class="text-[10px] font-semibold text-slate-400">{{ form.get(eixo)?.get('descricao')?.value?.length || 0 }}/80</span>
+              </div>
               <textarea formControlName="descricao" rows="2"
-                placeholder="Descreva o objetivo pedagógico para este eixo..."
-                class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm text-slate-700 resize-none"></textarea>
-              @if (form.get(eixo)?.get('descricao')?.invalid && form.get(eixo)?.get('descricao')?.touched) {
-              <span class="text-xs text-red-500">Descrição obrigatória</span>
+                maxlength="80"
+                placeholder="Descreva o objetivo pedagógico para este eixo"
+                class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm text-slate-700 resize-none"
+                [class.border-red-300]="form.get(eixo)?.get('descricao')?.invalid && form.get(eixo)?.get('descricao')?.touched"></textarea>
+
+              <!-- Mensagens de erro granulares -->
+              @if (form.get(eixo)?.get('descricao')?.touched) {
+                <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                  @if (form.get(eixo)?.get('descricao')?.hasError('required')) {
+                    A descrição da meta é obrigatória.
+                  }
+                  @if (form.get(eixo)?.get('descricao')?.hasError('minlength')) {
+                    A descrição da meta deve ter pelo menos 10 caracteres.
+                  }
+                  @if (form.get(eixo)?.get('descricao')?.hasError('maxlength')) {
+                    A descrição da meta deve ter no máximo 80 caracteres.
+                  }
+                  @if (form.get(eixo)?.get('descricao')?.hasError('apenasEspacos')) {
+                    A descrição da meta não pode conter apenas espaços em branco.
+                  }
+                  @if (form.get(eixo)?.get('descricao')?.hasError('apenasNumeros')) {
+                    A descrição da meta não pode conter apenas números.
+                  }
+                  @if (form.get(eixo)?.get('descricao')?.hasError('apenasHifens')) {
+                    A descrição da meta não pode conter apenas hífens.
+                  }
+                </div>
               }
             </div>
 
@@ -65,7 +98,7 @@
         </div>
         }
 
-        <!-- Mensagem de erro global -->
+        <!-- Mensagem de erro global (inclui 409) -->
         @if (erro()) {
         <div class="bg-red-50 border border-red-100 rounded-lg p-3 text-sm text-red-700">
           {{ erro() }}
@@ -74,7 +107,7 @@
 
       </div>
 
-      <!-- Rodapé com ações -->
+      <!-- Rodapé com ações (fixo) -->
       <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-slate-50 shrink-0">
         <button type="button" (click)="fecharModal()"
           class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
@@ -92,7 +125,7 @@
           </svg>
           Salvando...
           } @else {
-          Salvar Metas
+          Adicionar
           }
         </button>
       </div>

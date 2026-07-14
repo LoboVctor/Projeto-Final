@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { CalendarioService, EventoCalendario } from '../../../compartilhado/services/calendario.service';
 import { AuthService } from '../../../nucleo/services/auth';
+import { ConfirmacaoService } from '../../../compartilhado/services/confirmacao.service';
 
 interface DiaCalendario {
   data: Date;
@@ -32,6 +33,7 @@ export class CalendarioComponent implements OnInit {
   private readonly calendarioService = inject(CalendarioService);
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
+  private readonly confirmacaoService = inject(ConfirmacaoService);
 
   // ─── Estados Reativos ───────────────────────────────────────────────────────
   hoje = new Date();
@@ -287,7 +289,15 @@ export class CalendarioComponent implements OnInit {
     }
   }
 
-  excluirEvento(id: string): void {
+  async excluirEvento(id: string): Promise<void> {
+    const confirmado = await this.confirmacaoService.confirmar({
+      titulo: 'Excluir compromisso',
+      mensagem: 'Tem certeza que deseja excluir este compromisso do calendário?',
+      textoConfirmar: 'Excluir',
+      textoCancelar: 'Cancelar',
+      variante: 'danger' });
+    if (!confirmado) return;
+
     this.calendarioService.removerEvento(id).subscribe({
       next: () => {
         this.fecharPopup();

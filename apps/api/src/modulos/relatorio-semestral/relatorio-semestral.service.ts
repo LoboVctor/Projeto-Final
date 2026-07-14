@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { CreateRelatorioSemestralDto } from './dto/create-relatorio-semestral.dto.js';
 import { Eixos } from '../../../../../infra/generated/prisma/index.js';
@@ -28,7 +28,14 @@ export class RelatorioSemestralService {
         include: { metas: true },
       });
 
-      // 2. Se não existir, cria o relatório básico
+      // 2. Se já existir relatório COM metas, bloquear criação (evita sobrescrever registros)
+      if (relatorio && relatorio.metas.length > 0) {
+        throw new ConflictException(
+          'Este aluno já possui metas cadastradas para este semestre. A criação de novas metas não é permitida para evitar substituição dos registros existentes.',
+        );
+      }
+
+      // 3. Se não existir relatório, cria o relatório básico
       if (!relatorio) {
         relatorio = await tx.relatorioSemestral.create({
           data: {
@@ -43,7 +50,7 @@ export class RelatorioSemestralService {
         });
       }
 
-      // 3. Atualiza ou cria as metas por eixo
+      // 4. Cria as metas por eixo (apenas quando o relatório não tem metas ainda)
       const metasResultado = [];
 
       for (const metaDto of metas) {

@@ -72,7 +72,12 @@
     }
   </div>
 
-  <div class="score-list-container flex-1 flex flex-col justify-around">
+  <div
+    class="score-list-container flex-1 flex flex-col justify-around rounded-xl p-2 transition-all duration-300"
+    [ngClass]="modoEdicao 
+      ? 'border border-amber-400/80 bg-amber-50/60 shadow-[0_0_15px_rgba(245,158,11,0.25)] ring-1 ring-amber-300/50' 
+      : 'border border-transparent bg-transparent'"
+  >
     @for (item of indicadores; track item.key) {
       <div class="score-row group w-full min-w-0 max-w-full overflow-hidden">
 

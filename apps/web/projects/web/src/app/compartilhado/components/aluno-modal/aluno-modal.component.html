@@ -1,12 +1,11 @@
 @if (isVisible()) {
 <div
-  class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto animate-overlay-enter"
-  (click)="onClose()">
+  class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto animate-overlay-enter">
   <div
-    class="bg-white rounded-3xl shadow-xl relative overflow-hidden my-auto flex flex-col md:flex-row w-full max-w-5xl md:max-w-6xl animate-modal-enter"
+    class="bg-white rounded-3xl shadow-xl relative overflow-hidden my-auto flex flex-col md:flex-row w-full max-w-5xl md:max-w-6xl max-h-[92vh] animate-modal-enter"
     (click)="$event.stopPropagation()">
     <div
-      class="relative p-6 md:p-8 flex-shrink-0 w-full md:w-[350px] border-b md:border-b-0 md:border-r border-elo-borda">
+      class="relative p-6 md:p-8 flex-shrink-0 w-full md:w-[350px] border-b md:border-b-0 md:border-r border-elo-borda overflow-y-auto modal-scroll-area">
 
       @if (aluno) {
       <div class="flex flex-col items-center mt-2">
@@ -134,52 +133,53 @@
       </div>
       }
     </div>
-    @if (isVisaoGeralExpanded()) {
-    <app-bloco-visao-geral [visaoGeralData]="visaoGeralData()" [loading]="loadingVisaoGeral()"
-      [error]="errorVisaoGeral()" (recolher)="onClose()" (fechar)="onClose()"
-      (tentarNovamente)="forceReloadVisaoGeral()">
-    </app-bloco-visao-geral>
-    }
-    @if (isSaudeExpanded()) {
-    <app-bloco-saude [estudanteId]="aluno!.id" (recolher)="onClose()">
-    </app-bloco-saude>
-    }
-    @if (isRelatoriosExpanded()) {
-    <app-bloco-relatorios [estudanteId]="aluno!.id" (recolher)="onClose()">
-    </app-bloco-relatorios>
-    }
-    @if (isAgendaExpanded()) {
-
-    <app-bloco-agenda [estudanteId]="aluno!.id" (recolher)="onClose()">
-    </app-bloco-agenda>
-    }
-    @if (isDashboardExpanded()) {
-    @defer {
-    <app-bloco-dashboard [estudanteId]="aluno!.id" (recolher)="onClose()">
-    </app-bloco-dashboard>
-    } @loading {
-    <div class="flex-1 flex items-center justify-center p-10 bg-gray-50 rounded-r-3xl text-blue-600 font-medium">
-      <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-        viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-        </path>
-      </svg>
-      Baixando painel de métricas analíticas...
-    </div>
-    }
-    }
-    @if (isResponsavelExpanded()) {
-      <div class="h-full flex flex-col p-6 animate-fade-in overflow-y-auto">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xl font-bold text-elo-roxo-profundo font-sora">
-            Responsável / Endereço
-          </h2>
-        </div>
-        <app-cadastro-responsavel [isAba]="true" [alunoId]="aluno?.id ?? null"></app-cadastro-responsavel>
+    <main class="flex-1 flex flex-col min-h-0 bg-gray-50/50 rounded-r-3xl relative overflow-hidden">
+      @if (isVisaoGeralExpanded()) {
+      <app-bloco-visao-geral class="flex-1 flex flex-col min-h-0" [visaoGeralData]="visaoGeralData()" [loading]="loadingVisaoGeral()"
+        [error]="errorVisaoGeral()" (recolher)="onClose()" (fechar)="onClose()"
+        (tentarNovamente)="forceReloadVisaoGeral()">
+      </app-bloco-visao-geral>
+      }
+      @if (isSaudeExpanded()) {
+      <app-bloco-saude class="flex-1 flex flex-col min-h-0" [estudanteId]="aluno!.id" (recolher)="onClose()">
+      </app-bloco-saude>
+      }
+      @if (isRelatoriosExpanded()) {
+      <app-bloco-relatorios class="flex-1 flex flex-col min-h-0" [estudanteId]="aluno!.id" (recolher)="onClose()">
+      </app-bloco-relatorios>
+      }
+      @if (isAgendaExpanded()) {
+      <app-bloco-agenda class="flex-1 flex flex-col min-h-0" [estudanteId]="aluno!.id" (recolher)="onClose()">
+      </app-bloco-agenda>
+      }
+      @if (isDashboardExpanded()) {
+      @defer {
+      <app-bloco-dashboard class="flex-1 flex flex-col min-h-0" [estudanteId]="aluno!.id" (recolher)="onClose()">
+      </app-bloco-dashboard>
+      } @loading {
+      <div class="flex-1 flex items-center justify-center p-10 bg-gray-50 rounded-r-3xl text-blue-600 font-medium">
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+          </path>
+        </svg>
+        Baixando painel de métricas analíticas...
       </div>
-    }
+      }
+      }
+      @if (isResponsavelExpanded()) {
+        <div class="flex-1 flex flex-col p-6 animate-fade-in overflow-y-auto modal-scroll-area">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-elo-roxo-profundo font-sora">
+              Responsável / Endereço
+            </h2>
+          </div>
+          <app-cadastro-responsavel class="flex-1 flex flex-col min-h-0" [isAba]="true" [alunoId]="aluno?.id ?? null"></app-cadastro-responsavel>
+        </div>
+      }
+    </main>
   </div>
 </div>
 }

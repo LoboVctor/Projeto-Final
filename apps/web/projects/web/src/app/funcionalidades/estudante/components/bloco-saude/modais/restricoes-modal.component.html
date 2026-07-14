@@ -31,7 +31,11 @@
     <form [formGroup]="especificidadeForm" (ngSubmit)="salvar()" class="p-6 space-y-5 m-0">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-bold text-slate-600 font-['Sora']">Tipo de Registro</label>
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Tipo de Registro
+            @if (deveMostrarObrigatorio(especificidadeForm.get('tipo'))) {
+              <span class="text-red-500">*</span>
+            }
+          </label>
 
           <select
             formControlName="tipo"
@@ -43,7 +47,11 @@
           </select>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-bold text-slate-600 font-['Sora']">Categoria Clínica</label>
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Categoria Clínica
+            @if (deveMostrarObrigatorio(especificidadeForm.get('categoria'))) {
+              <span class="text-red-500">*</span>
+            }
+          </label>
           <select
             formControlName="categoria"
             class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm font-medium"
@@ -57,27 +65,79 @@
       </div>
 
       <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-bold text-slate-600 font-['Sora']"
-          >Título / Descrição Curta</label
-        >
+        <div class="flex justify-between items-center">
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Título / Descrição Curta
+            @if (deveMostrarObrigatorio(especificidadeForm.get('descricao'))) {
+              <span class="text-red-500">*</span>
+            }
+          </label>
+          <span class="text-[10px] font-semibold text-slate-400">{{ especificidadeForm.get('descricao')?.value?.length || 0 }}/80</span>
+        </div>
         <input
           type="text"
           formControlName="descricao"
+          maxlength="80"
           placeholder="Ex: Alergia a Amendoim, Sensibilidade Sonora severa"
           class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm"
+          [class.border-red-300]="especificidadeForm.get('descricao')?.invalid && especificidadeForm.get('descricao')?.touched"
         />
+        @if (especificidadeForm.get('descricao')?.invalid && especificidadeForm.get('descricao')?.touched) {
+          <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+            @if (especificidadeForm.get('descricao')?.hasError('required')) {
+              O título é obrigatório.
+            }
+            @if (especificidadeForm.get('descricao')?.hasError('soEspacos')) {
+              O título não pode conter apenas espaços em branco.
+            }
+            @if (especificidadeForm.get('descricao')?.hasError('soNumeros')) {
+              O título não pode conter apenas números.
+            }
+            @if (especificidadeForm.get('descricao')?.hasError('soHifens')) {
+              O título não pode conter apenas hífens.
+            }
+            @if (especificidadeForm.get('descricao')?.hasError('maxlength')) {
+              O título deve ter no máximo 80 caracteres.
+            }
+          </div>
+        }
       </div>
 
       <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-bold text-slate-600 font-['Sora']"
-          >Observações e Reações (Procedimentos)</label
-        >
+        <div class="flex justify-between items-center">
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Observações e Reações (Procedimentos)
+            @if (deveMostrarObrigatorio(especificidadeForm.get('observacao'))) {
+              <span class="text-red-500">*</span>
+            }
+          </label>
+          <span class="text-[10px] font-semibold text-slate-400">{{ especificidadeForm.get('observacao')?.value?.length || 0 }}/500</span>
+        </div>
         <textarea
           formControlName="observacao"
           rows="3"
-          placeholder="Descreva os detalhes da reação e o protocolo..."
+          maxlength="500"
+          placeholder="Descreva os detalhes da reação e o protocolo"
           class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm resize-none"
+          [class.border-red-300]="especificidadeForm.get('observacao')?.invalid && especificidadeForm.get('observacao')?.touched"
         ></textarea>
+        @if (especificidadeForm.get('observacao')?.invalid && especificidadeForm.get('observacao')?.touched) {
+          <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+            @if (especificidadeForm.get('observacao')?.hasError('required')) {
+              As observações são obrigatórias.
+            }
+            @if (especificidadeForm.get('observacao')?.hasError('soEspacos')) {
+              As observações não podem conter apenas espaços em branco.
+            }
+            @if (especificidadeForm.get('observacao')?.hasError('soNumeros')) {
+              As observações não podem conter apenas números.
+            }
+            @if (especificidadeForm.get('observacao')?.hasError('soHifens')) {
+              As observações não podem conter apenas hífens.
+            }
+            @if (especificidadeForm.get('observacao')?.hasError('maxlength')) {
+              As observações devem ter no máximo 500 caracteres.
+            }
+          </div>
+        }
       </div>
 
       <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
@@ -85,26 +145,26 @@
           <button
             type="button"
             (click)="cancelarEdicao()"
-            class="px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            class="px-5 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
           >
-            Cancelar Edição
+            Cancelar
           </button>
         }
         @if (!editingEspecificidadeId) {
           <button
             type="button"
             (click)="emitirFechar()"
-            class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
+            class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
           >
-            Fechar
+            Cancelar
           </button>
         }
         <button
           type="submit"
           [disabled]="especificidadeForm.invalid"
-          class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xs"
+          class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer"
         >
-          {{ editingEspecificidadeId ? 'Atualizar Dados' : 'Adicionar Especificidade' }}
+          {{ editingEspecificidadeId ? 'Atualizar' : 'Adicionar' }}
         </button>
       </div>
     </form>

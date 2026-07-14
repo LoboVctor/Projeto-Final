@@ -1,6 +1,5 @@
 <!-- Overlay + Modal centralizado (padrão do laudos-modal da aba Saúde) -->
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in"
-  (click)="onFechar()">
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
 
   <!-- Painel do modal (stopPropagation evita fechar ao clicar dentro) -->
   <div
@@ -64,15 +63,25 @@
 
       <!-- Campo: Parecer / Decisão -->
       <div class="flex flex-col gap-1.5">
-        <label for="parecerDecisao" class="text-xs font-bold text-slate-600 font-['Sora']">
-          Parecer e Decisão <span class="text-red-500">*</span>
-        </label>
+        <div class="flex justify-between items-center">
+          <label for="parecerDecisao" class="text-xs font-bold text-slate-600 font-['Sora']">
+            Parecer e Decisão <span class="text-red-500">*</span>
+          </label>
+          <span class="text-[10px] font-semibold text-slate-400">{{ parecerDecisao().length || 0 }}/3000</span>
+        </div>
         <textarea id="parecerDecisao" rows="5"
-          placeholder="Descreva o parecer da reunião pedagógica, as decisões tomadas e os encaminhamentos definidos..."
-          class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm resize-vertical"
-          [value]="parecerDecisao()" (input)="parecerDecisao.set($any($event.target).value)"
+          maxlength="3000"
+          placeholder="Descreva o parecer da reunião pedagógica, as decisões tomadas e os encaminhamentos definidos"
+          class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm resize-none overflow-y-auto"
+          [value]="parecerDecisao()" (input)="parecerDecisao.set($any($event.target).value); parecerTouched.set(true)"
+          (blur)="parecerTouched.set(true)"
+          [class.border-red-300]="errosParecer() && parecerTouched()"
           [disabled]="loading() || sucesso()"></textarea>
-        <span class="text-[11px] text-slate-400">Mínimo de 10 caracteres.</span>
+        @if (errosParecer()) {
+          <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+            {{ errosParecer() }}
+          </div>
+        }
       </div>
 
       <!-- Campo: Educadores participantes -->
@@ -154,7 +163,7 @@
         </svg>
         Salvando...
         } @else {
-        Registrar Ocorrência
+        Adicionar
         }
       </button>
     </div>

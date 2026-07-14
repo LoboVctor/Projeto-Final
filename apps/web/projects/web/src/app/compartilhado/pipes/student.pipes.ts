@@ -1,12 +1,12 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-/** Exibe "João F." a partir de "João Ferreira da Silva" */
+/** Exibe "João Silva" a partir de "João Ferreira da Silva" (primeiro + último sobrenome) */
 @Pipe({ name: 'shortName' })
 export class ShortNamePipe implements PipeTransform {
   transform(value: string): string {
     const parts = value.trim().split(/\s+/);
-    if (parts.length === 1) return parts[0] || '';
-    return `${parts[0]} ${parts[parts.length - 1]?.[0] || ''}.`;
+    if (parts.length <= 2) return value;
+    return `${parts[0]} ${parts[parts.length - 1]}`;
   }
 }
 

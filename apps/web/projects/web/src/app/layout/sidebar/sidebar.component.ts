@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NgClass, isPlatformBrowser } from '@angular/common';
 import { MenuItem, DEFAULT_MENU, LOGOUT_ITEM } from '../sidebar/menu-items';
 import { AuthService } from '../../nucleo/services/auth'; // Ajuste o caminho se necessário
+import { ConfirmacaoService } from '../../compartilhado/services/confirmacao.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -28,6 +29,7 @@ export class SidebarComponent implements OnInit {
 
   private authService = inject(AuthService);
   private platformId = inject(PLATFORM_ID);
+  private confirmacaoService = inject(ConfirmacaoService);
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -36,7 +38,15 @@ export class SidebarComponent implements OnInit {
     }
   }
 
-  fazerLogout(): void {
+  async fazerLogout(): Promise<void> {
+    const confirmado = await this.confirmacaoService.confirmar({
+      titulo: 'Sair do sistema',
+      mensagem: 'Tem certeza que deseja sair do Projeto ELO?',
+      textoConfirmar: 'Sair',
+      textoCancelar: 'Cancelar',
+      variante: 'warning' });
+    if (!confirmado) return;
+
     this.authService.logout();
   }
 }

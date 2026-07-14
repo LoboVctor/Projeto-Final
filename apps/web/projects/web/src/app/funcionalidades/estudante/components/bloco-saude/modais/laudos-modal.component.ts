@@ -1,7 +1,8 @@
 import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { EstudantesService } from '../../../../../compartilhado/services/estudantes.service';
+import { ConfirmacaoService } from '../../../../../compartilhado/services/confirmacao.service';
 
 @Component({
   selector: 'app-modal-laudos',
@@ -24,6 +25,7 @@ export class ModalLaudosComponent implements OnInit {
 
   private fb = inject(FormBuilder);
   private estudantesService = inject(EstudantesService);
+  private confirmacaoService = inject(ConfirmacaoService);
 
   constructor() {
     this.laudoForm = this.fb.group({
@@ -100,15 +102,32 @@ export class ModalLaudosComponent implements OnInit {
     });
   }
 
-  excluir(laudoId: string): void {
-    if (confirm('Tem certeza que deseja excluir este documento?')) {
-      this.estudantesService.excluirLaudo(this.estudanteId, laudoId).subscribe({
-        next: () => {
-          this.salvo.emit(); 
-        },
-        error: (err: unknown) => console.error('Erro ao excluir', err)
-      });
-    }
+  async excluir(laudoId: string): Promise<void> {
+    const confirmado = await this.confirmacaoService.confirmar({
+      titulo: 'Excluir laudo',
+      mensagem: 'Tem certeza que deseja remover este laudo ou diagnóstico da ficha do estudante?',
+      textoConfirmar: 'Excluir',
+      textoCancelar: 'Cancelar',
+      variante: 'danger' });
+    if (!confirmado) return;
+
+    this.estudantesService.excluirLaudo(this.estudanteId, laudoId).subscribe({
+      next: () => {
+        this.salvo.emit(); 
+      },
+      error: (err: unknown) => console.error('Erro ao excluir', err)
+    });
+  }
+
+  cancelarEdicao(): void {
+    this.editandoId = null;
+    this.arquivoSelecionado = null;
+    this.arquivoAtualNome = null;
+    this.laudoForm.reset({
+      tipoDiagnostico: 'TEA',
+      tipoDocumento: 'LAUDO_MEDICO',
+      dataEmissao: ''
+    });
   }
 
   finalizarAcao(): void {
@@ -117,9 +136,14 @@ export class ModalLaudosComponent implements OnInit {
     this.emitirFechar();
   }
 
-  tratarErro(err: any): void {
+  tratarErro(err: unknown): void {
     console.error('Erro na requisição:', err);
     this.enviando = false;
+  }
+
+  deveMostrarObrigatorio(control: AbstractControl | null): boolean {
+    if (!control) return true;
+    return control.invalid;
   }
 
   emitirFechar(): void {
