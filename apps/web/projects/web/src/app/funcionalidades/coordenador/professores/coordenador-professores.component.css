@@ -19,27 +19,17 @@
 .tag-status--inativo   { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
 .tag-status--bloqueado { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
 
-/* ── Fix: dropdown de ações ficava atrás do container da tabela ── */
-/* O wrapper importado usa overflow:hidden que corta posicionamentos
-   absolutos. Sobrescrevemos para visible e reconstituímos o visual
-   com border + border-radius diretamente no elemento. */
+/* ── Correção do Dropdown de Ações ──────────────────────────────── */
+/* Para que o menu de contexto (dropdown) não crie barras de rolagem 
+   ou fique cortado, permitimos que os elementos transbordem. */
+.tabela-card {
+  overflow: visible !important;
+}
 .tabela-wrapper {
   overflow: visible !important;
 }
-.tabela {
-  border-radius: 10px;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-/* Recria os cantos arredondados nas células de borda */
-.tabela thead tr th:first-child  { border-top-left-radius: 10px; }
-.tabela thead tr th:last-child   { border-top-right-radius: 10px; }
-.tabela tbody tr:last-child td:first-child { border-bottom-left-radius: 10px; }
-.tabela tbody tr:last-child td:last-child  { border-bottom-right-radius: 10px; }
 
 /* ── Coluna de Ações ────────────────────────────────────────────── */
-.th-acoes { width: 56px; text-align: center; }
-.td-acoes { text-align: center; }
 
 .acoes-wrapper {
   position: relative;

@@ -14,6 +14,8 @@ export interface IRegistroDiarioRepositorio {
   ): Promise<RegistroDiario>;
   buscarTodos(): Promise<RegistroDiario[]>;
   buscarAlertasDiasAnteriores(educadorId: string): Promise<RegistroDiario[]>;
+  buscarAlertasEscolaAgrupadosPorProfessor(escolaId?: string): Promise<{ educador: string; pendentes: number }[]>;
+  
   contarRegistrosPreenchidos(
     educadorId: string,
     dataInicio: Date,

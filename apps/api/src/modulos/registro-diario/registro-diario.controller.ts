@@ -86,6 +86,14 @@ export class RegistroDiarioController {
     return this.registroDiarioService.findAlertasDiasAnteriores(educadorId);
   }
 
+  @Get('alertas-escola')
+  @ApiOperation({
+    summary: 'Busca alertas agrupados por professor para toda a escola',
+  })
+  findAlertasEscola(@Query('escolaId') escolaId?: string) {
+    return this.registroDiarioService.findAlertasEscolaPorProfessor(escolaId);
+  }
+
   @Get('resumo-mensal')
   @ApiOperation({
     summary: 'Gera o resumo mensal de registros diários de um educador',

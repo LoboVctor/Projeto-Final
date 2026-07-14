@@ -20,6 +20,8 @@ import { LoadingFlorComponent } from '../../../../compartilhado/components/loadi
 })
 export class BlocoDashboardComponent implements OnInit {
   @Input({ required: true }) estudanteId!: string;
+  /** Nome do estudante — usado nos nomes dos arquivos exportados */
+  @Input() nomeEstudante: string = '';
   @Output() recolher = new EventEmitter<void>();
 
   private analyticsService = inject(AnalyticsService);
@@ -61,6 +63,7 @@ export class BlocoDashboardComponent implements OnInit {
   dashboardData = toSignal(this.dashboardResumo$);
 
   constructor() {
+    this.nomeUsuarioLogado.set(this.authService.getLoggedUserName());
     effect(() => {
       const data = this.dashboardData();
       
@@ -305,6 +308,7 @@ export class BlocoDashboardComponent implements OnInit {
     let csv = '\ufeff'; 
     
     csv += `RELATÓRIO DE DESEMPENHO ANALÍTICO\n`;
+    csv += `Aluno:;${this.nomeEstudante || '—'}\n`;
     csv += `Data de Geração:;${dataAtual} às ${horaAtual}\n`;
     csv += `Gerado por:;${this.nomeUsuarioLogado()}\n`;
     csv += `Período Analisado:;${periodoLabel}\n\n`;
@@ -334,7 +338,7 @@ export class BlocoDashboardComponent implements OnInit {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `Relatorio_Dashboard_${this.periodo()}.csv`);
+    link.setAttribute('download', `Relatorio_Dashboard_${this.nomeEstudante ? this.nomeEstudante.replace(/\s+/g, '_') + '_' : ''}${this.periodo()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -401,21 +405,7 @@ export class BlocoDashboardComponent implements OnInit {
       const pdfDinamico = new jsPDF('p', 'mm', [larguraPDF, alturaPDF]);
       pdfDinamico.addImage(imgData, 'PNG', 0, 0, larguraPDF, alturaPDF);
 
-      const nomeUsuario = this.authService.getLoggedUserName();
-
-      pdfDinamico.setFont('helvetica', 'bold');
-      pdfDinamico.setFontSize(9);
-      pdfDinamico.setTextColor(156, 163, 175);
-      pdfDinamico.text(
-        `Baixado por: ${nomeUsuario}`,
-        larguraPDF - 15, 12, { align: 'right' }
-      );
-      pdfDinamico.text(
-        `Gerado em: ${new Date().toLocaleString('pt-BR')}`,
-        larguraPDF - 15, 17, { align: 'right' }
-      );
-
-      pdfDinamico.save(`Relatorio_Dashboard_${this.periodo()}.pdf`);
+      pdfDinamico.save(`Relatorio_Dashboard_${this.nomeEstudante ? this.nomeEstudante.replace(/\s+/g, '_') + '_' : ''}${this.periodo()}.pdf`);
       this.auditoriaService.registrarDownload('RELATORIO_DASHBOARD', 'PDF', this.buildDetalhes()).subscribe();
 
     } catch (erro) {
@@ -438,7 +428,7 @@ export class BlocoDashboardComponent implements OnInit {
   }
 
   private buildDetalhes(): string {
-    return `periodo=${this.periodo()}; estudanteId=${this.estudanteId}`;
+    return `periodo=${this.periodo()}; estudanteId=${this.estudanteId}; nomeEstudante=${this.nomeEstudante}`;
   }
 
   // --- Lógica dos Gráficos Principais ---

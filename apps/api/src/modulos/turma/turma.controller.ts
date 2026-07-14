@@ -55,6 +55,39 @@ export class TurmaController {
   }
 
   /**
+   * GET /turmas/metricas-escola
+   * Retorna Big Numbers e distribuições globais de toda a escola (Visão Coordenador).
+   * DEVE ficar antes de qualquer rota com :id para evitar conflito de matching.
+   */
+  @Get('metricas-escola')
+  @ApiOperation({ summary: 'Retorna métricas agregadas de toda a escola (Big Numbers do Coordenador)' })
+  @ApiResponse({ status: 200, description: 'Métricas da escola retornadas com sucesso.' })
+  getMetricasEscola() {
+    return this.turmaService.obterMetricasEscola();
+  }
+
+  /**
+   * GET /turmas/kpis-escola
+   * Retorna KPIs globais agregados de toda a escola.
+   * DEVE ficar antes de qualquer rota com :id para evitar conflito de matching.
+   */
+  @Get('kpis-escola')
+  @ApiOperation({ summary: 'Retorna KPIs agregados de toda a escola' })
+  @ApiResponse({ status: 200, description: 'KPIs da escola retornados com sucesso.' })
+  getKpisEscola(@Query('periodo') periodo?: string) {
+    return this.turmaService.obterDashboardEscola(periodo);
+  }
+
+  /**
+   * GET /turmas/home/big-numbers/:educadorId
+   * DEVE ficar antes das rotas com :id para evitar conflito de matching.
+   */
+  @Get('home/big-numbers/:educadorId')
+  async obterBigNumbersHome(@Param('educadorId') educadorId: string) {
+    return this.turmaService.obterBigNumbersHome(educadorId);
+  }
+
+  /**
    * GET /turma/:id/estudantes
    * Lista os estudantes de uma turma com nome, foto e diagnósticos.
    */
@@ -88,7 +121,7 @@ export class TurmaController {
     return this.turmaService.obterMetricasTurma(id);
   }
 
-  @Get(':id/kpis') 
+  @Get(':id/kpis')
   obterDashboardTurma(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('periodo') periodo?: string,
@@ -96,19 +129,24 @@ export class TurmaController {
     return this.turmaService.obterDashboardTurma(id, periodo);
   }
 
-  @Get('home/big-numbers/:educadorId')
-  async obterBigNumbersHome(@Param('educadorId') educadorId: string) {
-    return this.turmaService.obterBigNumbersHome(educadorId);
+  @Get('historico-escola')
+  @ApiOperation({ summary: 'Retorna o histórico de uma categoria agregada de toda a escola' })
+  getHistoricoEscola(
+    @Query('categoria') categoria: string,
+    @Query('dataInicio') dataInicio: string,
+    @Query('dataFim') dataFim: string,
+  ) {
+    return this.turmaService.obterHistoricoEscola(categoria, dataInicio, dataFim);
   }
 
-  /**
-   * GET /turmas/metricas-escola
-   * Retorna Big Numbers e distribuições globais de toda a escola (Visão Coordenador).
-   */
-  @Get('metricas-escola')
-  @ApiOperation({ summary: 'Retorna métricas agregadas de toda a escola (Big Numbers do Coordenador)' })
-  @ApiResponse({ status: 200, description: 'Métricas da escola retornadas com sucesso.' })
-  getMetricasEscola() {
-    return this.turmaService.obterMetricasEscola();
+  @Get(':id/historico')
+  @ApiOperation({ summary: 'Retorna o histórico de uma categoria de uma turma específica' })
+  getHistoricoTurma(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('categoria') categoria: string,
+    @Query('dataInicio') dataInicio: string,
+    @Query('dataFim') dataFim: string,
+  ) {
+    return this.turmaService.obterHistoricoTurma(id, categoria, dataInicio, dataFim);
   }
 }

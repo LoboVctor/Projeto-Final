@@ -81,12 +81,13 @@ export class EducadorController {
   @ApiQuery({ name: 'limit', required: false, type: Number })
   listar(
     @Query('nome') nome?: string,
+    @Query('matricula') matricula?: string,
     @Query('tipo') tipo?: TipoEducador,
     @Query('status') status?: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number = 20,
   ) {
-    return this.educadorService.listar({ nome, tipo, status, page, limit });
+    return this.educadorService.listar({ nome, matricula, tipo, status, page, limit });
   }
 
   /**
