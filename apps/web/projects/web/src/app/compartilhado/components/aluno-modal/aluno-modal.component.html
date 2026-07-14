@@ -155,7 +155,7 @@
     }
     @if (isDashboardExpanded()) {
     @defer {
-    <app-bloco-dashboard [estudanteId]="aluno!.id" (recolher)="onClose()">
+    <app-bloco-dashboard [estudanteId]="aluno!.id" [nomeEstudante]="aluno!.nome" (recolher)="onClose()">
     </app-bloco-dashboard>
     } @loading {
     <div class="flex-1 flex items-center justify-center p-10 bg-gray-50 rounded-r-3xl text-blue-600 font-medium">

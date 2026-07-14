@@ -14,6 +14,7 @@ import { Subject, debounceTime, switchMap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL } from '../../../nucleo/config/api.config';
 import { AuditoriaService } from '../../../nucleo/services/auditoria.service';
+import { LoadingFlorComponent } from '../../../compartilhado/components/loading-flor/loading-flor.component';
 
 /** Modelo resumido do educador para listagem */
 export interface EducadorListagemItem {
@@ -41,7 +42,7 @@ export interface TurmaItem {
 @Component({
   selector: 'app-coordenador-professores',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, LoadingFlorComponent],
   templateUrl: './coordenador-professores.component.html',
   styleUrls: ['./coordenador-professores.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -62,7 +63,7 @@ export class CoordenadorProfessoresComponent implements OnInit {
   }
 
   resposta = signal<PaginacaoEducadores | null>(null);
-  loading = signal(false);
+  loading = signal(true);
   erro = signal<string | null>(null);
 
   isImporting = signal(false);
@@ -87,16 +88,38 @@ export class CoordenadorProfessoresComponent implements OnInit {
     { value: 'inativos', label: 'Inativos' },
   ];
 
-  // ─── Menu de Ações (dropdown de 3 pontos) ────────────────────────────────
+  // ─── Menu de Ações (dropdown de 3 pontos) e Cadastrar ──────────────────
   menuAbertoId = signal<string | null>(null);
+  dropdownCadastrarAberto = signal(false);
 
   toggleMenu(profId: string, event: Event): void {
     event.stopPropagation();
     this.menuAbertoId.set(this.menuAbertoId() === profId ? null : profId);
+    this.dropdownCadastrarAberto.set(false);
+  }
+
+  toggleDropdownCadastrar(event: Event): void {
+    event.stopPropagation();
+    this.dropdownCadastrarAberto.set(!this.dropdownCadastrarAberto());
+    this.menuAbertoId.set(null);
   }
 
   fecharMenus(): void {
     this.menuAbertoId.set(null);
+    this.dropdownCadastrarAberto.set(false);
+  }
+
+  baixarModeloCSV(): void {
+    const cabecalho = 'nome,email,cpf,telefone,tipo\n';
+    const exemplo = 'Ana Souza,ana@escola.com,12312312312,11999998888,REGENTE\n';
+    const blob = new Blob([cabecalho + exemplo], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'modelo_importacao_professores.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   // ─── Modal de Edição ──────────────────────────────────────────────────────
@@ -111,7 +134,7 @@ export class CoordenadorProfessoresComponent implements OnInit {
   turmasLoading = signal(false);
   // IDs das turmas selecionadas
   turmasSelecionadas = signal<Set<string>>(new Set());
-  
+
   // Lógica de busca de turmas
   termoBuscaTurma = signal('');
   readonly turmasFiltradas = computed(() => {
@@ -269,7 +292,15 @@ export class CoordenadorProfessoresComponent implements OnInit {
             page: String(this.paginaAtual()),
             limit: String(this.limitePorPagina),
           };
-          if (this.termoBusca().trim()) params['nome'] = this.termoBusca().trim();
+          const termo = this.termoBusca().trim();
+          if (termo) {
+            const isMatricula = /^\d+$/.test(termo);
+            if (isMatricula) {
+              params['matricula'] = termo;
+            } else {
+              params['nome'] = termo;
+            }
+          }
           if (this.filtroTipo()) params['tipo'] = this.filtroTipo();
           if (this.filtroStatus()) params['status'] = this.filtroStatus();
           return this.http.get<PaginacaoEducadores>(this.apiUrl, { params });

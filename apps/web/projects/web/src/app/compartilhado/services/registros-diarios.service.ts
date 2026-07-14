@@ -26,6 +26,15 @@ export class RegistrosDiariosService {
     return this.http.get<RegistroDiarioPendente[]>(`${this.API}/alertas`, { params });
   }
 
+  /** Busca os alertas agrupados por professor (para o coordenador) */
+  getAlertasEscolaPorProfessor(escolaId?: string): Observable<{ educador: string; pendentes: number }[]> {
+    let params = new HttpParams();
+    if (escolaId) {
+      params = params.set('escolaId', escolaId);
+    }
+    return this.http.get<{ educador: string; pendentes: number }[]>(`${this.API}/alertas-escola`, { params });
+  }
+
   /** Retorna o resumo mensal de registros do educador */
   getResumoMensal(educadorId: string): Observable<ResumoMensalResponse> {
     const params = new HttpParams().set('educadorId', educadorId);

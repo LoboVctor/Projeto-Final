@@ -188,6 +188,70 @@ export class TurmaRepository implements ITurmaRepositorio {
     });
   }
 
+  async buscarAgregacoesDiariasEscolaPorPeriodo(inicio: Date, fim: Date) {
+    return this.prisma.client.registroDiario.aggregate({
+      where: {
+        data: { gte: inicio, lte: fim },
+        preenchido: true,
+      },
+      _avg: {
+        scoreComportamento: true,
+        scoreInteracao: true,
+        scoreFoco: true,
+        scoreAutonomia: true,
+        statusAlimentacao: true,
+        usoBanheiro: true,
+      },
+    });
+  }
+
+  async buscarAulasRealizadasEscola(inicio: Date, fim: Date) {
+    return this.prisma.client.registroAula.findMany({
+      where: {
+        data: { gte: inicio, lte: fim },
+        status_aula: 'REALIZADA' 
+      },
+      select: { presenca: true }
+    });
+  }
+
+  async buscarRegistrosDaTurmaPorIntervalo(turmaId: string, inicio: Date, fim: Date): Promise<any[]> {
+    return this.prisma.client.registroDiario.findMany({
+      where: {
+        estudante: { turmas: { some: { id: turmaId } } },
+        data: { gte: inicio, lte: fim },
+        preenchido: true,
+      },
+      select: {
+        data: true,
+        scoreComportamento: true,
+        scoreInteracao: true,
+        scoreFoco: true,
+        scoreAutonomia: true,
+        statusAlimentacao: true,
+        usoBanheiro: true,
+      },
+    });
+  }
+
+  async buscarRegistrosDaEscolaPorIntervalo(inicio: Date, fim: Date): Promise<any[]> {
+    return this.prisma.client.registroDiario.findMany({
+      where: {
+        data: { gte: inicio, lte: fim },
+        preenchido: true,
+      },
+      select: {
+        data: true,
+        scoreComportamento: true,
+        scoreInteracao: true,
+        scoreFoco: true,
+        scoreAutonomia: true,
+        statusAlimentacao: true,
+        usoBanheiro: true,
+      },
+    });
+  }
+
   async contarEstudantesDoEducador(educadorId: string): Promise<number> {
     return this.prisma.client.estudante.count({
       where: {

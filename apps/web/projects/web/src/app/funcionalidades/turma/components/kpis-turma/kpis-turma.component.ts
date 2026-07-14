@@ -1,5 +1,5 @@
 import { Component, input, effect, ElementRef, ViewChild, OnDestroy, inject, signal } from '@angular/core';
-import { DecimalPipe, NgClass } from '@angular/common';
+import { DecimalPipe, NgClass, DatePipe } from '@angular/common';
 import { Chart, registerables } from 'chart.js';
 import { TurmasService } from '../../../../nucleo/services/turmas.service';
 
@@ -8,12 +8,13 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-kpis-turma',
   standalone: true,
-  imports: [DecimalPipe, NgClass],
+  imports: [DecimalPipe, NgClass, DatePipe],
   templateUrl: './kpis-turma.component.html',
   styleUrls: ['./kpis-turma.component.css']
 })
 export class KpisTurmaComponent implements OnDestroy {
-  readonly turmaId = input.required<string>();
+  readonly turmaId = input<string | undefined>();
+  readonly isVisaoEscola = input<boolean>(false);
   
   private readonly turmasService = inject(TurmasService);
   
@@ -34,9 +35,15 @@ export class KpisTurmaComponent implements OnDestroy {
 
   constructor() {
     effect(() => {
+      const visaoEscola = this.isVisaoEscola();
       const id = this.turmaId();
       const per = this.periodo();
-      if (id) this.carregarDashboard(id, per);
+
+      if (visaoEscola) {
+        this.carregarDashboardEscola(per);
+      } else if (id) {
+        this.carregarDashboard(id, per);
+      }
     });
   }
 
@@ -53,31 +60,238 @@ export class KpisTurmaComponent implements OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
-    if (this.mediaChart) this.mediaChart.destroy();
+  private carregarDashboardEscola(periodo: string) {
+    this.dashboardData.set(null); 
+    this.turmasService.obterKpisEscola(periodo).subscribe(data => {
+      this.dashboardData.set(data);
+      setTimeout(() => this.renderizarGauge(data.mediaGeral.valor), 50);
+    });
   }
 
-  private renderizarGauge(valor: number): void {
+  ngOnDestroy(): void {
     if (this.mediaChart) this.mediaChart.destroy();
+    if (this.historicoChart) this.historicoChart.destroy();
+  }
+
+  private renderizarGauge(valor: number) {
+    if (this.mediaChart) {
+      this.mediaChart.destroy();
+    }
+
     if (!this.mediaGaugeCanvas) return;
+
+    const canvas = this.mediaGaugeCanvas.nativeElement;
     
-    const ctx = this.mediaGaugeCanvas.nativeElement.getContext('2d');
-    if (!ctx) return;
-    
-    this.mediaChart = new Chart(ctx, {
+    this.mediaChart = new Chart(canvas, {
       type: 'doughnut',
       data: {
         datasets: [{
           data: [valor, 5 - valor],
-          backgroundColor: ['#f97316', '#ffedd5'],
+          backgroundColor: ['#f97316', '#f3f4f6'],
           borderWidth: 0,
           circumference: 180,
-          rotation: 270
+          rotation: 270,
         }]
       },
       options: {
-        responsive: true, maintainAspectRatio: false, cutout: '80%',
-        plugins: { tooltip: { enabled: false }, legend: { display: false } }
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '80%',
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false }
+        },
+        animation: {
+          animateRotate: true,
+          animateScale: false
+        }
+      }
+    });
+  }
+
+  // --- Lógica do Histórico (Modal) ---
+  categoriaSelecionada = signal<string | null>(null);
+  semanaAtualVisualizada = signal<Date>(this.obterInicioSemanaAtual());
+  private historicoChart: Chart | null = null;
+
+  private obterInicioSemanaAtual(): Date {
+    const data = new Date();
+    const dia = data.getDay();
+    const diff = data.getDate() - dia + (dia === 0 ? -6 : 1);
+    data.setDate(diff);
+    data.setHours(0, 0, 0, 0);
+    return data;
+  }
+
+  semanaAtualFim(): Date {
+    const inicio = new Date(this.semanaAtualVisualizada());
+    inicio.setDate(inicio.getDate() + 4);
+    return inicio;
+  }
+
+  podeNavegarProximaSemana(): boolean {
+    const inicioDestaSemana = this.obterInicioSemanaAtual();
+    return this.semanaAtualVisualizada() < inicioDestaSemana;
+  }
+
+  abrirDetalheCategoria(categoria: string) {
+    this.categoriaSelecionada.set(categoria);
+    this.semanaAtualVisualizada.set(this.obterInicioSemanaAtual());
+    this.carregarHistorico(categoria);
+  }
+
+  fecharDetalheCategoria() {
+    this.categoriaSelecionada.set(null);
+    if (this.historicoChart) {
+      this.historicoChart.destroy();
+      this.historicoChart = null;
+    }
+  }
+
+  navegarSemana(direcao: number) {
+    const novaData = new Date(this.semanaAtualVisualizada());
+    novaData.setDate(novaData.getDate() + (direcao * 7));
+    this.semanaAtualVisualizada.set(novaData);
+    
+    if (this.categoriaSelecionada()) {
+      this.carregarHistorico(this.categoriaSelecionada()!);
+    }
+  }
+
+  private carregarHistorico(categoria: string) {
+    const inicio = this.semanaAtualVisualizada();
+    const formatarParaDataPura = (d: Date) => {
+      const ano = d.getFullYear();
+      const mes = (d.getMonth() + 1).toString().padStart(2, '0');
+      const dia = d.getDate().toString().padStart(2, '0');
+      return `${ano}-${mes}-${dia}`;
+    };
+
+    const fim = new Date(inicio);
+    fim.setDate(fim.getDate() + 4); 
+
+    const strInicio = `${formatarParaDataPura(inicio)}T00:00:00`;
+    const strFim = `${formatarParaDataPura(fim)}T23:59:59`;
+
+    const request$ = this.isVisaoEscola()
+      ? this.turmasService.obterHistoricoEscola(categoria, strInicio, strFim)
+      : this.turmasService.obterHistoricoTurma(this.turmaId()!, categoria, strInicio, strFim);
+
+    request$.subscribe({
+      next: (data) => {
+        if (data && data.datasets && data.datasets.length > 0) {
+          setTimeout(() => this.renderHistoricoChart(data, categoria), 50);
+        } else {
+          this.tratarGraficoHistoricoVazio(categoria);
+        }
+      },
+      error: (err) => console.error('Erro ao buscar histórico:', err)
+    });
+  }
+
+  private tratarGraficoHistoricoVazio(categoria: string) {
+    setTimeout(() => {
+      if (this.historicoChart) this.historicoChart.destroy();
+      const canvas = document.getElementById('historicoCanvasTurma') as HTMLCanvasElement;
+      if (!canvas) return;
+      
+      const contexto = canvas.getContext('2d');
+      if (contexto) contexto.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const dadosVazios = {
+        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'],
+        datasets: [{ label: categoria, data: [0, 0, 0, 0, 0] }]
+      };
+      this.renderHistoricoChart(dadosVazios, categoria);
+    }, 50);
+  }
+
+  private renderHistoricoChart(data: { labels: string[], datasets: { data: number[] }[] }, categoria: string) {
+    const canvas = document.getElementById('historicoCanvasTurma') as HTMLCanvasElement;
+    if (!canvas) return;
+
+    if (this.historicoChart) this.historicoChart.destroy();
+
+    const trackBackground = Array(data.labels.length).fill(5);
+
+    this.historicoChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: categoria,
+            data: data.datasets?.[0]?.data || [],
+            backgroundColor: '#f97316',
+            borderRadius: 20,
+            borderSkipped: false,
+            barThickness: 16,
+            grouped: false,
+            order: 1
+          },
+          {
+            label: 'Máximo (5)',
+            data: trackBackground,
+            backgroundColor: '#f3f4f6',
+            borderRadius: 20,
+            borderSkipped: false,
+            barThickness: 16,
+            grouped: false,
+            order: 2,
+            hoverBackgroundColor: '#f3f4f6'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            filter: function(tooltipItem) {
+              return tooltipItem.dataset.label !== 'Máximo (5)';
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 5,
+            ticks: {
+              stepSize: 1,
+              font: {
+                family: "'Inter', sans-serif",
+                size: 11
+              },
+              color: '#9ca3af'
+            },
+            grid: {
+              color: '#f3f4f6',
+              drawTicks: false
+            },
+            border: { display: false }
+          },
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: {
+                family: "'Inter', sans-serif",
+                size: 12,
+                weight: 'bold'
+              },
+              color: '#6b7280'
+            },
+            border: { display: false }
+          }
+        },
+        animation: {
+          duration: 1000,
+          easing: 'easeOutQuart'
+        }
       }
     });
   }

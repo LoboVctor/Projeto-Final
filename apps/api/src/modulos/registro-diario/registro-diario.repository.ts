@@ -40,6 +40,38 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
     });
   }
 
+  async buscarAlertasEscolaAgrupadosPorProfessor(
+    escolaId?: string,
+  ): Promise<{ educador: string; pendentes: number }[]> {
+    const inicioDoDiaAtual = new Date();
+    inicioDoDiaAtual.setUTCHours(0, 0, 0, 0);
+
+    const pendentes = await this.prisma.client.registroDiario.findMany({
+      where: {
+        data: { lt: inicioDoDiaAtual },
+        preenchido: false,
+        // Caso queiramos filtrar por escolaId futuramente
+        ...(escolaId && { educador: { escolaId } }),
+      },
+      include: {
+        educador: {
+          select: { nome: true },
+        },
+      },
+    });
+
+    const contagemPorProfessor = new Map<string, number>();
+    for (const r of pendentes) {
+      const nome = r.educador?.nome || 'Desconhecido';
+      contagemPorProfessor.set(nome, (contagemPorProfessor.get(nome) || 0) + 1);
+    }
+
+    return Array.from(contagemPorProfessor.entries()).map(([educador, quantidade]) => ({
+      educador,
+      pendentes: quantidade,
+    }));
+  }
+
   async contarRegistrosPreenchidos(
     educadorId: string,
     dataInicio: Date,

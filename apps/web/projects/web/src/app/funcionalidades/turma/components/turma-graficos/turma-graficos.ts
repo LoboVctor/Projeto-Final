@@ -24,11 +24,11 @@ Chart.register(...registerables);
 const DIAG_LABEL: Record<string, string> = {
   TEA: 'TEA',
   TDAH: 'TDAH',
-  SINDROME_DOWN: 'Síndrome de Down',
-  PARALISIA_CEREBRAL: 'Paralisia Cerebral',
-  DEFICIENCIA_INTELECTUAL: 'Def. Intelectual',
-  DEFICIENCIA_MULTIPLA: 'Def. Múltipla',
-  OUTRO: 'Outro',
+  SINDROME_DOWN: 'S.DOWN',
+  PARALISIA_CEREBRAL: 'PC',
+  DEFICIENCIA_INTELECTUAL: 'DI',
+  DEFICIENCIA_MULTIPLA: 'DEMU',
+  OUTRO: 'OUTRO',
 };
 
 /** Cor da barra por tipo de diagnóstico (padronizado em roxo) */
@@ -80,6 +80,9 @@ export class TurmaGraficosComponent implements OnDestroy {
 
   /** Dados pré-carregados (ex: métricas globais da escola). Se fornecido, não busca da API. */
   readonly dadosExternos = input<MetricasTurma | null>(null);
+
+  /** Altera os textos para refletir a visão da escola inteira, não apenas de uma turma. */
+  readonly isVisaoEscola = input<boolean>(false);
 
   @ViewChild('canvasSexo', { static: false }) canvasSexo?: ElementRef<HTMLCanvasElement>;
   @ViewChild('canvasIdade', { static: false }) canvasIdade?: ElementRef<HTMLCanvasElement>;
@@ -264,7 +267,8 @@ export class TurmaGraficosComponent implements OnDestroy {
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            y: { beginAtZero: true, ticks: { stepSize: 1 } },
+            y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f3f4f6' } },
+            x: { grid: { display: false } },
           },
         },
       });

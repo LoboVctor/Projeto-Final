@@ -328,11 +328,11 @@ export class AlunosComponent implements OnInit {
     const mapa: Record<string, string> = {
       TEA: 'TEA',
       TDAH: 'TDAH',
-      SINDROME_DOWN: 'S.Down',
-      PARALISIA_CEREBRAL: 'P.Cerebral',
-      DEFICIENCIA_INTELECTUAL: 'Def. Int.',
-      DEFICIENCIA_MULTIPLA: 'Def. Múlt.',
-      OUTRO: 'Outro'
+      SINDROME_DOWN: 'S.DOWN',
+      PARALISIA_CEREBRAL: 'PC',
+      DEFICIENCIA_INTELECTUAL: 'DI',
+      DEFICIENCIA_MULTIPLA: 'DEMU',
+      OUTRO: 'OUTRO'
     };
     return aluno.diagnosticos.map((d) => mapa[d.diagnostico.tipo] || d.diagnostico.tipo).join(', ');
   }

@@ -11,55 +11,28 @@
             {{ turmaSelecionada()!.anoLetivo }} · {{ turmaSelecionada()!.turno | slice: 0 : 3 }}
           </span>
         }
-      </div>
 
-      @if (turmas().length > 1) {
-        <div class="turma-selector" role="group" aria-label="Selecionar turma">
-          @for (turma of turmas(); track turma.id) {
-            <button class="turma-selector-btn" [class.active]="turmaSelecionada()?.id === turma.id" (click)="selecionarTurma(turma)" type="button">
-              {{ turma.nome }}
-            </button>
-          }
-        </div>
-      }
-
-      <div class="view-toggle" role="group" aria-label="Modo de visualização">
-        <button id="coordenador-btn-view-grid" class="toggle-btn" [class.active]="viewMode() === 'grid'" (click)="setView('grid')" title="Visualização em Cards" aria-pressed="{{ viewMode() === 'grid' }}">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-            <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-          </svg>
-          Cards
-        </button>
-        <button id="coordenador-btn-view-list" class="toggle-btn" [class.active]="viewMode() === 'list'" (click)="setView('list')" title="Visualização em Lista" aria-pressed="{{ viewMode() === 'list' }}">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" />
-            <line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" />
-            <line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
-          </svg>
-          Lista
-        </button>
-      </div>
-
-      <div class="flex gap-2 ml-auto">
-        <button class="flex items-center gap-2 px-3 py-1.5 bg-white text-[#6C3CC9] border border-[#E8E3EF] rounded-lg font-bold text-sm hover:bg-[#F7F5FA] transition-colors" (click)="fileInput.click()" [disabled]="isImporting()">
-          @if (isImporting()) {
-            <svg class="animate-spin h-4 w-4 text-[#6C3CC9]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Importando...
-          } @else {
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-            Importar CSV
-          }
-        </button>
-        <input #fileInput type="file" accept=".csv" class="hidden" (change)="onFileSelected($event)">
-        
-        <button class="flex items-center gap-2 px-3 py-1.5 bg-[#6C3CC9] text-white rounded-lg font-bold text-sm hover:bg-[#5A32A8] transition-colors" (click)="abrirModalCadastrarTurma()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          Cadastrar
-        </button>
+        @if (turmas().length > 0) {
+          <div class="turma-selector-dropdown mt-2 sm:mt-0 relative max-w-xs w-full sm:w-64">
+            <select
+              class="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[#6C3CC9] focus:border-transparent transition-all cursor-pointer hover:bg-gray-50 hover:border-gray-300"
+              (change)="onTurmaSelecionadaChange($event)"
+              aria-label="Selecionar turma"
+            >
+              <option value="" disabled [selected]="!turmaSelecionada()">Selecione uma turma</option>
+              @for (turma of turmas(); track turma.id) {
+                <option [value]="turma.id" [selected]="turmaSelecionada()?.id === turma.id">
+                  {{ turma.nome }}
+                </option>
+              }
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+          </div>
+        }
       </div>
     </div>
 
@@ -73,7 +46,7 @@
     }
 
     @if (!loading() && !error() && turmaSelecionada()) {
-      <div class="big-numbers-row">
+      <div class="big-numbers-row mt-4">
         <div class="big-number-card">
           <div class="big-number-icon big-number-icon--purple">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -125,55 +98,216 @@
       </div>
     }
 
-    @if (!loading() && !error() && turmaSelecionada()) {
-      <app-turma-graficos [turmaId]="turmaSelecionada()!.id"></app-turma-graficos>
-    }
+
 
     @if (loading()) {
-      <div class="skeleton-grid">
+      <div class="skeleton-grid mt-4">
         @for (s of [1, 2, 3, 4, 5, 6]; track s) { <div class="skeleton-card"></div> }
       </div>
     }
 
-    @if (!loading() && !error() && viewMode() === 'grid') {
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-4 justify-items-start items-start students-container-transition" [class.is-loading-students]="loadingEstudantes()">
-        @for (estudante of estudantes(); track estudante) {
-          <app-card-aluno [nome]="estudante.nomeCompleto" [matricula]="estudante.matricula" [foto]="estudante.foto" [estudante]="estudante"
-            [diagnostico]="estudante.diagnosticos.length > 0 ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo' : 'Sem Laudo'"
-            (abrirPerfil)="abrirDetalhesAluno(estudante)"></app-card-aluno>
-        }
-        @if (estudantes().length === 0 && turmaSelecionada()) {
-          <div class="state-empty col-span-full text-center py-8 text-gray-500">Nenhum estudante nesta turma.</div>
-        }
-      </div>
-    }
+    @if (!loading() && !error() && turmaSelecionada()) {
+      <div class="content-split">
+        <div class="students-column">
+          <div class="students-column-header flex justify-between items-end mb-3">
+            <div>
+              <h3 class="text-lg font-sora font-bold text-gray-800">Alunos da Turma</h3>
+              <p class="text-sm text-gray-500">
+                @if (!loadingEstudantes()) { {{ estudantes().length }} estudantes encontrados }
+                @if (loadingEstudantes()) { Buscando estudantes... }
+              </p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+              <div class="view-toggle" role="group" aria-label="Modo de visualização">
+                <button id="coordenador-btn-view-grid" class="toggle-btn" [class.active]="viewMode() === 'grid'" (click)="setView('grid')" title="Visualização em Cards" aria-pressed="{{ viewMode() === 'grid' }}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                  </svg>
+                  Cards
+                </button>
+                <button id="coordenador-btn-view-list" class="toggle-btn" [class.active]="viewMode() === 'list'" (click)="setView('list')" title="Visualização em Lista" aria-pressed="{{ viewMode() === 'list' }}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" />
+                    <line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" />
+                    <line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
+                  </svg>
+                  Lista
+                </button>
+              </div>
+            </div>
+          </div>
 
-    @if (!loading() && !error() && viewMode() === 'list') {
-      <div class="students-list students-container-transition" [class.is-loading-students]="loadingEstudantes()">
-        @if (estudantes().length === 0 && turmaSelecionada()) { <div class="state-empty">Nenhum estudante nesta turma.</div> }
-        @if (estudantes().length > 0) {
-          <table class="list-table">
-            <thead><tr><th>Aluno</th><th>Matrícula</th><th>Diagnósticos</th></tr></thead>
-            <tbody>
-              @for (e of estudantes(); track e) {
-                <tr class="list-row" (click)="abrirDetalhesAluno(e)" title="Ver perfil de {{ e.nomeCompleto }}">
-                  <td class="list-cell-nome">
-                    <div class="list-avatar">
-                      @if (e.foto) { <img [src]="e.foto" [alt]="e.nomeCompleto" /> }
-                      @if (!e.foto) { <div class="list-avatar-placeholder">{{ e.nomeCompleto[0] }}</div> }
-                    </div>
-                    <span>{{ e.nomeCompleto }}</span>
-                  </td>
-                  <td class="list-cell-mat">{{ e.matricula }}</td>
-                  <td class="list-cell-diag">
-                    @for (d of e.diagnosticos; track d) { <span class="tag-diagnostico">{{ d.diagnostico.tipo | diagLabel }}</span> }
-                    @if (!e.diagnosticos.length) { <span class="no-diag">—</span> }
-                  </td>
-                </tr>
+          <div class="students-area">
+            @if (viewMode() === 'grid') {
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 students-container-transition" [class.is-loading-students]="loadingEstudantes()">
+                @for (estudante of estudantes(); track estudante) {
+                  <app-card-aluno [nome]="estudante.nomeCompleto" [matricula]="estudante.matricula" [foto]="estudante.foto" [estudante]="estudante"
+                    [diagnostico]="estudante.diagnosticos.length > 0 ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo' : 'Sem Laudo'"
+                    (abrirPerfil)="abrirDetalhesAluno(estudante)"></app-card-aluno>
+                }
+                @if (estudantes().length === 0) {
+                  <div class="state-empty col-span-full text-center py-8 text-gray-500">Nenhum estudante nesta turma.</div>
+                }
+              </div>
+            }
+
+            @if (viewMode() === 'list') {
+              <div class="students-list students-container-transition" [class.is-loading-students]="loadingEstudantes()">
+                @if (estudantes().length === 0) {
+                  <div class="state-empty text-center py-8 text-gray-500">Nenhum estudante nesta turma.</div>
+                } @else {
+                  <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden w-full">
+                    <table class="w-full text-left border-collapse">
+                      
+                      <thead>
+                        <tr class="bg-gray-50/50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-bold">
+                          <th class="px-6 py-4 font-sora">Aluno</th>
+                          <th class="px-6 py-4 font-sora">Matrícula</th>
+                          <th class="px-6 py-4 font-sora">Turma</th>
+                          <th class="px-6 py-4 font-sora text-center">Diagnóstico</th>
+                        </tr>
+                      </thead>
+                      
+                      <tbody class="divide-y divide-gray-50">
+                        @for (aluno of estudantes(); track aluno.id) {
+                          <tr class="hover:bg-purple-50/30 transition-colors cursor-pointer group"
+                              (click)="abrirDetalhesAluno(aluno)"
+                              tabindex="0"
+                              (keydown.enter)="abrirDetalhesAluno(aluno)"
+                              (keydown.space)="abrirDetalhesAluno(aluno)">
+                            
+                            <!-- Coluna: Aluno (Foto + Nome) -->
+                            <td class="px-6 py-3">
+                              <div class="flex items-center space-x-3">
+                                <img [src]="aluno.foto || 'assets/placeholder-avatar.png'" 
+                                     [alt]="aluno.nomeCompleto" 
+                                     class="w-10 h-10 rounded-full object-cover border border-gray-200 group-hover:border-purple-300 transition-colors" 
+                                     loading="lazy" />
+                                <span class="text-sm font-bold text-gray-800">{{ aluno.nomeCompleto }}</span>
+                              </div>
+                            </td>
+                            
+                            <!-- Coluna: Matrícula -->
+                            <td class="px-6 py-3">
+                              <span class="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded-md">{{ aluno.matricula }}</span>
+                            </td>
+                            
+                            <!-- Coluna: Turma -->
+                            <td class="px-6 py-3 text-sm text-gray-600 font-medium">
+                              {{ turmaSelecionada()?.nome }}
+                            </td>
+                            
+                            <!-- Coluna: Diagnóstico -->
+                            <td class="px-6 py-3 text-center">
+                              @if (aluno.diagnosticos.length > 0) {
+                                <div class="flex flex-wrap justify-center gap-1">
+                                  @for (d of aluno.diagnosticos; track d.diagnostico.nome) {
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-nunito font-bold border shadow-sm" [ngClass]="d.diagnostico.tipo | diagColor">
+                                      {{ d.diagnostico.tipo | diagLabel }}
+                                    </span>
+                                  }
+                                </div>
+                              } @else {
+                                <span class="text-gray-400 font-medium text-sm">—</span>
+                              }
+                            </td>
+                            
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="sidebar-wrapper">
+          <div class="sidebar-top-row">
+            <div class="sidebar-tabs-outer">
+              <button class="sidebar-tab-btn-outer" [class.ativo]="abaAtiva() === 'perfil'" (click)="trocarAba('perfil')">Perfil da Turma</button>
+              <button class="sidebar-tab-btn-outer" [class.ativo]="abaAtiva() === 'kpis'" (click)="trocarAba('kpis')">Métricas</button>
+            </div>
+
+            <!-- Botão Exportar Relatório (mesmo padrão visual do BlocoDashboardComponent) -->
+            <div class="relative esconder-no-pdf">
+              <button
+                id="btn-exportar-relatorio-turma"
+                (click)="toggleExportDropdown()"
+                class="export-btn"
+                type="button"
+                aria-label="Exportar relatório da turma"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Exportar Relatório</span>
+              </button>
+
+              @if (exportDropdownAberto()) {
+                <div class="export-dropdown">
+                  <button
+                    id="btn-export-pdf-turma"
+                    (click)="exportarPDF()"
+                    class="export-dropdown-item export-dropdown-item--pdf"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Salvar como PDF
+                  </button>
+                  <button
+                    id="btn-export-csv-turma"
+                    (click)="exportarCSV()"
+                    class="export-dropdown-item export-dropdown-item--csv"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Planilha Excel (CSV)
+                  </button>
+                </div>
               }
-            </tbody>
-          </table>
-        }
+            </div>
+          </div>
+
+          <aside class="sidebar-area-clean" #relatorioTurma>
+
+            <!-- Cabeçalho oculto — exibido apenas durante a geração do PDF -->
+            <div id="cabecalho-relatorio-turma-pdf" class="hidden cabecalho-pdf">
+              <h1 class="cabecalho-pdf__titulo">Relatório da Turma</h1>
+              <p class="cabecalho-pdf__subtitulo">
+                Turma: <strong>{{ turmaSelecionada()?.nome }}</strong> &nbsp;·&nbsp;
+                {{ abaAtiva() === 'perfil' ? 'Perfil Geral' : 'Métricas de Desempenho' }}
+              </p>
+              <div class="cabecalho-pdf__meta">
+                <span>Data: {{ dataHoraAtual() | date:'dd/MM/yyyy HH:mm' }}</span>
+                <span>Gerado por: {{ nomeUsuarioLogado() }}</span>
+              </div>
+            </div>
+
+            <div class="sidebar-content-clean min-h-[400px] flex flex-col relative">
+              @if (loadingAba()) {
+                <div class="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-[2px] z-10 rounded-xl">
+                  <app-loading-flor titulo="Carregando dados..." subtitulo="Preparando visualização"></app-loading-flor>
+                </div>
+              }
+              
+              <div [class.opacity-0]="loadingAba()" class="transition-opacity duration-300 flex-1 w-full h-full">
+                @switch (abaAtiva()) {
+                  @case ('perfil') {
+                    <app-turma-graficos [turmaId]="turmaSelecionada()!.id"></app-turma-graficos>
+                  }
+                  @case ('kpis') {
+                    <app-kpis-turma [turmaId]="turmaSelecionada()!.id"></app-kpis-turma>
+                  }
+                }
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
     }
 
@@ -246,4 +380,12 @@
       </div>
     }
   </main>
+
+  <!-- Overlay de loading exibido durante geração do PDF (mesmo padrão do BlocoDashboardComponent) -->
+  @if (gerandoPdf()) {
+    <div class="pdf-loading-overlay">
+      <app-loading-flor titulo="Gerando Relatório PDF..." subtitulo="Isso pode levar alguns segundos."></app-loading-flor>
+    </div>
+  }
+
 </div>

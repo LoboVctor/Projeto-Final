@@ -19,7 +19,9 @@
         <div
           class="bg-gradient-to-br from-white via-emerald-50/50 to-emerald-100/40 rounded-2xl shadow-sm hover:shadow-md border border-[#E8E3EF] hover:border-emerald-400/50 py-6 px-5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 group relative overflow-hidden min-h-[144px]">
           <!-- Efeito de fundo decorativo -->
-          <div class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-emerald-400 opacity-20 blur-2xl pointer-events-none"></div>
+          <div
+            class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-emerald-400 opacity-20 blur-2xl pointer-events-none">
+          </div>
           <div
             class="w-12 h-12 rounded-2xl bg-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -40,7 +42,9 @@
         <div
           class="bg-gradient-to-br from-white via-orange-50/60 to-amber-100/50 rounded-2xl shadow-sm hover:shadow-md border border-[#E8E3EF] hover:border-[#F97316]/50 py-6 px-5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 group relative overflow-hidden min-h-[144px]">
           <!-- Efeito de fundo decorativo -->
-          <div class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-orange-400 opacity-20 blur-2xl pointer-events-none"></div>
+          <div
+            class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-orange-400 opacity-20 blur-2xl pointer-events-none">
+          </div>
           <div
             class="w-12 h-12 rounded-2xl bg-orange-100/80 flex items-center justify-center text-[#F97316] shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">
             <!-- Girassol ELO Oficial Simplificado -->
@@ -68,7 +72,9 @@
           class="bg-gradient-to-br from-white via-purple-50/60 to-violet-100/50 rounded-2xl shadow-sm hover:shadow-md border border-[#E8E3EF] hover:border-[#4A248A]/50 py-6 px-5 flex items-center gap-4 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 group relative overflow-hidden min-h-[144px]"
           (click)="abrirModal()">
           <!-- Efeito de fundo decorativo -->
-          <div class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-purple-500 opacity-15 blur-2xl pointer-events-none"></div>
+          <div
+            class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-purple-500 opacity-15 blur-2xl pointer-events-none">
+          </div>
           <div
             class="w-12 h-12 rounded-2xl bg-[#E9D9FF]/70 flex items-center justify-center text-[#4A248A] shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -151,8 +157,8 @@
         } @else {
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 aluno-page">
           @for (estudante of alunosPaginados(); track estudante.id) {
-          <app-card-aluno [nome]="nomeCurtoAluno(estudante.nomeCompleto)" [matricula]="estudante.matricula" [estudante]="estudante"
-            [foto]="estudante.foto" [diagnostico]="
+          <app-card-aluno [nome]="nomeCurtoAluno(estudante.nomeCompleto)" [matricula]="estudante.matricula"
+            [estudante]="estudante" [foto]="estudante.foto" [diagnostico]="
                   estudante.diagnosticos.length > 0
                     ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo'
                     : 'Sem Laudo'
@@ -282,8 +288,8 @@
         <h3 class="text-base font-semibold text-[#6C3CC9]">Progresso do mês</h3>
 
         <div class="flex flex-col items-center justify-center flex-1 overflow-hidden pt-0.5">
-          <apx-chart class="block -mb-14 -mt-3 scale-90 origin-bottom" [series]="chartOptions.series" [chart]="chartOptions.chart"
-            [plotOptions]="chartOptions.plotOptions" [fill]="chartOptions.fill">
+          <apx-chart class="block -mb-14 -mt-3 scale-90 origin-bottom" [series]="chartOptions.series"
+            [chart]="chartOptions.chart" [plotOptions]="chartOptions.plotOptions" [fill]="chartOptions.fill">
           </apx-chart>
           @if (loadingMetricas()) {
           <span class="text-sm text-gray-400 animate-pulse">Carregando métricas...</span>
@@ -299,7 +305,6 @@
         <button (click)="abrirModal()"
           class="w-full py-2.5 bg-white border border-[#6C3CC9] text-[#6C3CC9] hover:bg-[#6C3CC9] hover:text-white rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer outline-none hover:shadow-sm">
           <span>Ver todos os registros</span>
-          <span>&rarr;</span>
         </button>
       </div>
 
@@ -340,7 +345,9 @@
             </button>
             <!-- Informações do evento -->
             <div class="flex-1 min-w-0">
-              <p class="text-[12px] font-bold text-[#2D1E40] leading-tight group-hover:text-[#6C3CC9] transition-colors whitespace-normal break-words">{{ evento.titulo }}</p>
+              <p
+                class="text-[12px] font-bold text-[#2D1E40] leading-tight group-hover:text-[#6C3CC9] transition-colors whitespace-normal break-words">
+                {{ evento.titulo }}</p>
               <p class="text-[11px] text-[#6B6177] mt-0.5">
                 às {{ evento.horarioInicio
                 ? (evento.horarioInicio | date:'HH:mm':'UTC')
@@ -352,9 +359,7 @@
           <!-- Paginação discreta (só aparece com mais de 2 eventos) -->
           @if (deveMostrarPaginacaoEventos()) {
           <div class="flex items-center justify-center gap-2 pt-1.5">
-            <button type="button"
-              (click)="paginaAnteriorEventos()"
-              [disabled]="paginaEventosAtual() === 0"
+            <button type="button" (click)="paginaAnteriorEventos()" [disabled]="paginaEventosAtual() === 0"
               class="w-6 h-6 rounded-md flex items-center justify-center text-[#6C3CC9] bg-[#F0E6FF] hover:bg-[#E0D0FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -364,8 +369,7 @@
             <span class="text-[11px] font-semibold text-[#6C3CC9]">
               {{ paginaEventosAtual() + 1 }} de {{ totalPaginasEventos() }}
             </span>
-            <button type="button"
-              (click)="proximaPaginaEventos()"
+            <button type="button" (click)="proximaPaginaEventos()"
               [disabled]="paginaEventosAtual() >= totalPaginasEventos() - 1"
               class="w-6 h-6 rounded-md flex items-center justify-center text-[#6C3CC9] bg-[#F0E6FF] hover:bg-[#E0D0FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"

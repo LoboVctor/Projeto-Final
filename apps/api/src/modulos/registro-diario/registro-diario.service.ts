@@ -46,6 +46,11 @@ export class RegistroDiarioService {
     );
   }
 
+  async findAlertasEscolaPorProfessor(escolaId?: string) {
+    const dados = await this.registroDiarioRepositorio.buscarAlertasEscolaAgrupadosPorProfessor(escolaId);
+    return dados.sort((a, b) => b.pendentes - a.pendentes);
+  }
+
   async getResumoMensal(educadorId: string) {
     const hoje = new Date();
     const primeiroDiaDoMes = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth(), 1));
