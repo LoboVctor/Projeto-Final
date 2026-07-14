@@ -504,12 +504,17 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     medicamentoId: number;
     dosagem: number;
     unidadeMedida: UnidadeM;
-    administradoEscola: boolean;
-    intervaloAdministracao: number;
-    horarioAdministrado: Date;
   }) {
     return this.prisma.client.estudanteMedicamento.create({
-      data: dados,
+      data: {
+        estudanteId: dados.estudanteId,
+        medicamentoId: dados.medicamentoId,
+        dosagem: dados.dosagem,
+        unidadeMedida: dados.unidadeMedida,
+        administradoEscola: false,
+        intervaloAdministracao: null,
+        horarioAdministrado: null
+      },
     });
   }
 
@@ -518,21 +523,27 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     medicamentoId: number,
     dados: {
       dosagem: number;
-      unidadeMedida: any;
-      administradoEscola: boolean;
-      intervaloAdministracao: number;
-      horarioAdministrado: Date;
+      unidadeMedida: UnidadeM;
     },
   ) {
     return this.prisma.client.estudanteMedicamento.update({
       where: {
         estudanteId_medicamentoId: { estudanteId, medicamentoId },
       },
-      data: dados,
+      data: {
+        dosagem: dados.dosagem,
+        unidadeMedida: dados.unidadeMedida,
+        administradoEscola: false,
+        intervaloAdministracao: null,
+        horarioAdministrado: null
+      },
     });
   }
 
-  async removerVinculoMedicamento(estudanteId: string, medicamentoId: number) {
+  async removerVinculoMedicamento(
+    estudanteId: string,
+    medicamentoId: number,
+  ) {
     return this.prisma.client.estudanteMedicamento.delete({
       where: {
         estudanteId_medicamentoId: { estudanteId, medicamentoId },

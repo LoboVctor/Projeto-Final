@@ -207,19 +207,14 @@ export interface IEstudanteRepositorio {
     medicamentoId: number;
     dosagem: number;
     unidadeMedida: UnidadeM;
-    administradoEscola: boolean;
-    intervaloAdministracao: number;
-    horarioAdministrado: Date;
   }): Promise<EstudanteMedicamento>;
+
   atualizarVinculoMedicamento(
     estudanteId: string,
     medicamentoId: number,
     dados: {
       dosagem: number;
       unidadeMedida: UnidadeM;
-      administradoEscola: boolean;
-      intervaloAdministracao: number;
-      horarioAdministrado: Date;
     },
   ): Promise<EstudanteMedicamento>;
   removerVinculoMedicamento(

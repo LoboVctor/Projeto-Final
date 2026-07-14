@@ -61,15 +61,15 @@
           accept=".pdf,.jpg,.jpeg,.png"
           class="w-full p-2.5 rounded-lg border border-dashed border-gray-300 bg-slate-50 text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 transition-all cursor-pointer" />
           
-          @if (editandoId && arquivoAtualNome && !arquivoSelecionado) {
+          @if (editandoId() && arquivoAtualNome() && !arquivoSelecionado) {
             <div class="flex items-center gap-2 mt-1.5 p-2 bg-purple-50/50 border border-purple-100 rounded-md">
               <svg class="w-4 h-4 text-purple-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
               </svg>
-              <span class="text-[11px] text-purple-700 font-medium truncate">Arquivo atual: <strong>{{ arquivoAtualNome }}</strong></span>
+              <span class="text-[11px] text-purple-700 font-medium truncate">Arquivo atual: <strong>{{ arquivoAtualNome() }}</strong></span>
               <span class="text-[10px] text-slate-400 ml-auto whitespace-nowrap">Deixe em branco para manter</span>
             </div>
-          } @else if (editandoId) {
+          } @else if (editandoId()) {
              <span class="text-[10px] text-slate-400 mt-1">Deixe em branco para manter o arquivo atual.</span>
           }
       </div>
@@ -80,29 +80,29 @@
         </button>
         <button 
           type="submit" 
-          [disabled]="laudoForm.invalid || (!editandoId && !arquivoSelecionado) || enviando" 
+          [disabled]="laudoForm.invalid || (!editandoId() && !arquivoSelecionado) || enviando()" 
           class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xs flex items-center gap-2">
           
-          @if (enviando) {
+          @if (enviando()) {
             <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             Salvando...
           } @else {
-            {{ editandoId ? 'Atualizar Documento' : 'Fazer Upload e Salvar' }}
+            {{ editandoId() ? 'Atualizar Documento' : 'Fazer Upload e Salvar' }}
           }
         </button>
       </div>
     </form>
 
-    @if (laudos && laudos.length > 0) {
+    @if (laudos() && laudos().length > 0) {
       <div class="p-6 bg-slate-50 border-t border-gray-100 flex-1 overflow-y-auto max-h-[220px]">
         <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 font-['Sora']">
           Laudos Anexados
         </h4>
         <div class="space-y-2">
-          @for (laudo of laudos; track laudo.id) {
+          @for (laudo of laudos(); track laudo.id) {
             <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-2xs">
               
               <div class="min-w-0 flex-1 pr-3">

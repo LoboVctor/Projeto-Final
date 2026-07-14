@@ -7,7 +7,7 @@ import type {
   EstudantePedagogico,
 } from './interfaces/IEstudanteRepositorio.js';
 import { EspecificidadeDto } from './dtos/create.especifidades.dto.js';
-import { DiaSemana, StatusAula, Sexo, Fcom, Prisma } from '../../../../../infra/generated/prisma';
+import { DiaSemana, StatusAula, Sexo, Fcom, UnidadeM } from '../../../../../infra/generated/prisma/index.js';
 import { ObterAgendaSemanaDto } from './dtos/obter-agenda-semana.dto.js';
 import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
 import { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
@@ -20,7 +20,7 @@ export class EstudanteService {
     private readonly estudanteRepositorio: IEstudanteRepositorio,
   ) {}
 
-  async adicionarAula(estudanteId: string, dto: CreateAulaEstudanteDto) {
+  async adicionarAula(estudanteId: string, dto: CreateAulaEstudanteDto): Promise<unknown> {
     return this.estudanteRepositorio.criarAula(estudanteId, dto);
   }
 
@@ -53,37 +53,38 @@ export class EstudanteService {
 
     for (const [index, row] of result.data.entries()) {
       try {
-        const rowData = row as any;
+        const rowData = row as Record<string, string>;
         
-        if (!rowData.nome || !rowData.matricula || !rowData.cpf || !rowData.data_nascimento || !rowData.sexo || !rowData.forma_comunicacao) {
+        if (!rowData['nome'] || !rowData['matricula'] || !rowData['cpf'] || !rowData['data_nascimento'] || !rowData['sexo'] || !rowData['forma_comunicacao']) {
            throw new Error('Campos obrigatórios ausentes: nome, matricula, cpf, data_nascimento, sexo ou forma_comunicacao.');
         }
 
-        const sexoValido = Object.values(Sexo).includes(rowData.sexo as Sexo);
-        if (!sexoValido) throw new Error(`Sexo inválido: ${rowData.sexo}`);
+        const sexoValido = Object.values(Sexo).includes(rowData['sexo'] as Sexo);
+        if (!sexoValido) throw new Error(`Sexo inválido: ${rowData['sexo']}`);
 
-        const comunicacaoValida = Object.values(Fcom).includes(rowData.forma_comunicacao as Fcom);
-        if (!comunicacaoValida) throw new Error(`Forma de comunicação inválida: ${rowData.forma_comunicacao}`);
+        const comunicacaoValida = Object.values(Fcom).includes(rowData['forma_comunicacao'] as Fcom);
+        if (!comunicacaoValida) throw new Error(`Forma de comunicação inválida: ${rowData['forma_comunicacao']}`);
 
         // Note: IEstudanteRepositorio.criarEstudante doesn't do Prisma error handling out of the box (P2002 for unique)
         // Let's rely on try-catch
         const criarDados = {
-          nomeCompleto: rowData.nome,
-          matricula: rowData.matricula,
-          cpf: rowData.cpf,
-          dataNascimento: new Date(rowData.data_nascimento),
-          sexo: rowData.sexo as Sexo,
-          formaComunicacao: rowData.forma_comunicacao as Fcom,
+          nomeCompleto: rowData['nome'],
+          matricula: rowData['matricula'],
+          cpf: rowData['cpf'],
+          dataNascimento: new Date(rowData['data_nascimento']),
+          sexo: rowData['sexo'] as Sexo,
+          formaComunicacao: rowData['forma_comunicacao'] as Fcom,
         };
 
         await this.estudanteRepositorio.criarEstudante(criarDados);
         sucesso++;
-      } catch (err: any) {
+      } catch (err: unknown) {
         falhas++;
-        if (err.code === 'P2002') {
+        const prismaError = err as { code?: string; message?: string };
+        if (prismaError.code === 'P2002') {
           erros.push(`Linha ${index + 2}: Matrícula ou CPF já cadastrados.`);
         } else {
-          erros.push(`Linha ${index + 2}: ${err.message || 'Erro desconhecido'}`);
+          erros.push(`Linha ${index + 2}: ${prismaError.message || 'Erro desconhecido'}`);
         }
       }
     }
@@ -360,11 +361,7 @@ export class EstudanteService {
     const aulasRecorrentes =
       await this.estudanteRepositorio.buscarAulasDoEstudante(estudanteId);
 
-    const [ano, mes, dia] = dto.dataBase.split('-').map(Number) as [
-      number,
-      number,
-      number,
-    ];
+    const [ano, mes, dia] = dto.dataBase.split('-').map(Number) as [number, number, number];
     const dataBase = new Date(ano, mes - 1, dia);
 
     const diaSemanaJs = dataBase.getDay();
@@ -423,7 +420,7 @@ export class EstudanteService {
 
   async adicionarLaudo(
     estudanteId: string,
-    dados: any,
+    dados: { tipoDiagnostico: string; tipoDocumento: string; dataEmissao: string },
     arquivo: Express.Multer.File,
   ) {
     if (!arquivo) {
@@ -444,7 +441,11 @@ export class EstudanteService {
     return this.estudanteRepositorio.deletarDocumento(documentoId);
   }
 
-  async atualizarLaudo(documentoId: string, dados: any, arquivo?: any) {
+  async atualizarLaudo(
+    documentoId: string, 
+    dados: { tipoDocumento: string; dataEmissao: string }, 
+    arquivo?: Express.Multer.File
+  ) {
     let linkArquivo: string | undefined;
 
     if (arquivo) {
@@ -472,7 +473,11 @@ export class EstudanteService {
     return `${hours}:${minutes}`;
   }
 
-  async addMedicamento(estudanteId: string, dados: any) {
+  /**
+   * Registra um novo medicamento.
+   * Ajustado: Passa apenas as propriedades limpas aceitas pelo novo contrato do repositório.
+   */
+  async addMedicamento(estudanteId: string, dados: { nomeMedicamento: string; dosagem: string; unidadeMedida: UnidadeM }) {
     let medicamento = await this.estudanteRepositorio.buscarMedicamentoPorNome(
       dados.nomeMedicamento,
     );
@@ -488,21 +493,17 @@ export class EstudanteService {
       medicamentoId: medicamento.id,
       dosagem: Number(dados.dosagem),
       unidadeMedida: dados.unidadeMedida,
-      administradoEscola: dados.administradoNaEscola,
-      intervaloAdministracao: dados.administradoNaEscola
-        ? Number(dados.intervaloAdministracao)
-        : 0,
-      horarioAdministrado:
-        dados.administradoNaEscola && dados.horarioAdministracao
-          ? this.parseTime(dados.horarioAdministracao)
-          : this.parseTime('00:00'),
     });
   }
 
+  /**
+   * Atualiza ou vincula um medicamento existente.
+   * Ajustado: Alinhado com o contrato enxuto sem agendamentos escolares.
+   */
   async updateMedicamento(
     estudanteId: string,
     medicamentoId: number,
-    dados: any,
+    dados: { nomeMedicamento: string; dosagem: string; unidadeMedida: UnidadeM },
   ) {
     const medicamentoAtual =
       await this.estudanteRepositorio.buscarMedicamentoPorId(medicamentoId);
@@ -531,21 +532,13 @@ export class EstudanteService {
       return this.addMedicamento(estudanteId, dados);
     }
 
-    // Se é o mesmo remédio, só atualiza os dados da relação
+    // Se é o mesmo remédio, só atualiza os dados enxutos da relação
     return this.estudanteRepositorio.atualizarVinculoMedicamento(
       estudanteId,
       medicamentoId,
       {
         dosagem: Number(dados.dosagem),
         unidadeMedida: dados.unidadeMedida,
-        administradoEscola: dados.administradoNaEscola,
-        intervaloAdministracao: dados.administradoNaEscola
-          ? Number(dados.intervaloAdministracao)
-          : 0,
-        horarioAdministrado:
-          dados.administradoNaEscola && dados.horarioAdministracao
-            ? this.parseTime(dados.horarioAdministracao)
-            : this.parseTime('00:00'),
       },
     );
   }
@@ -556,6 +549,7 @@ export class EstudanteService {
       medicamentoId,
     );
   }
+
   async registrarChamadaLote(dto: CreateRegistroAulaBatchDto) {
     if (!dto.estudantes || dto.estudantes.length === 0) {
       throw new BadRequestException('A lista de estudantes para registro não pode estar vazia.');
