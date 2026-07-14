@@ -103,55 +103,63 @@
         </span>
         }
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-start space-x-3">
-          <div class="bg-blue-50 text-blue-500 p-2 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </div>
-          <div>
-            <p class="text-xs font-semibold text-blue-500">Professor Regente</p>
-            <p class="text-sm font-bold text-gray-800">
-              {{ vg.professorRegente?.nomeCompleto || 'Sem atribuição' }}
-            </p>
-            <p class="text-xs text-gray-500 mt-0.5">Professor(a)</p>
-          </div>
-        </div>
-        <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-start space-x-3">
-          <div class="bg-blue-50 text-blue-500 p-2 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
+
+      <!-- Ajuste no Grid: md:grid-cols-12 para permitir controle assimétrico do espaço -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+        
+        <!-- 1º CARD: Turma e Turno (Ganhou destaque com md:col-span-5) -->
+        <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center space-x-3 md:col-span-5">
+          <div class="bg-blue-50 text-blue-500 p-2 rounded-lg shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
           </div>
-          <div>
-            <p class="text-xs font-semibold text-blue-500">Turma</p>
-            <p class="text-sm font-bold text-gray-800">{{ vg.turma?.nome || 'Sem Turma' }}</p>
-            <p class="text-xs text-gray-500 mt-0.5">{{ vg.turma?.etapa || '-' }}</p>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-0.5">Turma</p>
+            <p class="text-sm font-bold text-gray-800 leading-tight truncate">
+              {{ vg.turma?.nome || 'Sem Turma' }} - {{ formatarEtapa(vg.turma?.etapa) }}
+              @if (vg.turma?.turno) {
+                <span class="font-bold text-gray-500 text-xs capitalize">• {{ vg.turma!.turno!.toLowerCase() }}</span>
+              }
+            </p>
           </div>
         </div>
-        <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-start space-x-3">
-          <div class="bg-blue-50 text-blue-500 p-2 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
+
+        <!-- 2º CARD: Professor Regente (md:col-span-4) -->
+        <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center space-x-3 md:col-span-4">
+          <div class="bg-blue-50 text-blue-500 p-2 rounded-lg shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-0.5">Professor Regente</p>
+            <p class="text-sm font-bold text-gray-800 leading-tight truncate">
+              {{ vg.professorRegente?.nomeCompleto || 'Sem atribuição' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- 3º CARD: Ano Letivo (md:col-span-3) -->
+        <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center space-x-3 md:col-span-3">
+          <div class="bg-blue-50 text-blue-500 p-2 rounded-lg shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
           </div>
-          <div>
-            <p class="text-xs font-semibold text-blue-500">Ano Letivo</p>
-            <p class="text-sm font-bold text-gray-800">{{ vg.turma?.anoLetivo || '-' }}</p>
-            <p class="text-xs text-gray-500 mt-0.5">
-              {{ vg.turma?.turno || 'Turno não informado' }}
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-0.5">Ano Letivo</p>
+            <p class="text-sm font-bold text-gray-800 leading-tight">
+              {{ vg.turma?.anoLetivo || '-' }}
             </p>
           </div>
         </div>
+
       </div>
     </div>
     <!-- Informações Pessoais -->

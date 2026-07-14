@@ -26,9 +26,11 @@
         <h2 class="text-2xl font-bold text-elo-texto-principal font-sora text-center">
           {{ aluno.nome }}
         </h2>
-        <p class="text-elo-texto-secundario text-sm md:text-base mt-1">
-          Turma {{ aluno.turma }}
-        </p>
+        <div class="text-center mt-1.5 w-full overflow-hidden">
+          <p class="text-elo-texto-secundario text-sm md:text-base mt-1 truncate">
+            <span class="truncate">Turma {{ visaoGeralData()?.turma?.nome || aluno.turma }} - {{ formatarEtapa(visaoGeralData()?.turma?.etapa) }}</span>
+          </p>
+        </div>
         <div class="w-full bg-[#F3EEFC] border border-elo-lavanda/30 rounded-2xl p-4 mt-6 flex items-start space-x-3">
           <div class="text-elo-roxo-principal mt-0.5 flex-shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"

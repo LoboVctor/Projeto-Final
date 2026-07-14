@@ -3,7 +3,7 @@ import type { IRegistroDiarioRepositorio } from './interfaces/IRegistroDiarioRep
 import { CreateRegistrosDiarioDto } from './dtos/create-registros-diario.dto.js';
 import { UpdateRegistrosDiarioDto } from './dtos/update-registros-diario.dto.js';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PrismaService } from '../../prisma/prisma.service.js'; // Ajuste o caminho se necessário
+import { PrismaService } from '../../prisma/prisma.service.js';
 import { StatusAula } from '../../../../../infra/generated/prisma/index.js';
 
 @Injectable()
@@ -174,7 +174,7 @@ export class RegistroDiarioService {
     return this.registroDiarioRepositorio.remover(id);
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  @Cron('0 1 * * 1-5')
   async gerarRegistrosDiariosAutomaticamente() {
     this.logger.log('Iniciando rotina de geração de Registos Diários');
 

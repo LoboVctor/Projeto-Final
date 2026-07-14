@@ -15,7 +15,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Chart, registerables } from 'chart.js';
+import { Chart, ChartDataset, registerables } from 'chart.js';
 import { TurmasService, MetricasTurma } from '../../../../nucleo/services/turmas.service';
 
 Chart.register(...registerables);
@@ -57,7 +57,7 @@ const DIAG_BORDER_COLOR: Record<string, string> = {
 const SEXO_LABEL: Record<string, string> = {
   MASCULINO: 'Masculino',
   FEMININO: 'Feminino',
-  OUTRO: 'Outro',
+  PREFIRO_NAO_INFORMAR: 'Prefiro não responder',
 };
 
 /** Labels amigáveis para forma de comunicação */
@@ -154,10 +154,10 @@ export class TurmaGraficosComponent implements OnDestroy {
     const SEXO_COLOR: Record<string, string> = {
       MASCULINO: '#4A248A',
       FEMININO: '#f4c54e',
-      OUTRO: '#B79CED',
+     PREFIRO_NAO_INFORMAR: '#B79CED',
     };
 
-    const datasets = dados.distribuicaoSexo.map((d) => ({
+    const datasets: ChartDataset<'bar'>[] = dados.distribuicaoSexo.map((d) => ({
       label: SEXO_LABEL[d.sexo] ?? d.sexo,
       data: [d.quantidade], 
       backgroundColor: SEXO_COLOR[d.sexo] ?? '#9CA3AF',
@@ -183,7 +183,9 @@ export class TurmaGraficosComponent implements OnDestroy {
           indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
-          layout: { padding: 0 },
+          layout: { 
+            padding: { top: -10, bottom: 0, left: 0, right: 0 } 
+          },
           scales: {
             x: { stacked: true, display: false },
             y: { stacked: true, display: false }
@@ -191,7 +193,7 @@ export class TurmaGraficosComponent implements OnDestroy {
           plugins: {
             legend: {
               position: 'bottom',
-              labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Nunito', size: 11 } }
+              labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Nunito', size: 11 }, padding: 8 }
             },
             tooltip: {
               callbacks: {
@@ -205,17 +207,15 @@ export class TurmaGraficosComponent implements OnDestroy {
           afterDatasetsDraw(chartInstance) {
             const { ctx, data } = chartInstance;
             let total = 0;
-            
             data.datasets.forEach(ds => total += (ds.data[0] as number) || 0);
 
             data.datasets.forEach((dataset, i) => {
               const meta = chartInstance.getDatasetMeta(i);
-              const bar = meta.data[0] as any; 
+              const bar = meta.data[0] as any;
               const valor = (dataset.data[0] as number) || 0;
 
               if (bar && valor > 0 && total > 0) {
                 const percentagem = ((valor / total) * 100).toFixed(1).replace('.0', '') + '%';
-                
                 const centroX = (bar.x + bar.base) / 2;
                 const centroY = bar.y;
 
@@ -313,7 +313,7 @@ export class TurmaGraficosComponent implements OnDestroy {
   private renderizarCom(dados: MetricasTurma): void {
     if (!this.canvasCom) return;
 
-    const datasets = dados.distribuicaoComunicacao.map((d) => ({
+    const datasets: ChartDataset<'bar'>[] = dados.distribuicaoComunicacao.map((d) => ({
       label: FCOM_LABEL[d.forma] ?? d.forma,
       data: [d.quantidade],
       backgroundColor: d.forma === 'VERBAL' ? '#f4c54e' : '#4A248A',
@@ -339,7 +339,9 @@ export class TurmaGraficosComponent implements OnDestroy {
           indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
-          layout: { padding: 0 },
+          layout: { 
+            padding: { top: -10, bottom: 0, left: 0, right: 0 } 
+          },
           scales: {
             x: { stacked: true, display: false },
             y: { stacked: true, display: false }
@@ -347,7 +349,7 @@ export class TurmaGraficosComponent implements OnDestroy {
           plugins: {
             legend: {
               position: 'bottom',
-              labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Nunito', size: 11 } }
+              labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Nunito', size: 11 }, padding: 8 }
             },
             tooltip: {
               callbacks: {
@@ -356,7 +358,6 @@ export class TurmaGraficosComponent implements OnDestroy {
             }
           }
         },
-
         plugins: [{
           id: 'textInsideBarCom',
           afterDatasetsDraw(chartInstance) {

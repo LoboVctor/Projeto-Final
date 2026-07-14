@@ -1,4 +1,6 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards, Query, UseInterceptors, UploadedFile, HttpCode, HttpStatus, Request, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Put, Delete, Body, Param, ParseIntPipe, UseGuards, Query,
+   UseInterceptors, UploadedFile, HttpCode, HttpStatus, Request, BadRequestException, ParseFilePipe, 
+  MaxFileSizeValidator, FileValidator } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { EstudanteService } from './estudante.service.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
@@ -11,6 +13,35 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
 import { CreateAulaEstudanteDto } from './dtos/create-aula.dto.js';
+
+/**
+ * Validador customizado de tipo de arquivo baseado em mimetype.
+ *
+ * Substitui o FileTypeValidator nativo do Nest, que valida lendo o
+ * "magic number" a partir de file.buffer — disponível apenas quando o
+ * Multer usa memoryStorage. Como os endpoints de laudos usam diskStorage,
+ * file.buffer não é populado, e o FileTypeValidator falhava sempre com:
+ * "file buffer is not available; file type validation could not be performed".
+ *
+ * Este validador usa file.mimetype (preenchido pelo Multer a partir do
+ * header Content-Type do arquivo enviado), funcionando com qualquer storage.
+ */
+class MimeTypeValidator extends FileValidator<{ allowedTypes: string[] }> {
+  constructor(options: { allowedTypes: string[] }) {
+    super(options);
+  }
+
+  isValid(file?: Express.Multer.File): boolean {
+    if (!file) return false;
+    return this.validationOptions.allowedTypes.includes(file.mimetype);
+  }
+
+  buildErrorMessage(): string {
+    return `Formato de arquivo inválido. Permitidos: ${this.validationOptions.allowedTypes.join(', ')}`;
+  }
+}
+
+const TIPOS_ARQUIVO_PERMITIDOS = ['image/png', 'image/jpeg', 'application/pdf'];
 
 @ApiTags('Estudantes')
 @ApiBearerAuth()
@@ -148,8 +179,7 @@ export class EstudantesController {
       storage: diskStorage({
         destination: './uploads/laudos',
         filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
           const extensao = extname(file.originalname);
           cb(null, `${uniqueSuffix}${extensao}`);
         },
@@ -158,18 +188,18 @@ export class EstudantesController {
   )
   async adicionarLaudo(
     @Param('estudanteId') estudanteId: string,
-    @Body() body: any,
-    @UploadedFile() arquivo: Express.Multer.File,
+    @Body() body: { tipoDiagnostico: string; tipoDocumento: string; dataEmissao: string },
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB em bytes
+          new MimeTypeValidator({ allowedTypes: TIPOS_ARQUIVO_PERMITIDOS }),
+        ],
+      }),
+    )
+    arquivo: Express.Multer.File,
   ) {
     return this.estudanteService.adicionarLaudo(estudanteId, body, arquivo);
-  }
-
-  @Delete(':estudanteId/laudos/:documentoId')
-  @ApiOperation({
-    summary: 'Remove um laudo/documento de um estudante pelo ID do documento',
-  })
-  async removerLaudo(@Param('documentoId') documentoId: string) {
-    return this.estudanteService.removerLaudo(documentoId);
   }
 
   @Patch(':estudanteId/laudos/:documentoId')
@@ -181,8 +211,7 @@ export class EstudantesController {
       storage: diskStorage({
         destination: './uploads/laudos',
         filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
           const extensao = extname(file.originalname);
           cb(null, `${uniqueSuffix}${extensao}`);
         },
@@ -191,10 +220,27 @@ export class EstudantesController {
   )
   async atualizarLaudo(
     @Param('documentoId') documentoId: string,
-    @Body() body: any,
-    @UploadedFile() arquivo?: Express.Multer.File,
+    @Body() body: { tipoDocumento: string; dataEmissao: string },
+    @UploadedFile(
+      new ParseFilePipe({
+        fileIsRequired: false, 
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
+          new MimeTypeValidator({ allowedTypes: TIPOS_ARQUIVO_PERMITIDOS }),
+        ],
+      }),
+    )
+    arquivo?: Express.Multer.File,
   ) {
     return this.estudanteService.atualizarLaudo(documentoId, body, arquivo);
+  }
+
+  @Delete(':estudanteId/laudos/:documentoId')
+  @ApiOperation({
+    summary: 'Remove um laudo/documento de um estudante pelo ID do documento',
+  })
+  async removerLaudo(@Param('documentoId') documentoId: string) {
+    return this.estudanteService.removerLaudo(documentoId);
   }
 
   // ==========================================
@@ -212,7 +258,7 @@ export class EstudantesController {
     return this.estudanteService.addMedicamento(estudanteId, dados);
   }
 
-  @Patch(':estudanteId/medicamentos/:medicamentoId')
+  @Put(':estudanteId/medicamentos/:medicamentoId') 
   @ApiOperation({
     summary: 'Atualiza os dados de um medicamento registrado para o estudante',
   })

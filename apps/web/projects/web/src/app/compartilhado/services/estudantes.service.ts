@@ -56,6 +56,7 @@ export interface EstudanteSaude {
     tipo: string;
     urlArquivo: string;
     dataEmissao: string;
+    createdAt: string;
   }>;
 
   medicamentos: Array<{

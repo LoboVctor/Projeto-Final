@@ -890,8 +890,8 @@ async function main() {
   const alergiaAmendoim = await prisma.especificidade.create({
     data: {
       tipo: TipoEspecificidade.RESTRICAO,
-      descricao: 'Alergia severa a amendoim',
-      categoria: CategoriaEspecificidade.ALIMENTAR,
+      descricao: 'Alergia severa a látex',
+      categoria: CategoriaEspecificidade.SENSORIAL,
     },
   });
 
@@ -960,10 +960,8 @@ async function main() {
   // Todos os 5 estudantes recebem o mesmo histórico padronizado (>30 dias).
   const todosEstudantesIds = estudantesData.map((est) => est.id);
 
-  // Dias -3 a -89 (mais de 30 dias úteis de histórico) preenchidos para TODOS os
-  // estudantes. Os dias "hoje" (i=0) e "ontem" (i=1) ficam pendentes (ver bloco
-  // seguinte), simulando o fluxo real em que a rotina do dia ainda não foi preenchida.
-  for (let i = 2; i < 90; i++) {
+  // Dias -3 a -365 (1 ano de histórico letivo para métricas semestrais/anuais)
+  for (let i = 1; i <= 365; i++) {
     const dataRegistro = new Date(hoje);
     dataRegistro.setUTCDate(hoje.getUTCDate() - i);
 

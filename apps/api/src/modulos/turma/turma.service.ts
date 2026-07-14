@@ -360,15 +360,23 @@ export class TurmaService {
     const totalAlunos = await this.turmaRepositorio.contarEstudantesDoEducador(educadorId);
 
     const hoje = new Date();
-    const diaDaSemanaAtual = hoje.getDay();
+    const diaDaSemanaAtual = hoje.getDay(); 
     
+    if (diaDaSemanaAtual === 0 || diaDaSemanaAtual === 6) {
+      return {
+        totalAlunos,
+        scoreMedioDia: 0,
+        diaDaSemana: diaDaSemanaAtual
+      };
+    }
+
     const dataCorte = new Date();
     dataCorte.setDate(dataCorte.getDate() - 90);
 
     const registros = await this.turmaRepositorio.buscarRegistrosDiariosDoEducador(educadorId, dataCorte);
 
     const registrosDoDia = registros.filter(r => {
-      return new Date(r.data).getDay() === diaDaSemanaAtual;
+      return new Date(r.data).getUTCDay() === diaDaSemanaAtual;
     });
 
     let scoreMedio = 0;
@@ -386,7 +394,6 @@ export class TurmaService {
         ) / 6;
         somaGeral += mediaDoRegistro;
       }
-      // Calcula a média das médias
       scoreMedio = Number((somaGeral / registrosDoDia.length).toFixed(1));
     }
 
