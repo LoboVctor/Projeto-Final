@@ -101,6 +101,12 @@ export class TurmasService {
     return this.http.get<any>(`${this.API}/${turmaId}/kpis`, { params });
   }
 
+  obterKpisEscola(periodo: string = 'semana'): Observable<any> {
+    const params = new HttpParams().set('periodo', periodo);
+    
+    return this.http.get<any>(`${this.API}/kpis-escola`, { params });
+  }
+
   getBigNumbersHome(educadorId: string) {
     return this.http.get<BigNumbersHomeResponse>(`${this.API}/home/big-numbers/${educadorId}`);
   }
@@ -111,5 +117,21 @@ export class TurmasService {
    */
   getDashboardEscola(): Observable<MetricasEscola> {
     return this.http.get<MetricasEscola>(`${this.API}/metricas-escola`);
+  }
+
+  obterHistoricoEscola(categoria: string, dataInicio: string, dataFim: string): Observable<any> {
+    const params = new HttpParams()
+      .set('categoria', categoria)
+      .set('dataInicio', dataInicio)
+      .set('dataFim', dataFim);
+    return this.http.get<any>(`${this.API}/historico-escola`, { params });
+  }
+
+  obterHistoricoTurma(turmaId: string, categoria: string, dataInicio: string, dataFim: string): Observable<any> {
+    const params = new HttpParams()
+      .set('categoria', categoria)
+      .set('dataInicio', dataInicio)
+      .set('dataFim', dataFim);
+    return this.http.get<any>(`${this.API}/${turmaId}/historico`, { params });
   }
 }

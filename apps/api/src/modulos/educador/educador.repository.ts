@@ -11,6 +11,7 @@ const MAPA_TIPO_PARA_ROLE: Record<TipoEducador, Role> = {
 
 export interface FiltrosEducador {
   nome?: string;
+  matricula?: string;
   tipo?: TipoEducador;
   /** 'ativos' | 'inativos' | 'todos' */
   status?: string;
@@ -43,13 +44,16 @@ export class EducadorRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async listar(filtros: FiltrosEducador) {
-    const { nome, tipo, status, page, limit } = filtros;
+    const { nome, matricula, tipo, status, page, limit } = filtros;
     const skip = (page - 1) * limit;
 
     const where: Record<string, unknown> = {};
 
     if (nome) {
-      where['nome'] = { contains: nome, mode: 'insensitive' };
+      where['nome'] = { startsWith: nome, mode: 'insensitive' };
+    }
+    if (matricula) {
+      where['matricula'] = { contains: matricula, mode: 'insensitive' };
     }
     if (tipo) {
       where['tipo'] = tipo;

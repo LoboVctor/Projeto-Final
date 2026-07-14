@@ -334,6 +334,68 @@ export class TurmaService {
     };
   }
 
+  async obterDashboardEscola(periodo: string = 'semana'): Promise<TurmaDashboardResponseDto> {
+    const { atualInicio, atualFim, anteriorInicio, anteriorFim } = this.calcularJanelasDeTempoIguaisAoAluno(periodo);
+
+    const [diarioAtual, diarioAnterior, freqAtual, freqAnterior] = await Promise.all([
+      this.turmaRepositorio.buscarAgregacoesDiariasEscolaPorPeriodo(atualInicio, atualFim),
+      this.turmaRepositorio.buscarAgregacoesDiariasEscolaPorPeriodo(anteriorInicio, anteriorFim),
+      
+      this.turmaRepositorio.buscarAulasRealizadasEscola(atualInicio, atualFim),
+      this.turmaRepositorio.buscarAulasRealizadasEscola(anteriorInicio, anteriorFim)
+    ]);
+
+    const calcularMetricasFrequencia = (aulas: { presenca: boolean }[]) => {
+      if (aulas.length === 0) return 0;
+      const totaisPresencas = aulas.filter(a => a.presenca).length;
+      return (totaisPresencas / aulas.length) * 100;
+    };
+
+    const valFreqAtual = calcularMetricasFrequencia(freqAtual);
+    const valFreqAnterior = calcularMetricasFrequencia(freqAnterior);
+
+    const chaves = [
+      { key: 'Alimentacao', prop: 'statusAlimentacao' },
+      { key: 'Banheiro', prop: 'usoBanheiro' },
+      { key: 'Autonomia', prop: 'scoreAutonomia' },
+      { key: 'Comportamento', prop: 'scoreComportamento' },
+      { key: 'Interacao', prop: 'scoreInteracao' },
+      { key: 'Foco', prop: 'scoreFoco' },
+    ];
+
+    const categorias: Record<string, { valor: number; variacao: number }> = {};
+    let somaMediaGeral = 0;
+    let somaMediaGeralAnterior = 0;
+
+    for (const c of chaves) {
+      const valAtual = diarioAtual?._avg?.[c.prop as keyof typeof diarioAtual._avg] || 0;
+      const valAnterior = diarioAnterior?._avg?.[c.prop as keyof typeof diarioAnterior._avg] || 0;
+      
+      categorias[c.key] = {
+        valor: Number(valAtual.toFixed(1)),
+        variacao: Number((valAtual - valAnterior).toFixed(1)),
+      };
+      somaMediaGeral += valAtual;
+      somaMediaGeralAnterior += valAnterior;
+    }
+
+    const valMediaGeral = somaMediaGeral / 6;
+    const valMediaGeralAnterior = somaMediaGeralAnterior / 6;
+
+    return {
+      mediaGeral: {
+        valor: Number(valMediaGeral.toFixed(1)),
+        variacao: Number((valMediaGeral - valMediaGeralAnterior).toFixed(1)),
+      },
+      frequencia: {
+        valor: Number(valFreqAtual.toFixed(1)),
+        variacao: Number((valFreqAtual - valFreqAnterior).toFixed(1)),
+      },
+      categorias,
+    };
+  }
+
+
   private calcularJanelasDeTempoIguaisAoAluno(periodo: string) {
     const atualFim = new Date();
     const atualInicio = new Date();
@@ -485,5 +547,68 @@ export class TurmaService {
       distribuicaoDiagnostico,
       distribuicaoComunicacao,
     };
+  }
+
+  async obterHistoricoTurma(turmaId: string, categoria: string, dataInicio: string, dataFim: string) {
+    return this.obterHistorico(categoria, dataInicio, dataFim, turmaId);
+  }
+
+  async obterHistoricoEscola(categoria: string, dataInicio: string, dataFim: string) {
+    return this.obterHistorico(categoria, dataInicio, dataFim);
+  }
+
+  private async obterHistorico(categoria: string, dataInicio: string, dataFim: string, turmaId?: string) {
+    const inicioBusca = new Date(`${dataInicio.split('T')[0]}T00:00:00.000Z`);
+    const fimBusca = new Date(`${dataFim.split('T')[0]}T23:59:59.999Z`);
+
+    const registros = turmaId
+      ? await this.turmaRepositorio.buscarRegistrosDaTurmaPorIntervalo(turmaId, inicioBusca, fimBusca)
+      : await this.turmaRepositorio.buscarRegistrosDaEscolaPorIntervalo(inicioBusca, fimBusca);
+
+    const labels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'];
+    const numLabels = labels.length;
+
+    const agrupamento = {
+      Comportamento: Array.from({ length: numLabels }, () => [] as number[]),
+      Interação: Array.from({ length: numLabels }, () => [] as number[]),
+      Foco: Array.from({ length: numLabels }, () => [] as number[]),
+      Autonomia: Array.from({ length: numLabels }, () => [] as number[]),
+      Alimentação: Array.from({ length: numLabels }, () => [] as number[]),
+      Banheiro: Array.from({ length: numLabels }, () => [] as number[]),
+    };
+
+    registros.forEach((registro) => {
+      let index = -1;
+      const diaDaSemana = registro.data.getUTCDay();
+
+      if (diaDaSemana >= 1 && diaDaSemana <= 5) {
+        index = diaDaSemana - 1;
+      }
+
+      if (index >= 0 && index < numLabels) {
+        agrupamento.Comportamento[index]!.push(registro.scoreComportamento);
+        agrupamento.Interação[index]!.push(registro.scoreInteracao);
+        agrupamento.Foco[index]!.push(registro.scoreFoco);
+        agrupamento.Autonomia[index]!.push(registro.scoreAutonomia);
+        agrupamento.Alimentação[index]!.push(registro.statusAlimentacao);
+        agrupamento.Banheiro[index]!.push(registro.usoBanheiro);
+      }
+    });
+
+    let datasets = Object.keys(agrupamento).map((indicador) => {
+      const valoresAgrupados = agrupamento[indicador as keyof typeof agrupamento];
+      const medias = valoresAgrupados.map((valores) => {
+        if (valores.length === 0) return 0;
+        const soma = valores.reduce((acc, val) => acc + Number(val || 0), 0);
+        return parseFloat((soma / valores.length).toFixed(1));
+      });
+      return { label: indicador, data: medias };
+    });
+
+    if (categoria) {
+      datasets = datasets.filter((d) => categoria.includes(d.label));
+    }
+
+    return { labels, datasets };
   }
 }

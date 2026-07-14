@@ -20,16 +20,17 @@ import type {
   PaginacaoResponse,
 } from '../../../compartilhado/models/gerenciamento-alunos.model';
 import type { AlunoModalData } from '../../../compartilhado/models/aluno-modal.model';
-import { DiagLabelPipe } from '../../../compartilhado/pipes/student.pipes';
+import { DiagLabelPipe, DiagColorPipe } from '../../../compartilhado/pipes/student.pipes';
 import { AuditoriaService } from '../../../nucleo/services/auditoria.service';
 import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL } from '../../../nucleo/config/api.config';
 import { finalize } from 'rxjs';
+import { LoadingFlorComponent } from '../../../compartilhado/components/loading-flor/loading-flor.component';
 
 @Component({
   selector: 'app-coordenador-alunos',
   standalone: true,
-  imports: [CommonModule, FormsModule, AlunoModalComponent, DiagLabelPipe],
+  imports: [CommonModule, FormsModule, AlunoModalComponent, DiagLabelPipe, DiagColorPipe, LoadingFlorComponent],
   templateUrl: './coordenador-alunos.component.html',
   styleUrls: ['./coordenador-alunos.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,8 +46,31 @@ export class CoordenadorAlunosComponent implements OnInit {
   private readonly baseUrl = inject(API_BASE_URL);
 
   abaSolicitada = signal<string | null>(null);
+  dropdownCadastrarAberto = signal(false);
+
+  toggleDropdownCadastrar(event: Event): void {
+    event.stopPropagation();
+    this.dropdownCadastrarAberto.set(!this.dropdownCadastrarAberto());
+  }
+
+  fecharMenus(): void {
+    this.dropdownCadastrarAberto.set(false);
+  }
+
+  baixarModeloCSV(): void {
+    const cabecalho = 'nome,matricula,cpf,data_nascimento,sexo,forma_comunicacao\n';
+    const exemplo = 'Pedro da Silva,2023001,11122233344,2015-05-20,MASCULINO,VERBAL\n';
+    const blob = new Blob([cabecalho + exemplo], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'modelo_importacao_alunos.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
   resposta = signal<PaginacaoResponse<EstudanteListagemItem> | null>(null);
-  loading = signal(false);
+  loading = signal(true);
   erro = signal<string | null>(null);
 
   termoBusca = signal('');
@@ -59,7 +83,7 @@ export class CoordenadorAlunosComponent implements OnInit {
   filtroIdadeMin = signal<number | undefined>(undefined);
   filtroIdadeMax = signal<number | undefined>(undefined);
   paginaAtual = signal(1);
-  readonly limitePorPagina = 20;
+  readonly limitePorPagina = 6;
 
   turmasDisponiveis = signal<TurmaResumo[]>([]);
 
@@ -242,9 +266,9 @@ export class CoordenadorAlunosComponent implements OnInit {
   getDiagnosticoLabel(aluno: EstudanteListagemItem): string {
     if (aluno.diagnosticos.length === 0) return '—';
     const mapa: Record<string, string> = {
-      TEA: 'TEA', TDAH: 'TDAH', SINDROME_DOWN: 'S.Down',
-      PARALISIA_CEREBRAL: 'P.Cerebral', DEFICIENCIA_INTELECTUAL: 'Def. Int.',
-      DEFICIENCIA_MULTIPLA: 'Def. Múlt.', OUTRO: 'Outro',
+      TEA: 'TEA', TDAH: 'TDAH', SINDROME_DOWN: 'S.DOWN',
+      PARALISIA_CEREBRAL: 'PC', DEFICIENCIA_INTELECTUAL: 'DI',
+      DEFICIENCIA_MULTIPLA: 'DEMU', OUTRO: 'OUTRO',
     };
     return aluno.diagnosticos.map((d) => mapa[d.diagnostico.tipo] || d.diagnostico.tipo).join(', ');
   }

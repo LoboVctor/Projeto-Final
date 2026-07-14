@@ -124,6 +124,14 @@ export interface ITurmaRepositorio {
   buscarAgregacoesDiariasPorPeriodo(turmaId: string, inicio: Date, fim: Date): Promise<any>;
   buscarFrequenciaPorPeriodo(turmaId: string, inicio: Date, fim: Date): Promise<any>;
   buscarAulasRealizadas(turmaId: string, inicio: Date, fim: Date): Promise<{ presenca: boolean }[]>;
+  
+  // Métodos Globais da Escola
+  buscarAgregacoesDiariasEscolaPorPeriodo(inicio: Date, fim: Date): Promise<any>;
+  buscarAulasRealizadasEscola(inicio: Date, fim: Date): Promise<{ presenca: boolean }[]>;
+
+  // Métodos para o Histórico (Evolução)
+  buscarRegistrosDaTurmaPorIntervalo(turmaId: string, inicio: Date, fim: Date): Promise<any[]>;
+  buscarRegistrosDaEscolaPorIntervalo(inicio: Date, fim: Date): Promise<any[]>;
   contarEstudantesDoEducador(educadorId: string): Promise<number>;
   buscarRegistrosDiariosDoEducador(
     educadorId: string, 
