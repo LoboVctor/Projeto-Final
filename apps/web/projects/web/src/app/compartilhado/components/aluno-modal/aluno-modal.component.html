@@ -87,12 +87,6 @@
                   [ngClass]="isRelatoriosExpanded() ? 'bg-blue-600' : 'bg-blue-400'"></div>
                 <span>Relatórios</span>
               </button>
-              <button (click)="abrirResponsavel()" [class.font-bold]="isResponsavelExpanded()"
-                class="flex items-center space-x-2 text-sm text-blue-800 p-2 rounded hover:bg-blue-100/80 transition-colors text-left cursor-pointer">
-                <div class="w-1.5 h-1.5 rounded-full"
-                  [ngClass]="isResponsavelExpanded() ? 'bg-blue-600' : 'bg-blue-400'"></div>
-                <span>Responsável/Endereço</span>
-              </button>
             </div>
             }
           </div>
@@ -170,16 +164,6 @@
         Baixando painel de métricas analíticas...
       </div>
       }
-      }
-      @if (isResponsavelExpanded()) {
-        <div class="flex-1 flex flex-col p-6 animate-fade-in overflow-y-auto modal-scroll-area">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold text-elo-roxo-profundo font-sora">
-              Responsável / Endereço
-            </h2>
-          </div>
-          <app-cadastro-responsavel class="flex-1 flex flex-col min-h-0" [isAba]="true" [alunoId]="aluno?.id ?? null"></app-cadastro-responsavel>
-        </div>
       }
     </main>
   </div>

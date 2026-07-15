@@ -20,7 +20,6 @@ import { BlocoSaudeComponent } from '../../../funcionalidades/estudante/componen
 import { BlocoRelatoriosComponent } from '../../../funcionalidades/estudante/components/bloco-relatorios/bloco-relatorios';
 import { BlocoAgendaComponent } from '../../../funcionalidades/estudante/components/bloco-agenda/bloco-agenda.component';
 import { BlocoDashboardComponent } from '../../../funcionalidades/estudante/components/bloco-dashboards/bloco-dashboard.component';
-import { CadastroResponsavelComponent } from '../../../funcionalidades/estudante/cadastro-responsavel/cadastro-responsavel.component';
 
 @Component({
   selector: 'app-aluno-modal',
@@ -30,8 +29,7 @@ import { CadastroResponsavelComponent } from '../../../funcionalidades/estudante
     BlocoSaudeComponent,
     BlocoRelatoriosComponent,
     BlocoAgendaComponent,
-    BlocoDashboardComponent,
-    CadastroResponsavelComponent
+    BlocoDashboardComponent
   ],
   templateUrl: './aluno-modal.component.html',
   styleUrls: ['./aluno-modal.component.css'],

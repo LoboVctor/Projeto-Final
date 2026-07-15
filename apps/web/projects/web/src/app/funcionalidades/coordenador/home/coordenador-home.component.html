@@ -108,9 +108,9 @@
           <div class="flex flex-col min-w-0">
             <p class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-1">Diagnóstico Principal</p>
             @if (loadingDashboard()) {
-            <span class="text-lg font-extrabold text-purple-300 leading-tight animate-pulse">—</span>
+            <span class="text-4xl font-extrabold text-purple-300 leading-none animate-pulse">—</span>
             } @else {
-            <span class="text-xl font-extrabold text-[#6C3CC9] leading-tight break-words">
+            <span class="text-4xl font-extrabold text-[#6C3CC9] leading-none break-words">
               {{ metricasEscola()?.diagnosticoPrincipal ?? '—' }}
             </span>
             }
