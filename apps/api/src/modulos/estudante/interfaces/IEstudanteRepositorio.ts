@@ -158,6 +158,7 @@ export interface IEstudanteRepositorio {
   buscarSaude(estudanteId: string): Promise<EstudanteSaude | null>;
   buscarPedagogico(estudanteId: string): Promise<EstudantePedagogico | null>;
   criarEstudante(dados: any): Promise<any>;
+  atualizarEstudante(id: string, payload: { estudante: any, responsavel: any }): Promise<any>;
   buscarComFiltros(
     query: BuscarEstudantesQueryDto,
   ): Promise<EstudanteListagemPaginado>;
@@ -262,4 +263,5 @@ export interface IEstudanteRepositorio {
     },
   ): Promise<any>;
   registrarChamadaEmLote(dto: CreateRegistroAulaBatchDto): Promise<RegistroAula[]>;
+  desativarEstudante(id: string): Promise<any>;
 }

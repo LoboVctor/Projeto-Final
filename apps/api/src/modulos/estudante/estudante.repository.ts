@@ -30,11 +30,64 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     });
   }
 
+  async atualizarEstudante(id: string, payload: { estudante: any, responsavel: any }): Promise<any> {
+    return this.prisma.client.$transaction(async (tx) => {
+      // 1. Atualiza os dados do estudante
+      const estudanteAtualizado = await tx.estudante.update({
+        where: { id },
+        data: payload.estudante,
+      });
+
+      // 2. Se houver dados do responsável, atualizar ou criar
+      if (payload.responsavel) {
+        // Verifica se já existe um responsável principal
+        const relacaoPrincipal = await tx.estudanteResponsavel.findFirst({
+          where: {
+            estudanteId: id,
+            responsavelPrincipal: true,
+          },
+          include: {
+            responsavel: true,
+          },
+        });
+
+        if (relacaoPrincipal) {
+          // Se existe, atualiza os dados do responsável
+          await tx.responsavel.update({
+            where: { id: relacaoPrincipal.responsavelId },
+            data: payload.responsavel,
+          });
+        } else {
+          // Se não existe, cria um novo responsável e o vínculo principal
+          const novoResponsavel = await tx.responsavel.create({
+            data: {
+              ...payload.responsavel,
+              cpf: payload.responsavel.cpf || (Date.now().toString() + Math.floor(Math.random() * 1000)),
+              sexo: payload.responsavel.sexo || 'PREFIRO_NAO_INFORMAR',
+              bairro: payload.responsavel.bairro || 'Não informado'
+            },
+          });
+
+          await tx.estudanteResponsavel.create({
+            data: {
+              estudanteId: id,
+              responsavelId: novoResponsavel.id,
+              responsavelPrincipal: true,
+              grauParentesco: 'OUTRO', // Valor default obrigatório pelo schema
+            },
+          });
+        }
+      }
+
+      return estudanteAtualizado;
+    });
+  }
+
   async buscarVisaoGeral(
     estudanteId: string,
   ): Promise<EstudanteVisaoGeral | null> {
-    return this.prisma.client.estudante.findUnique({
-      where: { id: estudanteId },
+    return this.prisma.client.estudante.findFirst({
+      where: { id: estudanteId, deletedAt: null },
       include: {
         turmas: {
           include: { educador: true },
@@ -51,8 +104,8 @@ export class EstudanteRepository implements IEstudanteRepositorio {
   }
 
   async buscarSaude(estudanteId: string): Promise<EstudanteSaude | null> {
-    return this.prisma.client.estudante.findUnique({
-      where: { id: estudanteId },
+    return this.prisma.client.estudante.findFirst({
+      where: { id: estudanteId, deletedAt: null },
       select: {
         id: true,
         nomeCompleto: true,
@@ -101,8 +154,8 @@ export class EstudanteRepository implements IEstudanteRepositorio {
   async buscarPedagogico(
     estudanteId: string,
   ): Promise<EstudantePedagogico | null> {
-    return this.prisma.client.estudante.findUnique({
-      where: { id: estudanteId },
+    return this.prisma.client.estudante.findFirst({
+      where: { id: estudanteId, deletedAt: null },
       select: {
         id: true,
         nomeCompleto: true,
@@ -159,6 +212,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
       : undefined;
 
     const where = {
+      deletedAt: null,
       ...(query.nome && {
         nomeCompleto: { startsWith: query.nome, mode: 'insensitive' as const },
       }),
@@ -653,5 +707,12 @@ export class EstudanteRepository implements IEstudanteRepositorio {
         })
       )
     );
+  }
+
+  async desativarEstudante(id: string): Promise<any> {
+    return this.prisma.client.estudante.update({
+      where: { id },
+      data: { statusMatricula: false },
+    });
   }
 }

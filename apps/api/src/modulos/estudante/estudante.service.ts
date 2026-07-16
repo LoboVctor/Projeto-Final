@@ -13,6 +13,7 @@ import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dt
 import { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
 import { CreateAulaEstudanteDto } from './dtos/create-aula.dto.js';
 import { CriarEstudanteDto } from './dtos/criar-estudante.dto.js';
+import { AtualizarEstudanteDto } from './dtos/atualizar-estudante.dto.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
 @Injectable()
@@ -55,6 +56,50 @@ export class EstudanteService {
     } catch (err: any) {
       if (err?.code === 'P2002') {
          throw new ConflictException('Matrícula ou CPF já cadastrados.');
+      }
+      throw err;
+    }
+  }
+
+  async atualizar(id: string, dto: AtualizarEstudanteDto, arquivoFoto?: Express.Multer.File) {
+    const dados: any = {
+      ...(dto.nomeCompleto && { nomeCompleto: dto.nomeCompleto }),
+      ...(dto.matricula && { matricula: dto.matricula }),
+      ...(dto.cpf !== undefined && { cpf: dto.cpf }),
+      ...(dto.dataNascimento && { dataNascimento: new Date(dto.dataNascimento) }),
+      ...(dto.sexo && { sexo: dto.sexo }),
+      ...(dto.formaComunicacao && { formaComunicacao: dto.formaComunicacao }),
+    };
+
+    if (arquivoFoto) {
+      dados.foto = arquivoFoto.path;
+    }
+
+    if (dto.turmaId !== undefined) {
+      if (dto.turmaId) {
+        dados.turmas = { set: [{ id: dto.turmaId }] };
+      } else {
+        dados.turmas = { set: [] };
+      }
+    }
+
+    // Preparando dados do responsável se foram enviados
+    let responsavelDados = null;
+    if (dto.nomeResponsavel || dto.telefoneResponsavel || dto.emailResponsavel || dto.enderecoResponsavel || dto.cpfResponsavel) {
+      responsavelDados = {
+        ...(dto.nomeResponsavel && { nomeCompleto: dto.nomeResponsavel }),
+        ...(dto.telefoneResponsavel && { telefone: dto.telefoneResponsavel }),
+        ...(dto.emailResponsavel && { email: dto.emailResponsavel }),
+        ...(dto.enderecoResponsavel && { endereco: dto.enderecoResponsavel }),
+        ...(dto.cpfResponsavel && { cpf: dto.cpfResponsavel }),
+      };
+    }
+
+    try {
+      return await this.estudanteRepositorio.atualizarEstudante(id, { estudante: dados, responsavel: responsavelDados });
+    } catch (err: any) {
+      if (err?.code === 'P2002') {
+         throw new ConflictException('Matrícula, CPF ou E-mail já cadastrados.');
       }
       throw err;
     }
@@ -144,6 +189,7 @@ export class EstudanteService {
 
     return {
       id: dados.id,
+      matricula: dados.matricula,
       nomeCompleto: dados.nomeCompleto,
       dataNascimento: dados.dataNascimento,
       cpf: dados.cpf ? `***.***.${dados.cpf.slice(-6)}` : null,
@@ -169,6 +215,7 @@ export class EstudanteService {
       responsavel: responsavelPrincipal
         ? {
             nomeCompleto: responsavelPrincipal.nomeCompleto,
+            cpf: responsavelPrincipal.cpf,
             telefone: responsavelPrincipal.telefone,
             email: responsavelPrincipal.email,
             endereco: responsavelPrincipal.endereco,
@@ -632,5 +679,9 @@ export class EstudanteService {
     }
 
     return this.estudanteRepositorio.registrarChamadaEmLote(dto);
+  }
+
+  async desativar(id: string) {
+    return await this.estudanteRepositorio.desativarEstudante(id);
   }
 }

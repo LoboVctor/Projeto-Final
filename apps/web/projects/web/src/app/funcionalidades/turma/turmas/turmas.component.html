@@ -183,7 +183,7 @@
                             <!-- Coluna: Aluno (Foto + Nome) -->
                             <td class="px-6 py-3">
                               <div class="flex items-center space-x-3">
-                                <img [src]="aluno.foto || 'assets/placeholder-avatar.png'" 
+                                <img [src]="getFotoUrlCard(aluno)" 
                                      [alt]="aluno.nomeCompleto" 
                                      class="w-10 h-10 rounded-full object-cover border border-gray-200 group-hover:border-purple-300 transition-colors" 
                                      loading="lazy" />
@@ -325,7 +325,7 @@
       <app-aluno-modal
         [isVisible]="true"
         [aluno]="alunoEmDestaque()"
-        (fecharModal)="alunoEmDestaque.set(null)"
+        (fecharModal)="fecharModalAluno($event)"
       >
       </app-aluno-modal>
     }

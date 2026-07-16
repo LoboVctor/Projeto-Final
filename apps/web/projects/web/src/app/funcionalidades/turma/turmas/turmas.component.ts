@@ -136,8 +136,8 @@ export class TurmasComponent implements OnInit {
     });
   }
 
-  selecionarTurma(turma: TurmaResumo): void {
-    if (this.turmaSelecionada()?.id === turma.id) return;
+  selecionarTurma(turma: TurmaResumo, forceReload: boolean = false): void {
+    if (!forceReload && this.turmaSelecionada()?.id === turma.id) return;
     this.turmaSelecionada.set(turma);
     this.loadingEstudantes.set(true);
 
@@ -182,7 +182,7 @@ export class TurmasComponent implements OnInit {
     if (houveModificacao) {
       const turma = this.turmaSelecionada();
       if (turma) {
-        this.selecionarTurma(turma);
+        this.selecionarTurma(turma, true);
       }
     }
   }
