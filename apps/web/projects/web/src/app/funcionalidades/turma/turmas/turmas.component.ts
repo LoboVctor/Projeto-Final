@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject, signal, computed, ChangeDetectionStrategy, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TurmasService, TurmaResumo, EstudanteResumo, EstudantesPorTurmaResponse, MetricasTurma } from '../../../nucleo/services/turmas.service';
 import { AuthService } from '../../../nucleo/services/auth';
 import { DiagLabelPipe, DiagColorPipe } from '../../../compartilhado/pipes/student.pipes';
@@ -58,11 +58,12 @@ const SEXO_LABEL: Record<string, string> = {
   styleUrls: ['./turmas.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TurmasComponent implements OnInit {
+export class TurmasComponent implements OnInit, OnDestroy {
   private readonly turmasService = inject(TurmasService);
   private readonly authService = inject(AuthService);
   private readonly auditoriaService = inject(AuditoriaService);
   private readonly baseUrl = inject(API_BASE_URL);
+  private readonly platformId = inject(PLATFORM_ID);
 
   // ── ViewChild para captura do PDF ─────────────────────
   @ViewChild('relatorioTurma') relatorioTurma!: ElementRef;
@@ -94,6 +95,13 @@ export class TurmasComponent implements OnInit {
     const c = this.metricas()?.comunicacaoPrincipal;
     return c ? (FCOM_LABEL[c] ?? c) : '—';
   });
+
+  totalAlunosAnimado = signal(0);
+  idadePredominanteAnimado = signal(0);
+  diagnosticoAnimado = signal('');
+  comunicacaoAnimado = signal('');
+  private animacoesAtivas: Record<string, number> = {};
+  private intervalosAtivos: Record<string, ReturnType<typeof setInterval>> = {};
 
   ngOnInit(): void {
     this.carregarTurmas();
@@ -146,6 +154,7 @@ export class TurmasComponent implements OnInit {
       next: (res: EstudantesPorTurmaResponse) => {
         this.estudantes.set(res.estudantes);
         this.loadingEstudantes.set(false);
+        this.animarNumero(res.estudantes.length, (v) => this.totalAlunosAnimado.set(v), 'totalAlunos', { duracao: 800 });
       },
       error: () => {
         this.error.set('Erro ao carregar estudantes.');
@@ -154,7 +163,16 @@ export class TurmasComponent implements OnInit {
     });
 
     this.turmasService.obterMetricasTurma(turma.id).subscribe({
-      next: (m) => this.metricas.set(m),
+      next: (m) => {
+        this.metricas.set(m);
+        if (m.idadePredominante !== null && m.idadePredominante !== undefined) {
+          this.animarNumero(m.idadePredominante, (v) => this.idadePredominanteAnimado.set(v), 'idadePred', { duracao: 800 });
+        }
+        const diagLabel = m.diagnosticoPrincipal ? (DIAG_LABEL[m.diagnosticoPrincipal] ?? m.diagnosticoPrincipal) : '—';
+        this.animarTextoEmbaralhado(diagLabel, (v) => this.diagnosticoAnimado.set(v), 'diagTexto');
+        const comLabel = m.comunicacaoPrincipal ? (FCOM_LABEL[m.comunicacaoPrincipal] ?? m.comunicacaoPrincipal) : '—';
+        this.animarTextoEmbaralhado(comLabel, (v) => this.comunicacaoAnimado.set(v), 'comTexto');
+      },
       error: () => this.metricas.set(null),
     });
   }
@@ -193,6 +211,90 @@ export class TurmasComponent implements OnInit {
     const partes = nomeCompleto.trim().split(/\s+/);
     if (partes.length <= 2) return nomeCompleto;
     return `${partes[0]} ${partes[partes.length - 1]}`;
+  }
+
+  private animarNumero(
+    destino: number,
+    setValor: (valor: number) => void,
+    chave: string,
+    opcoes?: { duracao?: number }
+  ): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      setValor(destino);
+      return;
+    }
+
+    if (this.animacoesAtivas[chave]) {
+      cancelAnimationFrame(this.animacoesAtivas[chave]);
+      delete this.animacoesAtivas[chave];
+    }
+
+    const duracao = opcoes?.duracao ?? 800;
+    const inicio = 0;
+    const tempoInicio = performance.now();
+
+    const passo = (tempoAtual: number) => {
+      const tempoDecorrido = tempoAtual - tempoInicio;
+      const progresso = Math.min(tempoDecorrido / duracao, 1);
+      const progressoSuave = progresso * (2 - progresso);
+      const valorAtual = inicio + (destino - inicio) * progressoSuave;
+      setValor(Math.round(valorAtual));
+
+      if (progresso < 1) {
+        this.animacoesAtivas[chave] = requestAnimationFrame(passo);
+      } else {
+        setValor(destino);
+        delete this.animacoesAtivas[chave];
+      }
+    };
+
+    this.animacoesAtivas[chave] = requestAnimationFrame(passo);
+  }
+
+  private animarTextoEmbaralhado(
+    valorFinal: string,
+    setValor: (valor: string) => void,
+    chave: string
+  ): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      setValor(valorFinal);
+      return;
+    }
+
+    if (this.intervalosAtivos[chave]) {
+      clearInterval(this.intervalosAtivos[chave]);
+      delete this.intervalosAtivos[chave];
+    }
+
+    const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    let frame = 0;
+    const totalFrames = 12;
+
+    this.intervalosAtivos[chave] = setInterval(() => {
+      const progresso = frame / totalFrames;
+      const texto = valorFinal
+        .split('')
+        .map((letra, index) => {
+          if (letra === ' ') return ' ';
+          if (index < valorFinal.length * progresso) return letra;
+          return caracteres[Math.floor(Math.random() * caracteres.length)];
+        })
+        .join('');
+
+      setValor(texto);
+      frame++;
+
+      if (frame > totalFrames) {
+        clearInterval(this.intervalosAtivos[chave]);
+        delete this.intervalosAtivos[chave];
+        setValor(valorFinal);
+      }
+    }, 35);
+  }
+
+  ngOnDestroy(): void {
+    Object.values(this.animacoesAtivas).forEach((id) => cancelAnimationFrame(id));
+    Object.values(this.intervalosAtivos).forEach((id) => clearInterval(id));
   }
 
   // ── Lógica de exportação (baseada no padrão do BlocoDashboardComponent) ──

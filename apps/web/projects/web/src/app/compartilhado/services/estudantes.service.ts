@@ -184,6 +184,14 @@ export class EstudantesService {
     return this.http.put(`${this.baseUrl}/relatorios-semestrais/metas/${metaId}/avaliacao`, payload);
   }
 
+  atualizarMetasSemestre(relatorioId: string, payload: { metas: { id: string; descricao: string }[] }): Observable<unknown> {
+    return this.http.patch(`${this.baseUrl}/relatorios-semestrais/${relatorioId}/metas`, payload);
+  }
+
+  excluirMetasDoRelatorio(relatorioId: string): Observable<unknown> {
+    return this.http.delete(`${this.baseUrl}/relatorios-semestrais/${relatorioId}/metas`);
+  }
+
   // --- IMPORTAÇÃO ---
   importarCSV(formData: FormData): Observable<ImportacaoRelatorio> {
     return this.http.post<ImportacaoRelatorio>(`${this.baseUrl}/estudantes/importar-csv`, formData);

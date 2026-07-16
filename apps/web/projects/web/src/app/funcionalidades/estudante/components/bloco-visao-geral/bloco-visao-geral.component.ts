@@ -5,7 +5,9 @@ import {
   ChangeDetectionStrategy,
   OnInit,
   inject,
-  input } from '@angular/core';
+  WritableSignal,
+  input,
+  signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   EstudanteVisaoGeral,
@@ -37,10 +39,14 @@ export class BlocoVisaoGeralComponent implements OnInit {
   
   showModalEditarAluno = false;
 
-  userRole: string = 'PROFESSOR';
+  paginaGatilhos = signal(0);
+  paginaComportamentos = signal(0);
+  paginaProtocolos = signal(0);
+
+  userRole: 'PROFESSOR' | 'COORDENADOR' = 'PROFESSOR';
 
   ngOnInit() {
-    this.userRole = this.authService.getRole() || 'PROFESSOR';
+    this.userRole = (this.authService.getRole() as 'PROFESSOR' | 'COORDENADOR') || 'PROFESSOR';
   }
 
   editarInformacoes(): void {
@@ -91,6 +97,24 @@ export class BlocoVisaoGeralComponent implements OnInit {
     }
   }
 
+  classesCategoriaPorTipo(tipo: string): string {
+    const tipoNormalizado = String(tipo).toLowerCase();
+
+    if (tipoNormalizado.includes('gatilho')) {
+      return 'bg-red-50 text-red-700 border border-red-200';
+    }
+
+    if (tipoNormalizado.includes('comportamento')) {
+      return 'bg-blue-50 text-blue-700 border border-blue-200';
+    }
+
+    if (tipoNormalizado.includes('contencao')) {
+      return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+    }
+
+    return 'bg-slate-50 text-slate-700 border border-slate-200';
+  }
+
   formatarEtapa(etapa: string | undefined | null): string {
     if (!etapa) return 'Sem Etapa';
     const etapaLimpa = etapa.replace('_', ' ');
@@ -119,6 +143,20 @@ export class BlocoVisaoGeralComponent implements OnInit {
 
   onEspecificidadeSalva(): void {
     this.fecharModalEspecificidade();
+    this.paginaGatilhos.set(0);
+    this.paginaComportamentos.set(0);
+    this.paginaProtocolos.set(0);
     this.tentarNovamente.emit();
+  }
+
+  navegarPagina(paginaSignal: WritableSignal<number>, delta: number, total: number): void {
+    const next = paginaSignal() + delta;
+    if (next >= 0 && next < total) {
+      paginaSignal.set(next);
+    }
+  }
+
+  getItem(lista: EspecificidadeVisaoGeral[], pagina: number): EspecificidadeVisaoGeral | null {
+    return lista[pagina] ?? null;
   }
 }

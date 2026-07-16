@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, inject, input, Output, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
@@ -10,7 +10,9 @@ import {
   Validators,
 } from '@angular/forms';
 import { EstudantesService, UpsertRelatorioSemestralPayload } from '../../../../../compartilhado/services/estudantes.service';
-import { Eixo, Semestre } from '../../../../../compartilhado/models/estudante-pedagogico.model';
+import { Eixo, RelatorioSemestral, Semestre } from '../../../../../compartilhado/models/estudante-pedagogico.model';
+import { ConfirmacaoService } from '../../../../../compartilhado/services/confirmacao.service';
+import { FeedbackService } from '../../../../../compartilhado/services/feedback.service';
 
 const EIXOS: Eixo[] = ['COGNITIVO', 'MOTOR', 'LINGUAGEM', 'SOCIOEMOCIONAL', 'AUTONOMIA'];
 
@@ -22,24 +24,21 @@ const EIXO_LABEL: Record<Eixo, string> = {
   AUTONOMIA: 'Autonomia',
 };
 
-/** Validador customizado: rejeita strings compostas apenas por dígitos */
 const naoApenasNumeros: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const val: string = (control.value ?? '') as string;
-  if (val.trim().length === 0) return null; // deixa o 'required' tratar o campo vazio
+  if (val.trim().length === 0) return null;
   return /^\d+$/.test(val.trim()) ? { apenasNumeros: true } : null;
 };
 
-/** Validador customizado: rejeita strings compostas apenas por espaços em branco */
 const naoApenasEspacos: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const val: string = (control.value ?? '') as string;
-  if (val.length === 0) return null; // deixa o 'required' tratar o campo vazio
+  if (val.length === 0) return null;
   return val.trim().length === 0 ? { apenasEspacos: true } : null;
 };
 
-/** Validador customizado: rejeita strings compostas apenas por hífens */
 const naoApenasHifens: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const val: string = (control.value ?? '') as string;
-  if (val.trim().length === 0) return null; // deixa o 'required' tratar o campo vazio
+  if (val.trim().length === 0) return null;
   return /^-+$/.test(val.trim()) ? { apenasHifens: true } : null;
 };
 
@@ -51,20 +50,34 @@ const naoApenasHifens: ValidatorFn = (control: AbstractControl): ValidationError
 })
 export class MetasModalComponent {
   readonly estudanteId = input.required<string>();
+  readonly relatorios = input<RelatorioSemestral[]>([]);
 
   @Output() fechar = new EventEmitter<void>();
   @Output() salvou = new EventEmitter<void>();
 
   private readonly fb = inject(FormBuilder);
   private readonly estudantesService = inject(EstudantesService);
+  private readonly confirmacaoService = inject(ConfirmacaoService);
+  private readonly feedbackService = inject(FeedbackService);
 
   readonly eixos = EIXOS;
-  readonly eixoLabel = (e: Eixo) => EIXO_LABEL[e];
+  
+  eixoLabel(e: Eixo): string {
+    return EIXO_LABEL[e];
+  }
 
   enviando = signal(false);
   erro = signal<string | null>(null);
 
-  /** Validadores aplicados ao campo descrição de cada eixo */
+  isListagemAberta = signal(false);
+  
+  relatorioEmEdicao = signal<RelatorioSemestral | null>(null);
+
+  relatoriosComMetas = computed(() => {
+    const rels = this.relatorios() || [];
+    return rels.filter(r => r.metas && r.metas.length > 0);
+  });
+
   private readonly descricaoValidators = [
     Validators.required,
     Validators.minLength(10),
@@ -76,8 +89,7 @@ export class MetasModalComponent {
 
   form: FormGroup = this.fb.group({
     ano: [new Date().getFullYear(), [Validators.required, Validators.min(2000), Validators.max(2100)]],
-    semestre: ['PRIMEIRO' as Semestre, Validators.required],
-    // Sub-grupos para cada eixo com validações completas
+    semestre: ['PRIMEIRO', Validators.required],
     COGNITIVO: this.fb.group({ descricao: ['', this.descricaoValidators] }),
     MOTOR: this.fb.group({ descricao: ['', this.descricaoValidators] }),
     LINGUAGEM: this.fb.group({ descricao: ['', this.descricaoValidators] }),
@@ -96,8 +108,65 @@ export class MetasModalComponent {
     return map[e] ?? 'bg-gray-50 text-gray-700';
   }
 
+  deveMostrarObrigatorio(eixo: string): boolean {
+    const control = this.form.get(eixo)?.get('descricao');
+    return !control?.valid;
+  }
+
   fecharModal(): void {
     this.fechar.emit();
+  }
+
+  toggleListagem(): void {
+    this.isListagemAberta.update(v => !v);
+  }
+
+  editarRelatorio(relatorio: RelatorioSemestral): void {
+    this.relatorioEmEdicao.set(relatorio);
+    this.form.patchValue({
+      ano: relatorio.ano,
+      semestre: relatorio.semestre,
+    });
+    
+    for (const eixo of EIXOS) {
+      const meta = relatorio.metas.find(m => m.eixoDesenvolvimento === eixo);
+      this.form.get(eixo)?.get('descricao')?.setValue(meta ? meta.descricao : '');
+    }
+    
+    this.form.get('ano')?.disable();
+    this.form.get('semestre')?.disable();
+  }
+
+  cancelarEdicao(): void {
+    this.relatorioEmEdicao.set(null);
+    this.form.reset({
+      ano: new Date().getFullYear(),
+      semestre: 'PRIMEIRO'
+    });
+    this.form.get('ano')?.enable();
+    this.form.get('semestre')?.enable();
+  }
+
+  async excluirRelatorio(relatorio: RelatorioSemestral) {
+    const confirmado = await this.confirmacaoService.confirmar({
+      titulo: 'Excluir metas do semestre',
+      mensagem: 'Tem certeza que deseja excluir as metas deste semestre?',
+      textoConfirmar: 'Excluir',
+      textoCancelar: 'Cancelar',
+      variante: 'danger'
+    });
+
+    if (confirmado) {
+      this.estudantesService.excluirMetasDoRelatorio(relatorio.id).subscribe({
+        next: () => {
+          this.feedbackService.showSuccess('Metas excluídas com sucesso.');
+          this.salvou.emit();
+        },
+        error: () => {
+          this.feedbackService.showError('Erro ao excluir as metas do semestre.');
+        }
+      });
+    }
   }
 
   salvar(): void {
@@ -108,7 +177,32 @@ export class MetasModalComponent {
     this.enviando.set(true);
     this.erro.set(null);
 
-    const v = this.form.value;
+    const relatorioEdit = this.relatorioEmEdicao();
+    
+    if (relatorioEdit) {
+      const payload = {
+        metas: relatorioEdit.metas.map(meta => ({
+          id: meta.id,
+          descricao: (this.form.get(meta.eixoDesenvolvimento)?.get('descricao')?.value || '').trim()
+        }))
+      };
+
+      this.estudantesService.atualizarMetasSemestre(relatorioEdit.id, payload).subscribe({
+        next: () => {
+          this.enviando.set(false);
+          this.feedbackService.showSuccess('Metas do semestre atualizadas com sucesso.');
+          this.salvou.emit();
+          this.cancelarEdicao();
+        },
+        error: () => {
+          this.enviando.set(false);
+          this.feedbackService.showError('Erro ao atualizar as metas do semestre.');
+        }
+      });
+      return;
+    }
+
+    const v = this.form.getRawValue();
     const payload: UpsertRelatorioSemestralPayload = {
       estudanteId: this.estudanteId(),
       semestre: v.semestre as Semestre,
@@ -124,6 +218,7 @@ export class MetasModalComponent {
     this.estudantesService.upsertRelatorioSemestral(payload).subscribe({
       next: () => {
         this.enviando.set(false);
+        this.feedbackService.showSuccess('Metas salvas com sucesso.');
         this.salvou.emit();
         this.fechar.emit();
       },
@@ -131,16 +226,13 @@ export class MetasModalComponent {
         this.enviando.set(false);
         const httpError = err as { status?: number; error?: { message?: string } };
 
-        // Trata o erro 409 (duplicidade) com mensagem específica — sem fechar o modal
         if (httpError?.status === 409) {
-          this.erro.set(
-            'Este aluno já possui metas cadastradas para este semestre. A criação de novas metas não é permitida para evitar substituição dos registros existentes.',
-          );
+          this.feedbackService.showError('Este aluno já possui metas cadastradas para este semestre.');
           return;
         }
 
         const msg = httpError?.error?.message;
-        this.erro.set(typeof msg === 'string' ? msg : 'Erro ao salvar as metas. Tente novamente.');
+        this.feedbackService.showError(typeof msg === 'string' ? msg : 'Erro ao salvar as metas. Tente novamente.');
       },
     });
   }

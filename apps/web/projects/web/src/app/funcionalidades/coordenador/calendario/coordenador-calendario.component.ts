@@ -6,6 +6,14 @@ import { CalendarioService, EventoCalendario } from '../../../compartilhado/serv
 import { AuthService } from '../../../nucleo/services/auth';
 import { ConfirmacaoService } from '../../../compartilhado/services/confirmacao.service';
 
+function textoInvalido(valor: string): boolean {
+  const normalizado = valor.trim();
+  if (!normalizado) return true;
+  if (/^\d+$/.test(normalizado)) return true;
+  if (/^-+$/.test(normalizado)) return true;
+  return false;
+}
+
 interface DiaCalendario {
   data: Date;
   isMesAtual: boolean;
@@ -57,7 +65,23 @@ export class CoordenadorCalendarioComponent implements OnInit {
     const raw = new Date(this.anoAtual(), this.mesAtual()).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
     return raw.charAt(0).toUpperCase() + raw.slice(1);
   });
-  tituloModal = computed(() => this.modoEdicao() ? 'Editar Evento' : 'Criar Novo Evento');
+  tituloModal = computed(() => this.modoEdicao() ? 'Editar Evento' : 'Novo Evento');
+
+  tituloInvalido = computed(() => {
+    const v = this.formTitulo();
+    if (!v) return true;
+    return textoInvalido(v);
+  });
+
+  descricaoInvalida = computed(() => {
+    const v = this.formDescricao();
+    if (!v) return false;
+    return textoInvalido(v);
+  });
+
+  formInvalido = computed(() =>
+    this.tituloInvalido() || !this.formData() || !this.formHorario() || this.descricaoInvalida()
+  );
 
   constructor() {
     effect(() => { this.carregarEventos(this.mesAtual(), this.anoAtual()); }, { allowSignalWrites: true });
@@ -138,8 +162,8 @@ export class CoordenadorCalendarioComponent implements OnInit {
   fecharPopup(): void { this.eventoSelecionado.set(null); this.popupPos.set(null); }
 
   salvarEvento(): void {
-    if (!this.formTitulo().trim() || !this.formData() || !this.formHorario()) {
-      this.erroForm.set('Título, Data e Horário são obrigatórios.'); return;
+    if (this.formInvalido()) {
+      this.erroForm.set('Verifique os campos obrigatórios.'); return;
     }
     const educadorId = this.authService.getLoggedUserId();
     if (!educadorId) return;

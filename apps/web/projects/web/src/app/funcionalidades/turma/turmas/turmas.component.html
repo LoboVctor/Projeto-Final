@@ -4,29 +4,35 @@
     <div class="main-header">
       
       <div class="main-title-block">
-        <h1 class="main-title">
-          {{ turmaSelecionada() ? turmaSelecionada()!.nome : 'Turmas' }}
-        </h1>
-        
         @if (turmaSelecionada()) {
-          <span class="turma-badge">
-            {{ turmaSelecionada()!.anoLetivo }} · {{ turmaSelecionada()!.turno | slice: 0 : 3 }}
-          </span>
-        }
-
-        @if (turmas().length > 1) {
-          <div class="turma-selector" role="group" aria-label="Selecionar turma">
-            @for (turma of turmas(); track turma.id) {
-              <button
-                class="turma-selector-btn"
-                [class.active]="turmaSelecionada()?.id === turma.id"
-                (click)="selecionarTurma(turma)"
-                type="button"
-              >
-                {{ turma.nome }}
-              </button>
+          <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="text-2xl sm:text-3xl font-bold text-[#6C3CC9]">
+              {{ turmaSelecionada()!.nome }}
+            </h1>
+            <span class="turma-badge">
+              {{ turmaSelecionada()!.anoLetivo }} · {{ turmaSelecionada()!.turno | slice: 0 : 3 }}
+            </span>
+            @if (turmas().length > 1) {
+              <div class="turma-selector" role="group" aria-label="Selecionar turma">
+                @for (turma of turmas(); track turma.id) {
+                  <button
+                    class="turma-selector-btn"
+                    [class.active]="turmaSelecionada()?.id === turma.id"
+                    (click)="selecionarTurma(turma)"
+                    type="button"
+                  >
+                    {{ turma.nome }}
+                  </button>
+                }
+              </div>
             }
           </div>
+          <p class="text-[#686177] mt-1 text-sm">
+            Acompanhe o perfil, as métricas e os alunos de cada turma.
+          </p>
+        } @else {
+          <div class="title-skeleton"></div>
+          <div class="subtitle-skeleton"></div>
         }
       </div>
 
@@ -53,55 +59,63 @@
 
     @if (!loading() && !error() && turmaSelecionada()) {
       <div class="big-numbers-row mt-4">
-        <div class="big-number-card">
+        <div
+          class="big-number-card big-number-card--purple"
+          [class.is-loading]="loadingEstudantes()">
           <div class="big-number-icon big-number-icon--purple">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
           </div>
           <div class="big-number-info">
             <span class="big-number-label">Total de Alunos</span>
-            <span class="big-number-value" [class.is-loading]="loadingEstudantes()">{{ turmaSelecionada()!._count.estudantes }}</span>
+            <span class="big-number-value">{{ totalAlunosAnimado() }}</span>
           </div>
         </div>
 
-        <div class="big-number-card">
+        <div
+          class="big-number-card big-number-card--blue"
+          [class.is-loading]="loadingEstudantes()">
           <div class="big-number-icon big-number-icon--blue">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
           </div>
           <div class="big-number-info">
             <span class="big-number-label">Idade Predominante</span>
-            <span class="big-number-value" [class.is-loading]="loadingEstudantes()">
+            <span class="big-number-value">
               @if (metricas()?.idadePredominante !== null && metricas()?.idadePredominante !== undefined) {
-                {{ metricas()!.idadePredominante }} anos
+                {{ idadePredominanteAnimado() }} anos
               } @else { — }
             </span>
           </div>
         </div>
 
-        <div class="big-number-card">
+        <div
+          class="big-number-card big-number-card--amber"
+          [class.is-loading]="loadingEstudantes()">
           <div class="big-number-icon big-number-icon--amber">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
           </div>
           <div class="big-number-info">
             <span class="big-number-label">Diagnóstico Principal</span>
-            <span class="big-number-value big-number-value--sm" [class.is-loading]="loadingEstudantes()">{{ diagnosticoPrincipalLabel() }}</span>
+            <span class="big-number-value big-number-value--sm">{{ diagnosticoAnimado() }}</span>
           </div>
         </div>
 
-        <div class="big-number-card">
+        <div
+          class="big-number-card big-number-card--green"
+          [class.is-loading]="loadingEstudantes()">
           <div class="big-number-icon big-number-icon--green">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
           </div>
           <div class="big-number-info">
             <span class="big-number-label">Comunicação Principal</span>
-            <span class="big-number-value big-number-value--sm" [class.is-loading]="loadingEstudantes()">{{ comunicacaoPrincipalLabel() }}</span>
+            <span class="big-number-value big-number-value--sm">{{ comunicacaoAnimado() }}</span>
           </div>
         </div>
       </div>

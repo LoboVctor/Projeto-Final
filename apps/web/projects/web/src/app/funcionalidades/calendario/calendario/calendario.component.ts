@@ -6,6 +6,14 @@ import { CalendarioService, EventoCalendario } from '../../../compartilhado/serv
 import { AuthService } from '../../../nucleo/services/auth';
 import { ConfirmacaoService } from '../../../compartilhado/services/confirmacao.service';
 
+function textoInvalido(valor: string): boolean {
+  const normalizado = valor.trim();
+  if (!normalizado) return true;
+  if (/^\d+$/.test(normalizado)) return true;
+  if (/^-+$/.test(normalizado)) return true;
+  return false;
+}
+
 interface DiaCalendario {
   data: Date;
   isMesAtual: boolean;
@@ -70,7 +78,23 @@ export class CalendarioComponent implements OnInit {
   });
 
   tituloModal = computed(() =>
-    this.modoEdicao() ? 'Editar' : 'Criar'
+    this.modoEdicao() ? 'Editar Evento' : 'Novo Evento'
+  );
+
+  tituloInvalido = computed(() => {
+    const v = this.formTitulo();
+    if (!v) return true;
+    return textoInvalido(v);
+  });
+
+  descricaoInvalida = computed(() => {
+    const v = this.formDescricao();
+    if (!v) return false;
+    return textoInvalido(v);
+  });
+
+  formInvalido = computed(() =>
+    this.tituloInvalido() || !this.formData() || !this.formHorario() || this.descricaoInvalida()
   );
 
   constructor() {
@@ -241,8 +265,8 @@ export class CalendarioComponent implements OnInit {
   // ─── Salvar (Criar ou Editar) ────────────────────────────────────────────────
 
   salvarEvento(): void {
-    if (!this.formTitulo().trim() || !this.formData() || !this.formHorario()) {
-      this.erroForm.set('Título, Data e Horário são obrigatórios.');
+    if (this.formInvalido()) {
+      this.erroForm.set('Verifique os campos obrigatórios.');
       return;
     }
 

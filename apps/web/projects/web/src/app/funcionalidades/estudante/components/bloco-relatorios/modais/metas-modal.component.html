@@ -1,24 +1,32 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
   <div
-    class="bg-white rounded-2xl shadow-2xl w-full max-w-xl flex flex-col overflow-hidden border border-gray-100 max-h-[80vh]">
+    class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[75vh] flex flex-col overflow-hidden border border-gray-100">
 
     <!-- Cabeçalho (fixo) -->
     <div class="flex items-center justify-between p-5 border-b border-gray-100 bg-slate-50 shrink-0">
       <div>
-        <h3 class="text-lg font-bold font-['Sora'] text-slate-700 m-0">Metas do Semestre</h3>
+        <h3 class="text-lg font-bold font-['Sora'] text-slate-700 m-0">
+          @if (relatorioEmEdicao()) {
+          Editar Metas do Semestre
+          } @else {
+          Metas do Semestre
+          }
+        </h3>
         <p class="text-xs text-slate-500 m-0 mt-0.5">Registre as metas pedagógicas por eixo de desenvolvimento.</p>
       </div>
-      <button (click)="fecharModal()" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+      <button type="button" (click)="fecharModal()"
+        class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer outline-none">
         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>
 
-    <!-- Formulário com scroll interno -->
-    <form [formGroup]="form" (ngSubmit)="salvar()" class="flex flex-col flex-1 overflow-hidden">
+    <!-- Formulário Principal -->
+    <form [formGroup]="form" (ngSubmit)="salvar()" class="flex flex-col flex-1 overflow-hidden m-0 min-h-0">
+
       <!-- Corpo com scroll -->
-      <div class="overflow-y-auto flex-1 p-6 space-y-6">
+      <section class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
 
         <!-- Ano e Semestre -->
         <div class="grid grid-cols-2 gap-4">
@@ -27,7 +35,7 @@
               Ano <span class="text-red-500">*</span>
             </label>
             <input type="number" formControlName="ano" min="2000" max="2100"
-              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium text-slate-700" />
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed" />
             @if (form.get('ano')?.invalid && form.get('ano')?.touched) {
             <span class="text-xs text-red-500">Ano inválido</span>
             }
@@ -37,99 +45,160 @@
               Semestre <span class="text-red-500">*</span>
             </label>
             <select formControlName="semestre"
-              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium text-slate-700">
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed">
               <option value="PRIMEIRO">1º Semestre</option>
               <option value="SEGUNDO">2º Semestre</option>
             </select>
           </div>
         </div>
 
-        <!-- Blocos por eixo -->
+        <!-- Blocos por eixo (sempre visíveis) -->
         @for (eixo of eixos; track eixo) {
         <div class="border border-gray-200 rounded-xl overflow-hidden" [formGroupName]="eixo">
           <!-- Header do eixo -->
-          <div class="px-4 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+          <div class="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
             <span [class]="'text-xs font-bold px-2.5 py-1 rounded-full ' + eixoChipClass(eixo)">
               {{ eixoLabel(eixo) }}
             </span>
           </div>
+
           <!-- Campos -->
-          <div class="p-4 space-y-3">
-            <!-- Descrição da meta -->
+          <div class="p-3 space-y-2">
             <div class="flex flex-col gap-1">
               <div class="flex justify-between items-center">
                 <label class="text-xs font-bold text-slate-500 font-['Sora']">
-                  Descrição da meta <span class="text-red-500">*</span>
+                  Descrição da meta
+                  @if (deveMostrarObrigatorio(eixo)) {
+                  <span class="text-red-500">*</span>
+                  }
                 </label>
-                <span class="text-[10px] font-semibold text-slate-400">{{ form.get(eixo)?.get('descricao')?.value?.length || 0 }}/80</span>
+                <span class="text-[10px] font-semibold text-slate-400">{{
+                  form.get(eixo)?.get('descricao')?.value?.length || 0 }}/80</span>
               </div>
-              <textarea formControlName="descricao" rows="2"
-                maxlength="80"
+
+              <textarea formControlName="descricao" rows="2" maxlength="80"
                 placeholder="Descreva o objetivo pedagógico para este eixo"
                 class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm text-slate-700 resize-none"
                 [class.border-red-300]="form.get(eixo)?.get('descricao')?.invalid && form.get(eixo)?.get('descricao')?.touched"></textarea>
 
-              <!-- Mensagens de erro granulares -->
-              @if (form.get(eixo)?.get('descricao')?.touched) {
-                <div class="text-[10px] font-semibold text-red-500 mt-0.5">
-                  @if (form.get(eixo)?.get('descricao')?.hasError('required')) {
-                    A descrição da meta é obrigatória.
-                  }
-                  @if (form.get(eixo)?.get('descricao')?.hasError('minlength')) {
-                    A descrição da meta deve ter pelo menos 10 caracteres.
-                  }
-                  @if (form.get(eixo)?.get('descricao')?.hasError('maxlength')) {
-                    A descrição da meta deve ter no máximo 80 caracteres.
-                  }
-                  @if (form.get(eixo)?.get('descricao')?.hasError('apenasEspacos')) {
-                    A descrição da meta não pode conter apenas espaços em branco.
-                  }
-                  @if (form.get(eixo)?.get('descricao')?.hasError('apenasNumeros')) {
-                    A descrição da meta não pode conter apenas números.
-                  }
-                  @if (form.get(eixo)?.get('descricao')?.hasError('apenasHifens')) {
-                    A descrição da meta não pode conter apenas hífens.
-                  }
-                </div>
+              <!-- Mensagens de erro -->
+              @if (form.get(eixo)?.get('descricao')?.invalid && form.get(eixo)?.get('descricao')?.touched) {
+              <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                @if (form.get(eixo)?.get('descricao')?.hasError('required')) {
+                A descrição é obrigatória.
+                }
+                @if (form.get(eixo)?.get('descricao')?.hasError('minlength')) {
+                A descrição deve ter pelo menos 10 caracteres.
+                }
+                @if (form.get(eixo)?.get('descricao')?.hasError('apenasEspacos')) {
+                Não pode conter apenas espaços em branco.
+                }
+                @if (form.get(eixo)?.get('descricao')?.hasError('apenasNumeros')) {
+                Não pode conter apenas números.
+                }
+                @if (form.get(eixo)?.get('descricao')?.hasError('apenasHifens')) {
+                Não pode conter apenas hífens.
+                }
+              </div>
               }
             </div>
-
           </div>
         </div>
         }
 
-        <!-- Mensagem de erro global (inclui 409) -->
-        @if (erro()) {
-        <div class="bg-red-50 border border-red-100 rounded-lg p-3 text-sm text-red-700">
-          {{ erro() }}
-        </div>
-        }
+      </section>
 
-      </div>
-
-      <!-- Rodapé com ações (fixo) -->
-      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-slate-50 shrink-0">
-        <button type="button" (click)="fecharModal()"
-          class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+      <!-- Rodapé do formulário -->
+      <footer class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-slate-50 shrink-0">
+        @if (relatorioEmEdicao()) {
+        <button type="button" (click)="cancelarEdicao()"
+          class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer outline-none">
           Cancelar
         </button>
+        } @else {
+        <button type="button" (click)="fecharModal()"
+          class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer outline-none">
+          Cancelar
+        </button>
+        }
+
         <button type="submit" [disabled]="form.invalid || enviando()"
-          class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xs flex items-center gap-2 cursor-pointer">
+          class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xs flex items-center gap-2 cursor-pointer outline-none">
           @if (enviando()) {
-          <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-            </path>
-          </svg>
           Salvando...
+          } @else {
+          @if (relatorioEmEdicao()) {
+          Atualizar
           } @else {
           Adicionar
           }
+          }
         </button>
-      </div>
+      </footer>
     </form>
 
+    <!-- Accordion de Metas Cadastradas (Fora do formulário) -->
+    @if (relatoriosComMetas().length > 0 && !relatorioEmEdicao()) {
+    <div class="bg-slate-50 border-t border-gray-100 shrink-0">
+      <button type="button" (click)="toggleListagem()"
+        class="w-full flex items-center justify-between p-4 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer outline-none">
+        <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider font-['Sora']">
+          Metas cadastradas ({{ relatoriosComMetas().length }})
+        </h4>
+        <svg class="w-4 h-4 text-slate-500 transform transition-transform" [class.rotate-180]="isListagemAberta()"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      @if (isListagemAberta()) {
+      <div class="p-6 max-h-[220px] overflow-y-auto space-y-4">
+        @for (rel of relatoriosComMetas(); track rel.id) {
+        <div class="bg-white border border-gray-200 rounded-lg shadow-2xs overflow-hidden">
+          <div class="bg-slate-50 border-b border-gray-200 px-4 py-2 flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+              {{ rel.ano }}.{{ rel.semestre === 'PRIMEIRO' ? '1' : '2' }} — {{ rel.metas.length }} metas cadastradas
+            </span>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" (click)="editarRelatorio(rel)"
+                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer outline-none"
+                title="Editar Metas">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </button>
+              <button type="button" (click)="excluirRelatorio(rel)"
+                class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer outline-none"
+                title="Excluir Metas">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="divide-y divide-gray-100">
+            @for (m of rel.metas; track m.id) {
+            <div class="p-3">
+              <div class="mb-1">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase inline-block"
+                  [ngClass]="eixoChipClass(m.eixoDesenvolvimento)">
+                  {{ eixoLabel(m.eixoDesenvolvimento) }}
+                </span>
+              </div>
+              <div class="text-sm text-slate-600 break-words font-medium">
+                {{ m.descricao }}
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+    }
   </div>
 </div>

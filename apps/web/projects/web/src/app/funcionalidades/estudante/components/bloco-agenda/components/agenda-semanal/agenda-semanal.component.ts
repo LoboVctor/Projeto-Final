@@ -4,6 +4,15 @@ import { EstudantesService } from '../../../../../../compartilhado/services/estu
 import { AuthService } from '../../../../../../nucleo/services/auth';
 import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL } from '../../../../../../nucleo/config/api.config';
+import { DiaAgenda, EventoAgenda } from '../../../../../../compartilhado/models/estudante-agenda.model';
+
+function textoInvalido(valor: string): boolean {
+  const normalizado = valor.trim();
+  if (!normalizado) return true;
+  if (/^\d+$/.test(normalizado)) return true;
+  if (/^-+$/.test(normalizado)) return true;
+  return false;
+}
 
 @Component({
   selector: 'app-agenda-semanal',
@@ -16,7 +25,7 @@ export class AgendaSemanalComponent implements OnInit {
   private estudantesService = inject(EstudantesService);
 
   carregando = signal(true);
-  agenda = signal<any[]>([]);
+  agenda = signal<DiaAgenda[]>([]);
 
   dataBase = signal<Date>(new Date());
   visaoAtiva = signal<'dia' | 'semana'>('semana');
@@ -27,7 +36,7 @@ export class AgendaSemanalComponent implements OnInit {
     
     if (visao === 'dia') {
       const baseIso = this.formatarDataLocal(this.dataBase());
-      return dados.filter((d: any) => d.data === baseIso);
+      return dados.filter((d: DiaAgenda) => d.data === baseIso);
     }
     
     return dados;
@@ -45,15 +54,15 @@ export class AgendaSemanalComponent implements OnInit {
     const dataIso = this.formatarDataLocal(this.dataBase());
 
     this.estudantesService.getAgendaSemana(id, dataIso).subscribe({
-      next: (dados: any) => {
+      next: (dados: DiaAgenda[]) => {
         this.agenda.set(dados);
         
-        const total = dados.reduce((acumulador: number, dia: any) => acumulador + dia.eventos.length, 0);
+        const total = dados.reduce((acumulador: number, dia: DiaAgenda) => acumulador + dia.eventos.length, 0);
         this.estudantesService.totalEventosSemana.set(total);
         
         this.carregando.set(false);
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         console.error('Erro ao buscar a agenda:', err);
         this.carregando.set(false);
       }
@@ -108,6 +117,24 @@ export class AgendaSemanalComponent implements OnInit {
   novoHorarioFim = signal('09:00');
   erroAdicionar = signal<string | null>(null);
 
+  nomeAulaInvalido = computed(() => {
+    const v = this.novoNomeAula();
+    if (!v) return true;
+    if (v.trim().length < 3) return true;
+    return textoInvalido(v);
+  });
+
+  horarioInvalido = computed(() => {
+    const inicio = this.novoHorarioInicio();
+    const fim = this.novoHorarioFim();
+    if (!inicio || !fim) return true;
+    return fim <= inicio;
+  });
+
+  formAulaInvalido = computed(() =>
+    this.nomeAulaInvalido() || this.horarioInvalido()
+  );
+
   abrirModalAdicionarAula() {
     this.modalAdicionarAberto.set(true);
     this.erroAdicionar.set(null);
@@ -119,20 +146,20 @@ export class AgendaSemanalComponent implements OnInit {
     this.modalAdicionarAberto.set(false);
   }
 
-  setNovoNomeAula(event: any) {
-    this.novoNomeAula.set(event.target.value);
+  setNovoNomeAula(event: Event) {
+    this.novoNomeAula.set((event.target as HTMLInputElement).value);
   }
 
-  setNovoDiaSemana(event: any) {
-    this.novoDiaSemana.set(event.target.value);
+  setNovoDiaSemana(event: Event) {
+    this.novoDiaSemana.set((event.target as HTMLSelectElement).value);
   }
 
-  setNovoHorarioInicio(event: any) {
-    this.novoHorarioInicio.set(event.target.value);
+  setNovoHorarioInicio(event: Event) {
+    this.novoHorarioInicio.set((event.target as HTMLInputElement).value);
   }
 
-  setNovoHorarioFim(event: any) {
-    this.novoHorarioFim.set(event.target.value);
+  setNovoHorarioFim(event: Event) {
+    this.novoHorarioFim.set((event.target as HTMLInputElement).value);
   }
 
   salvarNovaAula() {
@@ -142,29 +169,22 @@ export class AgendaSemanalComponent implements OnInit {
       return;
     }
 
-    // Validar nome
-    if (!this.novoNomeAula().trim()) {
-      this.erroAdicionar.set('O nome da aula é obrigatório.');
-      return;
-    }
-
-    const inicio = this.novoHorarioInicio();
-    const fim = this.novoHorarioFim();
-
-    // Validar que fim > inicio
-    if (fim <= inicio) {
-      this.erroAdicionar.set('O horário de fim deve ser após o horário de início.');
+    if (this.formAulaInvalido()) {
+      this.erroAdicionar.set('Verifique os campos obrigatórios.');
       return;
     }
 
     // Validar horário duplicado: checar se já existe aula no mesmo dia com sobreposicão
+    const inicio = this.novoHorarioInicio();
+    const fim = this.novoHorarioFim();
+
     const diaSelecionado = this.novoDiaSemana();
     const diasAgenda = this.agenda();
-    const diaEncontrado = diasAgenda.find((d: any) => d.diaSemana === diaSelecionado);
+    const diaEncontrado = diasAgenda.find((d: DiaAgenda) => d.diaSemana === diaSelecionado);
     if (diaEncontrado && diaEncontrado.eventos && diaEncontrado.eventos.length > 0) {
-      const conflito = diaEncontrado.eventos.find((e: any) => {
-        const eInicio = e.horarioInicio;
-        const eFim = e.horarioFim;
+      const conflito = diaEncontrado.eventos.find((e: EventoAgenda) => {
+        const eInicio = e.horarioInicio ?? '';
+        const eFim = e.horarioFim ?? '';
         // Sobreposicão: novo inicio < fim existente E novo fim > inicio existente
         return inicio < eFim && fim > eInicio;
       });
@@ -197,9 +217,10 @@ export class AgendaSemanalComponent implements OnInit {
             this.carregarAgenda(); // recarrega a agenda
           }, 1500);
         },
-        error: (err: any) => {
+        error: (err: unknown) => {
           this.salvandoAula.set(false);
-          this.erroAdicionar.set(err.error?.message || 'Erro ao salvar a aula.');
+          const message = err instanceof Error ? err.message : 'Erro ao salvar a aula.';
+          this.erroAdicionar.set(message);
         }
       });
   }
