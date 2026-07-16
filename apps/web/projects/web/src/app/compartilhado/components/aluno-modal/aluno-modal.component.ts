@@ -21,7 +21,6 @@ import { BlocoSaudeComponent } from '../../../funcionalidades/estudante/componen
 import { BlocoRelatoriosComponent } from '../../../funcionalidades/estudante/components/bloco-relatorios/bloco-relatorios';
 import { BlocoAgendaComponent } from '../../../funcionalidades/estudante/components/bloco-agenda/bloco-agenda.component';
 import { BlocoDashboardComponent } from '../../../funcionalidades/estudante/components/bloco-dashboards/bloco-dashboard.component';
-import { CadastroResponsavelComponent } from '../../../funcionalidades/estudante/cadastro-responsavel/cadastro-responsavel.component';
 import { API_BASE_URL } from '../../../nucleo/config/api.config';
 import { DiagFullNamePipe } from '../../pipes/student.pipes';
 
@@ -34,7 +33,6 @@ import { DiagFullNamePipe } from '../../pipes/student.pipes';
     BlocoRelatoriosComponent,
     BlocoAgendaComponent,
     BlocoDashboardComponent,
-    CadastroResponsavelComponent,
     DiagFullNamePipe
   ],
   templateUrl: './aluno-modal.component.html',
