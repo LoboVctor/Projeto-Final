@@ -6,6 +6,7 @@ import {
   computed,
   ChangeDetectionStrategy,
   DestroyRef,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -49,14 +50,26 @@ export class CoordenadorAlunosComponent implements OnInit {
 
   abaSolicitada = signal<string | null>(null);
   dropdownCadastrarAberto = signal(false);
+  menuAbertoId = signal<string | null>(null);
 
   toggleDropdownCadastrar(event: Event): void {
     event.stopPropagation();
     this.dropdownCadastrarAberto.set(!this.dropdownCadastrarAberto());
   }
 
+  toggleMenu(id: string, event: Event): void {
+    event.stopPropagation();
+    this.menuAbertoId.update(current => current === id ? null : id);
+  }
+
+  @HostListener('document:click')
+  onDocumentClick() {
+    this.fecharMenus();
+  }
+
   fecharMenus(): void {
     this.dropdownCadastrarAberto.set(false);
+    this.menuAbertoId.set(null);
   }
 
   // --- Modal Cadastro Manual ---
@@ -288,8 +301,44 @@ export class CoordenadorAlunosComponent implements OnInit {
     return buildFotoUrl(aluno.nomeCompleto, aluno.foto, this.baseUrl);
   }
 
-  private dispararBusca(): void { this.busca$.next(); }
+  private dispararBusca(): void {
+    this.busca$.next();
+  }
 
+  // ──────────────── EXCLUSÃO ────────────────
+  modalConfirmacaoAberto = signal(false);
+  alunoParaDesativar = signal<EstudanteListagemItem | null>(null);
+  desativarLoading = signal(false);
+
+  confirmarDesativacao(aluno: EstudanteListagemItem) {
+    this.alunoParaDesativar.set(aluno);
+    this.modalConfirmacaoAberto.set(true);
+  }
+
+  fecharModalConfirmacao(): void {
+    this.modalConfirmacaoAberto.set(false);
+    this.alunoParaDesativar.set(null);
+  }
+
+  executarDesativacao() {
+    const aluno = this.alunoParaDesativar();
+    if (!aluno) return;
+    
+    this.desativarLoading.set(true);
+    this.estudantesService.desativarEstudante(aluno.id).subscribe({
+      next: () => {
+        this.desativarLoading.set(false);
+        this.fecharModalConfirmacao();
+        this.dispararBusca();
+      },
+      error: (err) => {
+        console.error('Erro ao desativar aluno:', err);
+        this.desativarLoading.set(false);
+        this.erro.set('Erro ao desativar aluno. Tente novamente mais tarde.');
+        this.fecharModalConfirmacao();
+      }
+    });
+  }
 
   abrirModalCadastrarAluno(): void {
     this.fecharMenus();
@@ -333,3 +382,4 @@ export class CoordenadorAlunosComponent implements OnInit {
     this.importResult.set(null);
   }
 }
+

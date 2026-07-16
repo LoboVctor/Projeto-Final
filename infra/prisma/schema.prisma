@@ -45,6 +45,7 @@ model Estudante {
   formaComunicacao Fcom
   statusMatricula  Boolean
   createdAt        DateTime @default(now())
+  deletedAt        DateTime?
   escolaId String
 
   escola            Escola   @relation(fields: [escolaId], references: [id])

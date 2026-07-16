@@ -11,6 +11,7 @@ export interface ProfessorRegente {
 
 export interface ResponsavelVisaoGeral {
   nomeCompleto: string;
+  cpf: string;
   telefone: string;
   email: string;
   endereco: string;
@@ -26,6 +27,7 @@ export interface EspecificidadeVisaoGeral {
 
 export interface EstudanteVisaoGeral {
   id: string;
+  matricula: string;
   nomeCompleto: string;
   dataNascimento: string;
   cpf: string;

@@ -18,6 +18,7 @@ import { LoadingFlorComponent } from '../../../compartilhado/components/loading-
 import { calcularIdade } from '../../../compartilhado/utils/date.utils';
 
 import { TurmasService, TurmaResumo } from '../../../nucleo/services/turmas.service';
+import { AuthService } from '../../../nucleo/services/auth';
 import type {
   EstudanteListagemItem,
   PaginacaoResponse,
@@ -39,6 +40,9 @@ export class AlunosComponent implements OnInit {
   private readonly turmasService = inject(TurmasService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly auditoriaService = inject(AuditoriaService);
+  private readonly authService = inject(AuthService);
+
+  userRole = this.authService.getRole() || 'EDUCADOR';
 
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -256,9 +260,12 @@ export class AlunosComponent implements OnInit {
     this.modalAlunoAberto.set(true);
   }
 
-  fecharModalAluno(): void {
+  fecharModalAluno(houveModificacao: boolean = false): void {
     this.modalAlunoAberto.set(false);
     this.modalAlunoData.set(null);
+    if (houveModificacao) {
+      this.dispararBusca();
+    }
   }
 
   private paraAlunoModalData(aluno: EstudanteListagemItem): AlunoModalData {
@@ -372,6 +379,4 @@ export class AlunosComponent implements OnInit {
   private dispararBusca(): void {
     this.busca$.next();
   }
-
-  
 }
