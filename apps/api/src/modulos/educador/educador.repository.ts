@@ -114,23 +114,14 @@ export class EducadorRepository {
     });
   }
 
-  async criar(dados: CriarEducadorDados, logadoId: string, hashSenha: string) {
+  async criar(dados: CriarEducadorDados, escolaId: string, hashSenha: string) {
     const { turmaIds, email, ...camposScalares } = dados;
-
-    const logado = await this.prisma.client.educador.findUnique({
-      where: { id: logadoId },
-      select: { escolaId: true },
-    });
-
-    if (!logado) {
-      throw new UnauthorizedException('Educador logado não encontrado');
-    }
 
     return this.prisma.client.educador.create({
       data: {
         ...camposScalares,
         dataContratacao: new Date(camposScalares.dataContratacao),
-        escolaId: logado.escolaId,
+        escolaId,
         // Cria também as turmas, se enviadas
         ...(turmaIds?.length
           ? {

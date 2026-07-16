@@ -13,6 +13,7 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
 import { CreateAulaEstudanteDto } from './dtos/create-aula.dto.js';
+import { CriarEstudanteDto } from './dtos/criar-estudante.dto.js';
 
 /**
  * Validador customizado de tipo de arquivo baseado em mimetype.
@@ -51,6 +52,49 @@ export class EstudantesController {
   constructor(private readonly estudanteService: EstudanteService) {}
 
   /**
+   * POST /estudantes
+   * Cria um estudante manualmente.
+   */
+  @Post()
+  @ApiOperation({ summary: 'Cria um estudante manualmente' })
+  @UseInterceptors(
+    FileInterceptor('arquivo', {
+      storage: diskStorage({
+        destination: './uploads/fotos',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  async criar(
+    @Body() dto: CriarEstudanteDto,
+    @Request() req: any,
+    @UploadedFile() arquivo?: Express.Multer.File,
+  ) {
+    const logadoId = req.user.educadorId || req.user.responsavelId || req.user.id;
+    console.log('[DEBUG] req.user in POST /estudantes:', req.user);
+    let escolaId = req.user.escolaId; 
+    
+    if (!escolaId) {
+      if (req.user.role === 'COORDENADOR') {
+        // Como o seed não vincula o admin a um educador, pegamos a escola padrão
+        const escolaPadrao = await this.estudanteService.buscarEscolaPadrao();
+        if (escolaPadrao) {
+          escolaId = escolaPadrao.id;
+        } else {
+          throw new BadRequestException('Nenhuma escola encontrada no sistema para vincular ao estudante.');
+        }
+      } else {
+        throw new BadRequestException('escolaId não encontrada no token do usuário logado.');
+      }
+    }
+
+    return this.estudanteService.criar(dto, arquivo, escolaId);
+  }
+
+  /**
    * POST /estudantes/importar-csv
    * Importa estudantes em lote a partir de um arquivo CSV.
    */
@@ -61,8 +105,18 @@ export class EstudantesController {
     if (!arquivo) {
       throw new BadRequestException('Arquivo não enviado');
     }
-    const logadoId = req.user.educadorId;
-    return this.estudanteService.importarCSV(arquivo, logadoId);
+    const logadoId = req.user.educadorId || req.user.id;
+    let escolaId = req.user.escolaId;
+    if (!escolaId) {
+      if (req.user.role === 'COORDENADOR') {
+        const escolaPadrao = await this.estudanteService.buscarEscolaPadrao();
+        if (escolaPadrao) escolaId = escolaPadrao.id;
+      }
+      if (!escolaId) {
+        throw new BadRequestException('escolaId não encontrada no token do usuário logado.');
+      }
+    }
+    return this.estudanteService.importarCSV(arquivo, logadoId, escolaId);
   }
 
   /**
@@ -219,8 +273,9 @@ export class EstudantesController {
     }),
   )
   async atualizarLaudo(
+    @Param('estudanteId') estudanteId: string,
     @Param('documentoId') documentoId: string,
-    @Body() body: { tipoDocumento: string; dataEmissao: string },
+    @Body() body: { tipoDiagnostico: string; tipoDocumento: string; dataEmissao: string },
     @UploadedFile(
       new ParseFilePipe({
         fileIsRequired: false, 
@@ -232,7 +287,7 @@ export class EstudantesController {
     )
     arquivo?: Express.Multer.File,
   ) {
-    return this.estudanteService.atualizarLaudo(documentoId, body, arquivo);
+    return this.estudanteService.atualizarLaudo(estudanteId, documentoId, body, arquivo);
   }
 
   @Delete(':estudanteId/laudos/:documentoId')

@@ -219,18 +219,18 @@
 
 @if (isModalEspecificidadesOpen) {
 <app-modal-especificidades [estudanteId]="estudanteId()" [especificidades]="restricoes"
-  (fechar)="fecharModalEspecificidades()" (salvo)="carregarDadosSaude()">
+  (fechar)="fecharModalEspecificidades()" (salvo)="onEspecificidadeSalva()">
 </app-modal-especificidades>
 }
 
 @if (isModalLaudosOpen) {
 <app-modal-laudos [estudanteId]="estudanteId()" [laudos]="dadosSaude?.laudos || []" (fechar)="fecharModalLaudos()"
-  (salvo)="carregarDadosSaude()">
+  (salvo)="onLaudoSalvo()">
 </app-modal-laudos>
 }
 
 @if (isModalMedicamentosOpen) {
 <app-modal-medicamentos [estudanteId]="estudanteId()" [medicamentos]="dadosSaude?.medicamentos || []"
-  (fechar)="fecharModalMedicamento()" (salvo)="carregarDadosSaude()">
+  (fechar)="fecharModalMedicamento()" (salvo)="onMedicamentoSalvo()">
 </app-modal-medicamentos>
 }

@@ -1,8 +1,9 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Patch, Body, Request } from '@nestjs/common';
 import { AutenticacaoService } from './autenticacao.service.js';
 import { LoginDto } from './dtos/login.dto.js';
 import { EsqueceuSenhaDto } from './dtos/esqueceu-senha.dto.js';
 import { RedefinirSenhaDto } from './dtos/redefinir-senha.dto.js';
+import { PrimeiroAcessoDto } from './dtos/primeiro-acesso.dto.js';
 import { Public } from '../../common/decorators/public.decorator.js';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
@@ -18,6 +19,14 @@ export class AutenticacaoController {
   })
   login(@Body() loginDto: LoginDto) {
     return this.autenticacaoService.login(loginDto);
+  }
+
+  @Patch('primeiro-acesso')
+  @ApiOperation({
+    summary: 'Troca a senha obrigatória no primeiro acesso. Requer autenticação.',
+  })
+  primeiroAcesso(@Body() dto: PrimeiroAcessoDto, @Request() req: any) {
+    return this.autenticacaoService.primeiroAcesso(req.user.id, dto);
   }
 
   @Public()

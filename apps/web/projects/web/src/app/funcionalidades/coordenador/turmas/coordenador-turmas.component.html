@@ -143,8 +143,8 @@
             @if (viewMode() === 'grid') {
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 students-container-transition" [class.is-loading-students]="loadingEstudantes()">
                 @for (estudante of estudantes(); track estudante) {
-                  <app-card-aluno [nome]="estudante.nomeCompleto" [matricula]="estudante.matricula" [foto]="estudante.foto" [estudante]="estudante"
-                    [diagnostico]="estudante.diagnosticos.length > 0 ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo' : 'Sem Laudo'"
+                  <app-card-aluno [nome]="nomeCurtoAluno(estudante.nomeCompleto)" [matricula]="estudante.matricula" [foto]="getFotoUrlCard(estudante)" [estudante]="estudante"
+                    [diagnostico]="'Sem Laudo'" [diagnosticos]="getDiagnosticosCard(estudante)"
                     (abrirPerfil)="abrirDetalhesAluno(estudante)"></app-card-aluno>
                 }
                 @if (estudantes().length === 0) {
@@ -203,7 +203,7 @@
                             <td class="px-6 py-3 text-center">
                               @if (aluno.diagnosticos.length > 0) {
                                 <div class="flex flex-wrap justify-center gap-1">
-                                  @for (d of aluno.diagnosticos; track d.diagnostico.nome) {
+                                  @for (d of aluno.diagnosticos; track $index) {
                                     <span class="px-2 py-0.5 rounded text-[10px] font-nunito font-bold border shadow-sm" [ngClass]="d.diagnostico.tipo | diagColor">
                                       {{ d.diagnostico.tipo | diagLabel }}
                                     </span>
@@ -319,7 +319,7 @@
       <app-aluno-modal
         [isVisible]="true"
         [aluno]="alunoEmDestaque()"
-        (fecharModal)="alunoEmDestaque.set(null)"
+        (fecharModal)="fecharModalAluno($event)"
       ></app-aluno-modal>
     }
 

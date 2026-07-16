@@ -251,5 +251,15 @@ export interface IEstudanteRepositorio {
       linkArquivo?: string;
     },
   ): Promise<any>;
+  atualizarLaudoCompleto(
+    estudanteId: string,
+    documentoId: string,
+    dados: {
+      tipoDiagnostico: string;
+      tipoDocumento: string;
+      dataEmissao: string;
+      linkArquivo?: string;
+    },
+  ): Promise<any>;
   registrarChamadaEmLote(dto: CreateRegistroAulaBatchDto): Promise<RegistroAula[]>;
 }

@@ -26,6 +26,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         email: true,
         role: true,
         educadorId: true,
+        responsavelId: true,
+        educador: { select: { escolaId: true } },
       },
     });
 
@@ -33,6 +35,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Usuário não encontrado ou inativo');
     }
 
-    return user;
+    return {
+      ...user,
+      escolaId: user.educador?.escolaId,
+    };
   }
 }

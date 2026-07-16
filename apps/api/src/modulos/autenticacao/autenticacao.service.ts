@@ -6,6 +6,7 @@ import * as crypto from 'crypto';
 import { LoginDto } from './dtos/login.dto.js';
 import { EsqueceuSenhaDto } from './dtos/esqueceu-senha.dto.js';
 import { RedefinirSenhaDto } from './dtos/redefinir-senha.dto.js';
+import { PrimeiroAcessoDto } from './dtos/primeiro-acesso.dto.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
 /** Armazena tokens de redefinição em memória com TTL de 1h (substituir por Redis em produção) */
@@ -46,6 +47,37 @@ export class AutenticacaoService {
       access_token: await this.jwtService.signAsync(payload),
       usuario: usuarioSemSenha,
     };
+  }
+
+  /**
+   * Altera a senha no primeiro acesso do usuário.
+   * Requer que o usuário esteja autenticado via JWT.
+   * Após a troca, seta deveMudarSenha = false.
+   */
+  async primeiroAcesso(usuarioId: string, dto: PrimeiroAcessoDto): Promise<{ message: string }> {
+    const usuario = await this.prisma.client.usuario.findUnique({
+      where: { id: usuarioId },
+    });
+
+    if (!usuario) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    if (!usuario.deveMudarSenha) {
+      throw new BadRequestException('Este usuário já realizou a troca de senha obrigatória.');
+    }
+
+    const senhaHash = await bcrypt.hash(dto.novaSenha, 12);
+
+    await this.prisma.client.usuario.update({
+      where: { id: usuarioId },
+      data: {
+        senha: senhaHash,
+        deveMudarSenha: false,
+      },
+    });
+
+    return { message: 'Senha alterada com sucesso.' };
   }
 
   /**

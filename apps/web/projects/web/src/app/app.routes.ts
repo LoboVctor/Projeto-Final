@@ -4,6 +4,7 @@ import { CoordinatorShellComponent } from './layout/coordinator-shell/coordinato
 import { authGuard } from './nucleo/guards/auth-guard';
 import { loginGuard } from './nucleo/guards/login-guard';
 import { coordinatorGuard } from './nucleo/guards/coordinator-guard';
+import { primeiroAcessoGuard } from './nucleo/guards/primeiro-acesso.guard';
 
 export const routes: Routes = [
   // ── Rota raiz: redireciona para /login ────────────────────────────────
@@ -33,12 +34,19 @@ export const routes: Routes = [
     loadComponent: () => import('./funcionalidades/autenticacao/redefinir-senha/redefinir-senha').then(m => m.RedefinirSenhaComponent)
   },
 
+  {
+    // Rota de primeiro acesso: requer autenticação mas NÃO requer senha já trocada
+    path: 'primeiro-acesso',
+    canActivate: [authGuard],
+    loadComponent: () => import('./funcionalidades/autenticacao/redefinir-senha/redefinir-senha').then(m => m.RedefinirSenhaComponent)
+  },
+
   // ── Rotas internas do Professor (com AppShell + Sidebar) ──────────────
-  // authGuard aplicado no pai para proteger TODAS as rotas filhas
+  // authGuard + primeiroAcessoGuard protegem todas as rotas filhas
   {
     path: '',
     component: AppShellComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, primeiroAcessoGuard],
     children: [
       {
         path: 'home',
@@ -72,11 +80,11 @@ export const routes: Routes = [
   },
 
   // ── Rotas internas do Coordenador (com CoordinatorShell + Sidebar) ────
-  // authGuard + coordinatorGuard protegem todas as rotas filhas
+  // authGuard + coordinatorGuard + primeiroAcessoGuard protegem todas as rotas filhas
   {
     path: 'coordenador',
     component: CoordinatorShellComponent,
-    canActivate: [authGuard, coordinatorGuard],
+    canActivate: [authGuard, coordinatorGuard, primeiroAcessoGuard],
     children: [
       {
         path: 'home',

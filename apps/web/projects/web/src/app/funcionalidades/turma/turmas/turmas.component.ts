@@ -12,6 +12,9 @@ import { AuditoriaService } from '../../../nucleo/services/auditoria.service';
 import { LoadingFlorComponent } from '../../../compartilhado/components/loading-flor/loading-flor.component';
 import { jsPDF } from 'jspdf';
 import { toPng } from 'html-to-image';
+import { buildAlunoModalData, getDiagnosticosArrayForCard, buildFotoUrl } from '../../../compartilhado/utils/aluno-modal.utils';
+
+import { API_BASE_URL } from '../../../nucleo/config/api.config';
 
 type ViewMode = 'grid' | 'list';
 
@@ -59,6 +62,7 @@ export class TurmasComponent implements OnInit {
   private readonly turmasService = inject(TurmasService);
   private readonly authService = inject(AuthService);
   private readonly auditoriaService = inject(AuditoriaService);
+  private readonly baseUrl = inject(API_BASE_URL);
 
   // ── ViewChild para captura do PDF ─────────────────────
   @ViewChild('relatorioTurma') relatorioTurma!: ElementRef;
@@ -162,22 +166,25 @@ export class TurmasComponent implements OnInit {
   alunoEmDestaque = signal<AlunoModalData | null>(null);
 
   abrirDetalhesAluno(estudante: EstudanteResumo): void {
-    const nomeDaTurma = this.turmaSelecionada()?.nome || 'Turma Indefinida';
+    this.alunoEmDestaque.set(buildAlunoModalData(estudante, this.baseUrl));
+  }
 
-    const diagnosticoPrincipal = estudante.diagnosticos.length > 0
-      ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo'
-      : 'Sem Laudo';
+  getDiagnosticosCard(estudante: EstudanteResumo): string[] {
+    return getDiagnosticosArrayForCard(estudante.diagnosticos);
+  }
 
-    const dadosParaModal: AlunoModalData = {
-      id: estudante.id,
-      nome: estudante.nomeCompleto,
-      turma: nomeDaTurma,
-      diagnostico: diagnosticoPrincipal,
-      nivelSuporte: 'Nível 1 de Suporte',
-      foto: estudante.foto || `https://ui-avatars.com/api/?name=${estudante.nomeCompleto}&background=F0E6FF&color=4A148C`,
-    };
+  getFotoUrlCard(estudante: EstudanteResumo): string {
+    return buildFotoUrl(estudante.nomeCompleto, estudante.foto, this.baseUrl);
+  }
 
-    this.alunoEmDestaque.set(dadosParaModal);
+  fecharModalAluno(houveModificacao: boolean = false): void {
+    this.alunoEmDestaque.set(null);
+    if (houveModificacao) {
+      const turma = this.turmaSelecionada();
+      if (turma) {
+        this.selecionarTurma(turma);
+      }
+    }
   }
 
   /** Exibe apenas primeiro nome + último sobrenome, sem "..." — igual ao comportamento da Home */
