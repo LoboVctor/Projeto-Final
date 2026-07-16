@@ -158,11 +158,10 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 aluno-page">
           @for (estudante of alunosPaginados(); track estudante.id) {
           <app-card-aluno [nome]="nomeCurtoAluno(estudante.nomeCompleto)" [matricula]="estudante.matricula"
-            [estudante]="estudante" [foto]="estudante.foto" [diagnostico]="
-                  estudante.diagnosticos.length > 0
-                    ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo'
-                    : 'Sem Laudo'
-                " (abrirPerfil)="abrirDetalhesAluno(estudante)">
+            [estudante]="estudante" [foto]="getFotoUrlCard(estudante)"
+            [diagnostico]="'Sem Laudo'"
+            [diagnosticos]="getDiagnosticosCard(estudante)"
+            (abrirPerfil)="abrirDetalhesAluno(estudante)">
           </app-card-aluno>
           }
         </div>

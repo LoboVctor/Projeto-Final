@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed, effect, ElementRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { CalendarioService, EventoCalendario } from '../../../compartilhado/services/calendario.service';
 import { AuthService } from '../../../nucleo/services/auth';
 import { ConfirmacaoService } from '../../../compartilhado/services/confirmacao.service';
@@ -29,6 +30,7 @@ export class CoordenadorCalendarioComponent implements OnInit {
   private readonly calendarioService = inject(CalendarioService);
   private readonly authService = inject(AuthService);
   private readonly confirmacaoService = inject(ConfirmacaoService);
+  private readonly route = inject(ActivatedRoute);
 
   hoje = new Date();
   mesAtual = signal<number>(this.hoje.getMonth());
@@ -61,7 +63,12 @@ export class CoordenadorCalendarioComponent implements OnInit {
     effect(() => { this.carregarEventos(this.mesAtual(), this.anoAtual()); }, { allowSignalWrites: true });
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    // Ação rápida da Home: se vier com ?abrirModal=true, abre o modal de novo evento
+    if (this.route.snapshot.queryParams['abrirModal'] === 'true') {
+      this.abrirModal();
+    }
+  }
 
   carregarEventos(mes: number, ano: number): void {
     const escolaId = this.authService.getEscolaId();

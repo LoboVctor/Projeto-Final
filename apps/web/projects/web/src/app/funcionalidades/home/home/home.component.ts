@@ -29,6 +29,8 @@ import { CardAlunoComponent } from '../../../compartilhado/components/card-aluno
 import { AlunoModalComponent } from '../../../compartilhado/components/aluno-modal/aluno-modal.component';
 import { AlunoModalData } from '../../../compartilhado/models/aluno-modal.model';
 import { CalendarioService, EventoCalendario } from '../../../compartilhado/services/calendario.service';
+import { buildAlunoModalData, getDiagnosticosArrayForCard, buildFotoUrl } from '../../../compartilhado/utils/aluno-modal.utils';
+import { API_BASE_URL } from '../../../nucleo/config/api.config';
 
 export type ChartOptions = {
   series: ApexNonAxisChartSeries;
@@ -58,6 +60,7 @@ export class HomeComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly calendarioService = inject(CalendarioService);
+  private readonly baseUrl = inject(API_BASE_URL);
   private readonly router = inject(Router);
 
   // --- SIGNALS EXISTENTES (lógica preservada) ---
@@ -441,18 +444,14 @@ export class HomeComponent implements OnInit {
     this.acaoRapidaSelecionada.set(null);
     this.abaDestino.set(aba);
 
-    const nomeDaTurma = this.turmaAtual()?.nome || 'Turma Indefinida';
-    const diagnosticoPrincipal = estudante.diagnosticos.length > 0
-      ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo'
-      : 'Sem Laudo';
+    this.alunoEmDestaque.set(buildAlunoModalData(estudante, this.baseUrl));
+  }
 
-    this.alunoEmDestaque.set({
-      id: estudante.id,
-      nome: estudante.nomeCompleto,
-      turma: nomeDaTurma,
-      diagnostico: diagnosticoPrincipal,
-      nivelSuporte: 'Nível 1 de Suporte',
-      foto: estudante.foto || `https://ui-avatars.com/api/?name=${estudante.nomeCompleto}&background=F0E6FF&color=4A148C`
-    });
+  getDiagnosticosCard(estudante: EstudanteResumo): string[] {
+    return getDiagnosticosArrayForCard(estudante.diagnosticos);
+  }
+
+  getFotoUrlCard(estudante: EstudanteResumo): string {
+    return buildFotoUrl(estudante.nomeCompleto, estudante.foto, this.baseUrl);
   }
 }

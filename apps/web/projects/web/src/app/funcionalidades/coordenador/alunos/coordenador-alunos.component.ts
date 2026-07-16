@@ -26,11 +26,13 @@ import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL } from '../../../nucleo/config/api.config';
 import { finalize } from 'rxjs';
 import { LoadingFlorComponent } from '../../../compartilhado/components/loading-flor/loading-flor.component';
+import { ModalCadastrarAlunoComponent } from './components/modal-cadastrar-aluno/modal-cadastrar-aluno.component';
+import { buildAlunoModalData, buildFotoUrl } from '../../../compartilhado/utils/aluno-modal.utils';
 
 @Component({
   selector: 'app-coordenador-alunos',
   standalone: true,
-  imports: [CommonModule, FormsModule, AlunoModalComponent, DiagLabelPipe, DiagColorPipe, LoadingFlorComponent],
+  imports: [CommonModule, FormsModule, AlunoModalComponent, DiagLabelPipe, DiagColorPipe, LoadingFlorComponent, ModalCadastrarAlunoComponent],
   templateUrl: './coordenador-alunos.component.html',
   styleUrls: ['./coordenador-alunos.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,11 +41,11 @@ export class CoordenadorAlunosComponent implements OnInit {
   private readonly estudantesService = inject(EstudantesService);
   private readonly turmasService = inject(TurmasService);
   private readonly auditoriaService = inject(AuditoriaService);
+  private readonly baseUrl = inject(API_BASE_URL);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = inject(API_BASE_URL);
 
   abaSolicitada = signal<string | null>(null);
   dropdownCadastrarAberto = signal(false);
@@ -55,6 +57,17 @@ export class CoordenadorAlunosComponent implements OnInit {
 
   fecharMenus(): void {
     this.dropdownCadastrarAberto.set(false);
+  }
+
+  // --- Modal Cadastro Manual ---
+  modalCadastrarAlunoAberto = signal(false);
+
+  fecharModalCadastrarAluno(): void {
+    this.modalCadastrarAlunoAberto.set(false);
+  }
+
+  onAlunoCadastrado(): void {
+    this.dispararBusca();
   }
 
   baixarModeloCSV(): void {
@@ -114,6 +127,11 @@ export class CoordenadorAlunosComponent implements OnInit {
   ngOnInit(): void {
     const statusUrl = this.route.snapshot.queryParams['status'];
     if (statusUrl) this.filtroStatus.set(statusUrl);
+
+    // Ação rápida da Home: se vier com ?abrirModal=true, abre o modal de cadastro direto
+    if (this.route.snapshot.queryParams['abrirModal'] === 'true') {
+      this.modalCadastrarAlunoAberto.set(true);
+    }
 
     this.turmasService.getTurmas().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (turmas) => this.turmasDisponiveis.set(turmas),
@@ -212,20 +230,16 @@ export class CoordenadorAlunosComponent implements OnInit {
     this.modalAlunoAberto.set(true);
   }
 
-  fecharModalAluno(): void {
+  fecharModalAluno(houveModificacao: boolean = false): void {
     this.modalAlunoAberto.set(false);
     this.modalAlunoData.set(null);
+    if (houveModificacao) {
+      this.dispararBusca(); // Atualiza a listagem se houver mudanças no modal
+    }
   }
 
   private paraAlunoModalData(aluno: EstudanteListagemItem): AlunoModalData {
-    return {
-      id: aluno.id,
-      nome: aluno.nomeCompleto,
-      turma: this.getTurmaLabel(aluno),
-      diagnostico: this.getDiagnosticoLabel(aluno),
-      nivelSuporte: '',
-      foto: aluno.foto ?? undefined,
-    };
+    return buildAlunoModalData(aluno, this.baseUrl);
   }
 
   exportarCSV(): void {
@@ -263,49 +277,23 @@ export class CoordenadorAlunosComponent implements OnInit {
 
   getStatusLabel(aluno: EstudanteListagemItem): string { return aluno.statusMatricula ? 'ATIVO' : 'INATIVO'; }
 
-  getDiagnosticoLabel(aluno: EstudanteListagemItem): string {
-    if (aluno.diagnosticos.length === 0) return '—';
-    const mapa: Record<string, string> = {
-      TEA: 'TEA', TDAH: 'TDAH', SINDROME_DOWN: 'S.DOWN',
-      PARALISIA_CEREBRAL: 'PC', DEFICIENCIA_INTELECTUAL: 'DI',
-      DEFICIENCIA_MULTIPLA: 'DEMU', OUTRO: 'OUTRO',
-    };
-    return aluno.diagnosticos.map((d) => mapa[d.diagnostico.tipo] || d.diagnostico.tipo).join(', ');
-  }
-
+  /** Usado na coluna "Turma" da tabela. */
   getTurmaLabel(aluno: EstudanteListagemItem): string {
-    if (aluno.turmas.length === 0) return '—';
+    if (!aluno.turmas || aluno.turmas.length === 0) return '—';
     return aluno.turmas.map((t) => t.nome).join(' / ');
   }
 
+  /** Usado na coluna "Aluno" da tabela (avatar). */
   getFotoUrl(aluno: EstudanteListagemItem): string {
-    return (
-      aluno.foto ||
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(aluno.nomeCompleto)}&background=EDE9FE&color=4F46E5&size=64`
-    );
-  }
-
-  getCorDiagnostico(diagnostico: string): string {
-    const mapaCores: Record<string, string> = {
-      'TEA': 'bg-[#F3E8FF] text-[#6C3CC9] border-[#B79CED]/40',
-      'TDAH': 'bg-[#E0F2FE] text-[#0369A1] border-[#7DD3FC]/40',
-      'SINDROME DOWN': 'bg-[#E6F4EA] text-[#137333] border-[#82CBA2]/40',
-      'SINDROME_DOWN': 'bg-[#E6F4EA] text-[#137333] border-[#82CBA2]/40',
-      'PARALISIA CEREBRAL': 'bg-[#FEE2E2] text-[#991B1B] border-[#FCA5A5]/40',
-      'PARALISIA_CEREBRAL': 'bg-[#FEE2E2] text-[#991B1B] border-[#FCA5A5]/40',
-      'DEFICIENCIA INTELECTUAL': 'bg-[#FEF3C7] text-[#92400E] border-[#FCD34D]/40',
-      'DEFICIENCIA_INTELECTUAL': 'bg-[#FEF3C7] text-[#92400E] border-[#FCD34D]/40',
-      'DEFICIENCIA MULTIPLA': 'bg-[#FCE7F3] text-[#9D174D] border-[#FBCFE8]/40',
-      'DEFICIENCIA_MULTIPLA': 'bg-[#FCE7F3] text-[#9D174D] border-[#FBCFE8]/40',
-      'OUTRO': 'bg-[#F3F4F6] text-[#374151] border-[#D1D5DB]/40',
-    };
-    return mapaCores[diagnostico?.toUpperCase()] || 'bg-[#F3F4F6] text-[#374151] border-[#D1D5DB]/40';
+    return buildFotoUrl(aluno.nomeCompleto, aluno.foto, this.baseUrl);
   }
 
   private dispararBusca(): void { this.busca$.next(); }
 
-  abrirModalCadastrarAluno() {
-    alert('Funcionalidade de cadastro manual em desenvolvimento.');
+
+  abrirModalCadastrarAluno(): void {
+    this.fecharMenus();
+    this.modalCadastrarAlunoAberto.set(true);
   }
 
   onFileSelected(event: Event) {

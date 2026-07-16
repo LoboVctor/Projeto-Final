@@ -3,10 +3,18 @@ import * as bcrypt from 'bcrypt';
 import * as Papa from 'papaparse';
 import { EducadorRepository, FiltrosEducador, AtualizarEducadorDados, CriarEducadorDados } from './educador.repository.js';
 import { TipoEducador } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service.js';
 
 @Injectable()
 export class EducadorService {
-  constructor(private readonly educadorRepository: EducadorRepository) {}
+  constructor(
+    private readonly educadorRepository: EducadorRepository,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  async buscarEscolaPadrao() {
+    return this.prisma.client.escola.findFirst();
+  }
 
   listar(filtros: FiltrosEducador) {
     return this.educadorRepository.listar(filtros);
@@ -16,13 +24,13 @@ export class EducadorService {
     return this.educadorRepository.buscarPorId(id);
   }
 
-  async criar(dados: CriarEducadorDados, logadoId: string) {
+  async criar(dados: CriarEducadorDados, escolaId: string) {
     // A senha padrão para todo novo usuário é 'Elo@1234'
     const senhaPadrao = 'Elo@1234';
     const hashSenha = await bcrypt.hash(senhaPadrao, 10);
 
     try {
-      return await this.educadorRepository.criar(dados, logadoId, hashSenha);
+      return await this.educadorRepository.criar(dados, escolaId, hashSenha);
     } catch (error: any) {
       if (error.code === 'P2002') {
         throw new ConflictException('Já existe um educador com este CPF, Matrícula ou E-mail.');
@@ -31,7 +39,7 @@ export class EducadorService {
     }
   }
 
-  async importarCSV(arquivo: Express.Multer.File, logadoId: string) {
+  async importarCSV(arquivo: Express.Multer.File, escolaId: string) {
     const csvData = arquivo.buffer.toString('utf-8');
     
     // Configura o papaparse
@@ -72,7 +80,7 @@ export class EducadorService {
           dataContratacao: rowData.data_contratacao || new Date().toISOString(),
         };
 
-        await this.criar(criarDados, logadoId);
+        await this.criar(criarDados, escolaId);
         sucesso++;
       } catch (err: any) {
         falhas++;

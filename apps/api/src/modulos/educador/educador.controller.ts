@@ -15,6 +15,7 @@ import {
   UnauthorizedException,
   UseInterceptors,
   UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -42,11 +43,22 @@ export class EducadorController {
   @Post()
   @ApiOperation({ summary: 'Cria um novo educador' })
   async criar(@Body() dto: CriarEducadorDto, @Request() req: any) {
-    const logadoId = req.user.educadorId;
-    if (!logadoId) {
-      throw new UnauthorizedException('Educador logado não encontrado no token');
+    let escolaId = req.user.escolaId;
+    
+    if (!escolaId) {
+      if (req.user.role === 'COORDENADOR') {
+        const escolaPadrao = await this.educadorService.buscarEscolaPadrao();
+        if (escolaPadrao) {
+          escolaId = escolaPadrao.id;
+        } else {
+          throw new BadRequestException('Nenhuma escola encontrada no sistema para vincular ao educador.');
+        }
+      } else {
+        throw new BadRequestException('escolaId não encontrada no token do usuário logado.');
+      }
     }
-    return this.educadorService.criar(dto, logadoId);
+
+    return this.educadorService.criar(dto, escolaId);
   }
 
   /**
@@ -57,14 +69,25 @@ export class EducadorController {
   @ApiOperation({ summary: 'Importa educadores via arquivo CSV' })
   @UseInterceptors(FileInterceptor('arquivo'))
   async importarCSV(@UploadedFile() arquivo: Express.Multer.File, @Request() req: any) {
-    const logadoId = req.user.educadorId;
-    if (!logadoId) {
-      throw new UnauthorizedException('Educador logado não encontrado no token');
+    let escolaId = req.user.escolaId;
+    
+    if (!escolaId) {
+      if (req.user.role === 'COORDENADOR') {
+        const escolaPadrao = await this.educadorService.buscarEscolaPadrao();
+        if (escolaPadrao) {
+          escolaId = escolaPadrao.id;
+        } else {
+          throw new BadRequestException('Nenhuma escola encontrada no sistema para vincular aos educadores.');
+        }
+      } else {
+        throw new BadRequestException('escolaId não encontrada no token do usuário logado.');
+      }
     }
+
     if (!arquivo) {
-      throw new UnauthorizedException('Arquivo CSV não enviado.');
+      throw new BadRequestException('Arquivo CSV não enviado.');
     }
-    return this.educadorService.importarCSV(arquivo, logadoId);
+    return this.educadorService.importarCSV(arquivo, escolaId);
   }
 
   /**

@@ -267,14 +267,21 @@ export class CoordenadorHomeComponent implements OnInit {
     }
   }
 
-  // ── Ações Rápidas (navegação direta) ─────────────────────────
+  // ── Ações Rápidas (navegação com abertura de modal) ─────────────
 
-  irParaTurmas(): void {
-    this.router.navigate(['/turmas']);
+  /** Navega para a tela de Alunos e sinaliza para abrir o dropdown de cadastro */
+  irParaCadastrarAluno(): void {
+    this.router.navigate(['/coordenador/alunos'], { queryParams: { abrirModal: 'true' } });
   }
 
-  irParaRelatorios(): void {
-    this.router.navigate(['/turmas']);
+  /** Navega para a tela de Professores e sinaliza para abrir o dropdown de cadastro */
+  irParaCadastrarProfessor(): void {
+    this.router.navigate(['/coordenador/professores'], { queryParams: { abrirModal: 'true' } });
+  }
+
+  /** Navega para o Calendário e sinaliza para abrir o modal de novo evento */
+  irParaAdicionarEvento(): void {
+    this.router.navigate(['/coordenador/calendario'], { queryParams: { abrirModal: 'true' } });
   }
 
   private renderizarProgressoProfessor(dados: { educador: string; pendentes: number }[]): void {
