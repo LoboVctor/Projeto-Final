@@ -201,16 +201,25 @@ export class BlocoRelatoriosComponent implements OnInit, OnChanges {
     return 'bg-red-50 text-red-700 border border-red-200';
   }
 
-  /** Chip de eixo de desenvolvimento — cor por eixo */
+  /** Chip de eixo de desenvolvimento — cor padronizada azul para todos */
   eixoChipClass(e: Eixo): string {
-    const map: Record<Eixo, string> = {
-      COGNITIVO: 'bg-blue-50 text-blue-700',
-      MOTOR: 'bg-orange-50 text-orange-700',
-      LINGUAGEM: 'bg-purple-50 text-purple-700',
-      SOCIOEMOCIONAL: 'bg-pink-50 text-pink-700',
-      AUTONOMIA: 'bg-teal-50 text-teal-700'
-    };
-    return map[e] ?? 'bg-gray-50 text-gray-700';
+    return 'bg-blue-50 text-blue-700';
+  }
+
+  /** Retorna status finalizado se todas as metas estiverem avaliadas */
+  relatorioStatusLabel(relatorio: { status: StatusRelatorio; metas: MetaDesenvolvimento[] }): string {
+    if (relatorio.metas && relatorio.metas.length > 0 && relatorio.metas.every(m => m.scoreFinal > 0)) {
+      return 'Finalizado';
+    }
+    return this.statusLabel(relatorio.status);
+  }
+
+  /** Retorna badge azul se todas as metas estiverem avaliadas */
+  relatorioStatusBadgeClass(relatorio: { status: StatusRelatorio; metas: MetaDesenvolvimento[] }): string {
+    if (relatorio.metas && relatorio.metas.length > 0 && relatorio.metas.every(m => m.scoreFinal > 0)) {
+      return 'bg-blue-50 text-blue-700 border border-blue-200';
+    }
+    return this.statusBadgeClass(relatorio.status);
   }
 
   /** Exibe semestre + ano no formato 2026.1 / 2026.2 */

@@ -1,6 +1,6 @@
 @if (feedbackService.currentFeedback(); as feedback) {
   <div
-    class="fixed top-8 right-8 z-50 min-w-[320px] max-w-md shadow-xl rounded-lg p-4 flex items-start gap-3 alert-enter bg-white border border-gray-100"
+    class="fixed top-8 right-8 z-[9999] min-w-[320px] max-w-md shadow-xl rounded-lg p-4 flex items-start gap-3 alert-enter bg-white border border-gray-100"
     [ngClass]="{
       'alert-success': feedback.type === 'success',
       'alert-error': feedback.type === 'error',

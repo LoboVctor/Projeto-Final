@@ -1,6 +1,6 @@
 <div class="h-full flex flex-col w-full mt-8 gap-4">
 
-  <div class="flex justify-between items-center px-1">
+  <div class="flex justify-between items-center px-1 mb-4 pb-2 border-b border-gray-100">
     
     <div class="flex items-center gap-3">
       <h3 class="text-base font-bold text-amber-700 font-sora m-0">Horários Semanais</h3>
@@ -8,59 +8,115 @@
   </div>
 
   @if (modalAdicionarAberto()) {
-    <div class="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 flex flex-col gap-4 relative">
-        <div class="flex justify-between items-center border-b border-gray-100 pb-3">
-          <h4 class="text-lg font-bold text-gray-800 font-sora">Nova Aula</h4>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-gray-100">
+        <div class="flex items-center justify-between p-5 border-b border-gray-100 bg-slate-50">
+          <div>
+            <h3 class="text-lg font-bold font-['Sora'] text-slate-700 m-0">Nova Aula</h3>
+            <p class="text-xs text-slate-500 m-0 mt-0.5">Adicione uma aula à agenda do aluno.</p>
+          </div>
           <button (click)="fecharModalAdicionarAula()" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
-        <div class="flex flex-col gap-3">
-          <label class="flex flex-col gap-1 text-xs font-bold text-gray-700">
-            Nome da Aula <span class="text-red-500">*</span>
-            <input type="text" (change)="setNovoNomeAula($event)" [value]="novoNomeAula()" placeholder="Ex: Informática" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-elo-roxo-principal font-normal">
-          </label>
-          <label class="flex flex-col gap-1 text-xs font-bold text-gray-700">
-            Dia da Semana <span class="text-red-500">*</span>
-            <select (change)="setNovoDiaSemana($event)" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-elo-roxo-principal font-normal">
+        <div class="p-6 space-y-5 m-0">
+          @if (erroAdicionar()) {
+            <div class="flex items-center gap-2 bg-red-50 text-red-600 p-3 rounded-xl text-sm border border-red-100">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              {{ erroAdicionar() }}
+            </div>
+          }
+
+          <div class="flex flex-col gap-1.5">
+            <div class="flex justify-between items-center">
+              <label class="text-xs font-bold text-slate-600 font-['Sora']">Nome da Aula
+                @if (nomeAulaInvalido()) {
+                  <span class="text-red-500">*</span>
+                }
+              </label>
+              <span class="text-[10px] font-semibold text-slate-400">{{ novoNomeAula().length }}/80</span>
+            </div>
+            <input type="text" (input)="setNovoNomeAula($event)" [value]="novoNomeAula()"
+              maxlength="80"
+              placeholder="Ex: Informática"
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm"
+              [class.border-red-300]="nomeAulaInvalido() && novoNomeAula().length > 0"
+            />
+            @if (nomeAulaInvalido() && novoNomeAula().length > 0) {
+              <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                @if (novoNomeAula().trim().length === 0) {
+                  O nome da aula é obrigatório.
+                }
+                @if (novoNomeAula().trim().length > 0 && novoNomeAula().trim().length < 3) {
+                  O nome deve ter no mínimo 3 caracteres.
+                }
+                @if (novoNomeAula().trim().length >= 3 && /^\d+$/.test(novoNomeAula().trim())) {
+                  O nome não pode conter apenas números.
+                }
+                @if (novoNomeAula().trim().length >= 3 && /^-+$/.test(novoNomeAula().trim())) {
+                  O nome não pode conter apenas hífens.
+                }
+              </div>
+            }
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">Dia da Semana
+              <span class="text-red-500">*</span>
+            </label>
+            <select (change)="setNovoDiaSemana($event)"
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm font-medium">
               <option value="SEGUNDA">Segunda-feira</option>
               <option value="TERCA">Terça-feira</option>
               <option value="QUARTA">Quarta-feira</option>
               <option value="QUINTA">Quinta-feira</option>
               <option value="SEXTA">Sexta-feira</option>
             </select>
-          </label>
-          <div class="flex gap-3">
-            <label class="flex flex-col gap-1 text-xs font-bold text-gray-700 flex-1">
-              Horário Início <span class="text-red-500">*</span>
-              <input type="time" (change)="setNovoHorarioInicio($event)" [value]="novoHorarioInicio()" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-elo-roxo-principal font-normal">
-            </label>
-            <label class="flex flex-col gap-1 text-xs font-bold text-gray-700 flex-1">
-              Horário Fim <span class="text-red-500">*</span>
-              <input type="time" (change)="setNovoHorarioFim($event)" [value]="novoHorarioFim()" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-elo-roxo-principal font-normal">
-            </label>
           </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-bold text-slate-600 font-['Sora']">Horário Início
+                @if (horarioInvalido()) {
+                  <span class="text-red-500">*</span>
+                }
+              </label>
+              <input type="time" (change)="setNovoHorarioInicio($event)" [value]="novoHorarioInicio()"
+                class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm font-medium"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-bold text-slate-600 font-['Sora']">Horário Fim
+                @if (horarioInvalido()) {
+                  <span class="text-red-500">*</span>
+                }
+              </label>
+              <input type="time" (change)="setNovoHorarioFim($event)" [value]="novoHorarioFim()"
+                class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm font-medium"
+              />
+            </div>
+          </div>
+          @if (horarioInvalido() && novoHorarioInicio() && novoHorarioFim()) {
+            <div class="text-[10px] font-semibold text-red-500">
+              O horário final deve ser posterior ao horário inicial.
+            </div>
+          }
         </div>
 
-        @if (erroAdicionar()) {
-          <div class="text-xs text-red-500 font-semibold bg-red-50 p-2 rounded-lg border border-red-100">
-            {{ erroAdicionar() }}
-          </div>
-        }
-
-        <div class="flex justify-end gap-3 mt-2">
-          <button (click)="fecharModalAdicionarAula()" class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" [disabled]="salvandoAula()">Cancelar</button>
-          <button (click)="salvarNovaAula()" [class]="aulaSalva() ? 'px-6 py-2 text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed' : 'px-6 py-2 text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'" [disabled]="salvandoAula()">
-            @if (salvandoAula()) {
-              <svg class="animate-spin h-3 w-3 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            }
-            @if (aulaSalva()) {
-              Salvo
-            } @else {
-              Salvar
-            }
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 px-6 pb-6">
+          <button (click)="fecharModalAdicionarAula()" type="button"
+            class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+            Cancelar
+          </button>
+          <button (click)="salvarNovaAula()" [disabled]="formAulaInvalido() || salvandoAula()" type="button"
+            class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer">
+            Adicionar
           </button>
         </div>
       </div>

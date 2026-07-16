@@ -1,6 +1,7 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { CreateRelatorioSemestralDto } from './dto/create-relatorio-semestral.dto.js';
+import { UpdateMetasLoteDto } from './dto/update-metas-lote.dto.js';
 import { Eixos } from '../../../../../infra/generated/prisma/index.js';
 
 @Injectable()
@@ -99,5 +100,92 @@ export class RelatorioSemestralService {
       },
       orderBy: [{ ano: 'desc' }, { semestre: 'desc' }],
     });
+  }
+
+  async atualizarAvaliacaoMeta(metaId: string, dto: { scoreFinal: number; parecer?: string }) {
+    const db = this.prismaService.client;
+
+    const meta = await db.metaDesenvolvimento.findUnique({
+      where: { id: metaId },
+    });
+
+    if (!meta) {
+      throw new NotFoundException('Meta de desenvolvimento não encontrada.');
+    }
+
+    return db.metaDesenvolvimento.update({
+      where: { id: metaId },
+      data: {
+        scoreFinal: dto.scoreFinal,
+        parecer: dto.parecer?.trim() ?? '',
+      },
+    });
+  }
+
+  async atualizarDescricaoMeta(metaId: string, dto: { descricao: string }) {
+    const db = this.prismaService.client;
+
+    const meta = await db.metaDesenvolvimento.findUnique({
+      where: { id: metaId },
+    });
+
+    if (!meta) {
+      throw new NotFoundException('Meta de desenvolvimento não encontrada.');
+    }
+
+    return db.metaDesenvolvimento.update({
+      where: { id: metaId },
+      data: {
+        descricao: dto.descricao,
+      },
+    });
+  }
+
+  async excluirMeta(metaId: string) {
+    const db = this.prismaService.client;
+
+    const meta = await db.metaDesenvolvimento.findUnique({
+      where: { id: metaId },
+    });
+
+    if (!meta) {
+      throw new NotFoundException('Meta de desenvolvimento não encontrada.');
+    }
+
+    return db.metaDesenvolvimento.delete({
+      where: { id: metaId },
+    });
+  }
+
+  async atualizarMetasDoSemestre(relatorioId: string, dto: UpdateMetasLoteDto) {
+    const db = this.prismaService.client;
+
+    const relatorio = await db.relatorioSemestral.findUnique({
+      where: { id: relatorioId },
+      include: { metas: true },
+    });
+
+    if (!relatorio) {
+      throw new NotFoundException('Relatório semestral não encontrado.');
+    }
+
+    const metasDoRelatorio = new Set(relatorio.metas.map((meta) => meta.id));
+
+    for (const meta of dto.metas) {
+      if (!metasDoRelatorio.has(meta.id)) {
+        throw new BadRequestException('Uma ou mais metas não pertencem ao relatório informado.');
+      }
+    }
+
+    return db.$transaction(
+      dto.metas.map((meta) =>
+        db.metaDesenvolvimento.update({
+          where: { id: meta.id },
+          data: {
+            descricao: meta.descricao.trim(),
+          },
+        }),
+      ),
+    );
   }
 }

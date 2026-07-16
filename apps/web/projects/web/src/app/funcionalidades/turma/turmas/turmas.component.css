@@ -16,8 +16,7 @@
 .turmas-main {
   flex: 1;
   min-height: 0;
-  padding: 16px 20px;
-  padding-bottom: 1rem;
+  padding: 40px 20px 16px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -26,8 +25,7 @@
 
 /* ── Cabeçalho e Big Numbers (MANTIDO INTACTO) ───────── */
 .main-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-.main-title-block { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-.main-title { font-size: 20px; font-weight: 700; color: #2D1E40; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px; }
+.main-title-block { display: flex; flex-direction: column; gap: 4px; }
 .turma-badge { font-size: 12px; font-weight: 600; color: #57606a; background: #f3f5f8; padding: 3px 10px; border-radius: 999px; border: 1px solid #d0d7de; }
 .turma-selector { display: flex; gap: 6px; flex-wrap: wrap; }
 .turma-selector-btn { padding: 6px 14px; font-size: 12.5px; font-weight: 600; color: #57606a; background: #f3f5f8; border: 1px solid #d0d7de; border-radius: 20px; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; white-space: nowrap; }
@@ -43,89 +41,144 @@
 .skeleton-card { height: 160px; border-radius: 8px; background: linear-gradient(90deg, #e8eaed 25%, #f3f5f8 50%, #e8eaed 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-/* ── Big Numbers ─────────────────────────────────────── */
-.big-numbers-row { 
-  display: grid; 
-  grid-template-columns: repeat(4, 1fr); 
-  gap: 16px; 
-}
-
-.big-number-card { 
-  display: flex; 
-  align-items: center; 
+/* ── Big Numbers (padrão Home: degradê, sombra, hover, cor por card) ─── */
+.big-numbers-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  padding: 18px 16px;
-  background: #ffffff; 
-  border: 1px solid #e5e7eb; 
-  border-radius: 16px; 
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  min-height: 90px;
 }
 
-.big-number-card:hover { 
+.big-number-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 20px;
+  border: 1px solid #E8E3EF;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  min-height: 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+.big-number-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08); 
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
 }
 
-.big-number-icon { 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  width: 52px; 
-  height: 52px; 
-  border-radius: 12px; 
-  flex-shrink: 0; 
+.big-number-card.is-loading {
+  opacity: 0.4;
+  filter: blur(3px);
+  pointer-events: none;
 }
 
-/* Tamanho do SVG interno do ícone */
+.big-number-card--purple {
+  background: linear-gradient(to bottom right, #ffffff, #F3EEFF 60%, #E9D9FF);
+  border-color: #E8E3EF;
+}
+.big-number-card--purple:hover { border-color: rgba(108, 60, 201, 0.4); }
+
+.big-number-card--blue {
+  background: linear-gradient(to bottom right, #ffffff, #EFF6FF 60%, #DBEAFE);
+}
+.big-number-card--blue:hover { border-color: rgba(37, 99, 235, 0.4); }
+
+.big-number-card--amber {
+  background: linear-gradient(to bottom right, #ffffff, #FFFBEB 60%, #FEF3C7);
+}
+.big-number-card--amber:hover { border-color: rgba(217, 119, 6, 0.4); }
+
+.big-number-card--green {
+  background: linear-gradient(to bottom right, #ffffff, #ECFDF5 60%, #D1FAE5);
+}
+.big-number-card--green:hover { border-color: rgba(5, 150, 105, 0.4); }
+
+.big-number-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s ease;
+}
+
+.big-number-card:hover .big-number-icon {
+  transform: scale(1.05);
+}
+
 .big-number-icon svg {
   width: 24px !important;
   height: 24px !important;
   stroke-width: 2;
 }
 
-.big-number-icon--purple { background: #EDE9FE; color: #6C3CC9; }
+.big-number-icon--purple { background: #E9D9FF; color: #6C3CC9; }
 .big-number-icon--blue { background: #DBEAFE; color: #2563EB; }
 .big-number-icon--amber { background: #FEF3C7; color: #D97706; }
 .big-number-icon--green { background: #D1FAE5; color: #059669; }
 
-.big-number-info { 
-  display: flex; 
-  flex-direction: column; 
-  gap: 6px; /* Ajuste sutil no distanciamento vertical interno */
-  min-width: 0; 
+.big-number-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
   flex: 1;
 }
 
-.big-number-label { 
-  font-size: 11px; 
-  font-weight: 700; 
-  color: #6B7280; 
-  text-transform: uppercase; 
-  letter-spacing: 0.06em; 
+.big-number-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #686177;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   white-space: normal;
   line-height: 1.3;
 }
 
-/* Valor numérico */
 .big-number-value,
-.big-number-value--sm { 
-  font-size: 22px;
+.big-number-value--sm {
+  font-size: 28px;
   font-weight: 800;
-  color: #111827; 
-  line-height: 1.1; 
+  line-height: 1.1;
   white-space: normal;
   word-break: break-word;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.big-number-value.is-loading { 
-  opacity: 0.3; 
-  filter: blur(3px); 
+.big-number-value--sm {
+  font-size: 20px;
+}
+
+.big-number-card--purple .big-number-value { color: #6C3CC9; }
+.big-number-card--blue .big-number-value { color: #2563EB; }
+.big-number-card--amber .big-number-value { color: #D97706; }
+.big-number-card--green .big-number-value { color: #059669; }
+
+.title-skeleton {
+  width: 180px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #e8eaed 25%, #f3f5f8 50%, #e8eaed 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+.subtitle-skeleton {
+  width: 280px;
+  height: 18px;
+  margin-top: 4px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e8eaed 25%, #f3f5f8 50%, #e8eaed 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
 }
 
 /* ── LAYOUT DIVIDIDO (ALUNOS E ABAS) ─────────────────── */
@@ -326,13 +379,17 @@
   }
 
   .big-number-card {
-    padding: 12px;
-    min-height: 76px;
+    padding: 14px;
+    min-height: 100px;
   }
 
   .big-number-value,
   .big-number-value--sm {
-    font-size: 18px;
+    font-size: 22px;
+  }
+
+  .big-number-value--sm {
+    font-size: 16px;
   }
 
   .sidebar-tabs-outer {
@@ -473,4 +530,4 @@
 .cabecalho-pdf:not(.hidden) {
   display: flex;
 }
-
+
