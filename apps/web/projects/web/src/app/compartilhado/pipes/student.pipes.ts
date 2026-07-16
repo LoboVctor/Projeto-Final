@@ -28,6 +28,32 @@ export class DiagLabelPipe implements PipeTransform {
   }
 }
 
+/** Converte o enum TipoDiagnostico para o nome completo e formatado (ex: SINDROME_DOWN -> Síndrome de Down) */
+@Pipe({ name: 'diagFullName' })
+export class DiagFullNamePipe implements PipeTransform {
+  private readonly map: Record<string, string> = {
+    TEA: 'TEA (Autismo)',
+    TDAH: 'TDAH',
+    SINDROME_DOWN: 'Síndrome de Down',
+    SINDROME_DOWN_SIMPLES: 'Síndrome de Down', // Case for possible variations
+    PARALISIA_CEREBRAL: 'Paralisia Cerebral',
+    DEFICIENCIA_INTELECTUAL: 'Deficiência Intelectual',
+    DEFICIENCIA_MULTIPLA: 'Deficiência Múltipla',
+    OUTRO: 'Outro'
+  };
+
+  transform(value: string): string {
+    if (!value || value === 'Sem diagnóstico' || value === 'Sem Laudo') return value;
+    
+    // Pode vir como uma string separada por vírgulas (ex: "SINDROME_DOWN, TEA")
+    if (value.includes(',')) {
+      return value.split(',').map(v => this.map[v.trim()] || v.trim()).join(', ');
+    }
+    
+    return this.map[value] || value;
+  }
+}
+
 /** Converte o enum TipoDiagnostico para as classes CSS de cor correspondentes */
 @Pipe({ name: 'diagColor' })
 export class DiagColorPipe implements PipeTransform {

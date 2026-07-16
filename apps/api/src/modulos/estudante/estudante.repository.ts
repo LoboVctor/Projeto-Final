@@ -477,6 +477,68 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     });
   }
 
+  async atualizarLaudoCompleto(
+    estudanteId: string,
+    documentoId: string,
+    dados: {
+      tipoDiagnostico: string;
+      tipoDocumento: string;
+      dataEmissao: string;
+      linkArquivo?: string;
+    },
+  ) {
+    // 1. Find or create the DiagnosticoBase for the NEW tipoDiagnostico
+    let diagnosticoBase = await this.prisma.client.diagnostico.findFirst({
+      where: { tipo: dados.tipoDiagnostico as any },
+    });
+
+    if (!diagnosticoBase) {
+      diagnosticoBase = await this.prisma.client.diagnostico.create({
+        data: {
+          nome: dados.tipoDiagnostico,
+          descricao: '',
+          tipo: dados.tipoDiagnostico as any,
+        },
+      });
+    }
+
+    // 2. Ensure EstudanteDiagnostico exists
+    await this.prisma.client.estudanteDiagnostico.upsert({
+      where: {
+        estudanteId_diagnosticoId: {
+          estudanteId,
+          diagnosticoId: diagnosticoBase.id,
+        },
+      },
+      update: {},
+      create: {
+        estudanteId,
+        diagnosticoId: diagnosticoBase.id,
+      },
+    });
+
+    // 3. Update the DocumentoDiagnostico to point to the new diagnosticoId
+    const updated = await this.prisma.client.documentoDiagnostico.update({
+      where: { id: documentoId },
+      data: {
+        tipo: dados.tipoDocumento as any,
+        dataEmissao: new Date(dados.dataEmissao),
+        diagnosticoId: diagnosticoBase.id,
+        ...(dados.linkArquivo && { arquivo: dados.linkArquivo }),
+      },
+    });
+
+    // 4. CLEANUP: Remove any EstudanteDiagnostico for this student that has no documents left
+    await this.prisma.client.estudanteDiagnostico.deleteMany({
+      where: {
+        estudanteId: estudanteId,
+        documentos: { none: {} },
+      },
+    });
+
+    return updated;
+  }
+
   async criarAula(estudanteId: string, dto: any) {
     const [inicioHora, inicioMinuto] = dto.horarioInicio.split(':').map(Number);
     const horarioInicio = new Date(Date.UTC(1970, 0, 1, inicioHora, inicioMinuto));

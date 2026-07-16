@@ -12,16 +12,52 @@ import { ObterAgendaSemanaDto } from './dtos/obter-agenda-semana.dto.js';
 import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
 import { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
 import { CreateAulaEstudanteDto } from './dtos/create-aula.dto.js';
+import { CriarEstudanteDto } from './dtos/criar-estudante.dto.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
 
 @Injectable()
 export class EstudanteService {
   constructor(
     @Inject('IEstudanteRepositorio')
     private readonly estudanteRepositorio: IEstudanteRepositorio,
+    private readonly prisma: PrismaService,
   ) {}
+
+  async buscarEscolaPadrao() {
+    return this.prisma.client.escola.findFirst();
+  }
 
   async adicionarAula(estudanteId: string, dto: CreateAulaEstudanteDto): Promise<unknown> {
     return this.estudanteRepositorio.criarAula(estudanteId, dto);
+  }
+
+  async criar(dto: CriarEstudanteDto, arquivoFoto: Express.Multer.File | undefined, escolaId: string) {
+    const criarDados: any = {
+      nomeCompleto: dto.nomeCompleto,
+      matricula: dto.matricula,
+      cpf: dto.cpf,
+      dataNascimento: new Date(dto.dataNascimento),
+      sexo: dto.sexo,
+      formaComunicacao: dto.formaComunicacao,
+      escola: { connect: { id: escolaId } },
+      statusMatricula: true,
+      foto: arquivoFoto ? arquivoFoto.path : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(dto.nomeCompleto)
+    };
+
+    if (dto.turmaId) {
+      criarDados.turmas = {
+        connect: [{ id: dto.turmaId }]
+      };
+    }
+
+    try {
+      return await this.estudanteRepositorio.criarEstudante(criarDados);
+    } catch (err: any) {
+      if (err?.code === 'P2002') {
+         throw new ConflictException('Matrícula ou CPF já cadastrados.');
+      }
+      throw err;
+    }
   }
 
   async getVisaoGeral(estudanteId: string) {
@@ -35,7 +71,7 @@ export class EstudanteService {
     return this.mapearRetornoVisaoGeral(estudante);
   }
 
-  async importarCSV(arquivo: Express.Multer.File, logadoId: string) {
+  async importarCSV(arquivo: Express.Multer.File, logadoId: string, escolaId: string) {
     const csvData = arquivo.buffer.toString('utf-8');
     
     const result = Papa.parse(csvData, {
@@ -74,6 +110,8 @@ export class EstudanteService {
           dataNascimento: new Date(rowData['data_nascimento']),
           sexo: rowData['sexo'] as Sexo,
           formaComunicacao: rowData['forma_comunicacao'] as Fcom,
+          escola: { connect: { id: escolaId } },
+          statusMatricula: true,
         };
 
         await this.estudanteRepositorio.criarEstudante(criarDados);
@@ -469,8 +507,9 @@ export class EstudanteService {
   }
 
   async atualizarLaudo(
+    estudanteId: string,
     documentoId: string, 
-    dados: { tipoDocumento: string; dataEmissao: string }, 
+    dados: { tipoDiagnostico: string; tipoDocumento: string; dataEmissao: string }, 
     arquivo?: Express.Multer.File
   ) {
     let linkArquivo: string | undefined;
@@ -479,7 +518,8 @@ export class EstudanteService {
       linkArquivo = `http://localhost:3000/api/v1/uploads/laudos/${arquivo.filename}`;
     }
 
-    return this.estudanteRepositorio.atualizarDocumento(documentoId, {
+    return this.estudanteRepositorio.atualizarLaudoCompleto(estudanteId, documentoId, {
+      tipoDiagnostico: dados.tipoDiagnostico,
       tipoDocumento: dados.tipoDocumento,
       dataEmissao: dados.dataEmissao,
       linkArquivo,

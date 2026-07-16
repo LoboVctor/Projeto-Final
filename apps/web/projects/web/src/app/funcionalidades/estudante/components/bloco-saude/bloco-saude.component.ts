@@ -24,6 +24,7 @@ import { ModalLaudosComponent } from './modais/laudos-modal.component';
 export class BlocoSaudeComponent implements OnInit {
   readonly estudanteId = input.required<string>();
   @Output() recolher = new EventEmitter<void>();
+  @Output() dadosAtualizados = new EventEmitter<void>();
 
   dadosSaude: EstudanteSaude | null = null;
   restricoes: any[] = [];
@@ -83,6 +84,8 @@ export class BlocoSaudeComponent implements OnInit {
   }
 
   onEspecificidadeSalva(): void {
+    this.carregarDadosSaude();
+    this.dadosAtualizados.emit();
     this.fecharModalEspecificidades();
   }
 
@@ -95,6 +98,8 @@ export class BlocoSaudeComponent implements OnInit {
   }
 
   onLaudoSalvo(): void {
+    this.carregarDadosSaude();
+    this.dadosAtualizados.emit();
     this.fecharModalLaudos();
   }
 
@@ -107,6 +112,8 @@ export class BlocoSaudeComponent implements OnInit {
   }
 
   onMedicamentoSalvo(): void {
+    this.carregarDadosSaude();
+    this.dadosAtualizados.emit();
     this.fecharModalMedicamento();
   }
 

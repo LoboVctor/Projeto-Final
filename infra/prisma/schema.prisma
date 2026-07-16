@@ -18,6 +18,7 @@ model Usuario {
   email         String       @unique
   senha         String       // Aqui ficará o hash do bcrypt
   bloqueado     Boolean      @default(false)
+  deveMudarSenha Boolean     @default(true)
 
   educadorId    String?      @unique
   responsavelId String?      @unique

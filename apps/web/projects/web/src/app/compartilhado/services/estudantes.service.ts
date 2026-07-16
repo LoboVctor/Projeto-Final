@@ -188,4 +188,9 @@ export class EstudantesService {
   importarCSV(formData: FormData): Observable<ImportacaoRelatorio> {
     return this.http.post<ImportacaoRelatorio>(`${this.baseUrl}/estudantes/importar-csv`, formData);
   }
+
+  // --- CADASTRO MANUAL ---
+  criar(formData: FormData): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/estudantes`, formData);
+  }
 }

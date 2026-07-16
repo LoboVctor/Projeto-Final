@@ -21,6 +21,7 @@ import { API_BASE_URL } from '../../../nucleo/config/api.config';
 import { finalize } from 'rxjs';
 import { jsPDF } from 'jspdf';
 import { toPng } from 'html-to-image';
+import { buildAlunoModalData, getDiagnosticosArrayForCard, buildFotoUrl } from '../../../compartilhado/utils/aluno-modal.utils';
 
 type ViewMode = 'grid' | 'list';
 
@@ -161,20 +162,33 @@ export class CoordenadorTurmasComponent implements OnInit {
   }
 
   abrirDetalhesAluno(estudante: EstudanteResumo): void {
-    const nomeDaTurma = this.turmaSelecionada()?.nome || 'Turma Indefinida';
-    const diagnosticoPrincipal =
-      estudante.diagnosticos.length > 0
-        ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo'
-        : 'Sem Laudo';
+    this.alunoEmDestaque.set(buildAlunoModalData(estudante, this.baseUrl));
+  }
 
-    this.alunoEmDestaque.set({
-      id: estudante.id,
-      nome: estudante.nomeCompleto,
-      turma: nomeDaTurma,
-      diagnostico: diagnosticoPrincipal,
-      nivelSuporte: 'Nível 1 de Suporte',
-      foto: estudante.foto || `https://ui-avatars.com/api/?name=${estudante.nomeCompleto}&background=F0E6FF&color=4A148C`,
-    });
+  getDiagnosticosCard(estudante: EstudanteResumo): string[] {
+    return getDiagnosticosArrayForCard(estudante.diagnosticos);
+  }
+
+  getFotoUrlCard(estudante: EstudanteResumo): string {
+    return buildFotoUrl(estudante.nomeCompleto, estudante.foto, this.baseUrl);
+  }
+
+  fecharModalAluno(houveModificacao: boolean = false): void {
+    this.alunoEmDestaque.set(null);
+    if (houveModificacao) {
+      const turma = this.turmaSelecionada();
+      if (turma) {
+        this.selecionarTurma(turma);
+      }
+    }
+  }
+
+  /** Exibe apenas primeiro nome + último sobrenome (igual ao padrão da tela de turmas do professor) */
+  nomeCurtoAluno(nomeCompleto: string): string {
+    if (!nomeCompleto) return '';
+    const partes = nomeCompleto.trim().split(/\s+/);
+    if (partes.length <= 2) return nomeCompleto;
+    return `${partes[0]} ${partes[partes.length - 1]}`;
   }
 
   abrirModalCadastrarTurma(): void {

@@ -15,6 +15,7 @@ export class Login {
   private router = inject(Router);
 
   isLoading = signal<boolean>(false);
+  mostrarSenha = signal<boolean>(false);
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -35,7 +36,9 @@ export class Login {
       .subscribe({
         next: () => {
           this.isLoading.set(false);
-          if (this.authService.isCoordenador()) {
+          if (this.authService.deveMudarSenha()) {
+            this.router.navigate(['/primeiro-acesso']);
+          } else if (this.authService.isCoordenador()) {
             this.router.navigate(['/coordenador/home']);
           } else {
             this.router.navigate(['/home']);

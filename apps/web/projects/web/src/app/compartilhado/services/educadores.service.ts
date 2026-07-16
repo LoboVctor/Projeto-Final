@@ -14,4 +14,8 @@ export class EducadoresService {
   importarCSV(formData: FormData): Observable<ImportacaoRelatorio> {
     return this.http.post<ImportacaoRelatorio>(`${this.baseUrl}/educadores/importar-csv`, formData);
   }
+
+  criar(payload: any): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/educadores`, payload);
+  }
 }

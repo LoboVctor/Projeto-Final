@@ -1,11 +1,7 @@
 import { IsString, MinLength, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class RedefinirSenhaDto {
-  @ApiProperty({ description: 'Token recebido pelo e-mail' })
-  @IsString()
-  token!: string;
-
+export class PrimeiroAcessoDto {
   @ApiProperty({ example: 'NovaSenha@123', minLength: 8 })
   @IsString()
   @MinLength(8, { message: 'A senha deve ter pelo menos 8 caracteres' })
