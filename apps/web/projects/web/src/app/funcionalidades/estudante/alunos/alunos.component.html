@@ -218,15 +218,15 @@
       <div class="tabela-wrapper">
         <table class="tabela" aria-label="Lista de alunos">
           <thead>
-            <tr>
-              <th class="th-aluno">Aluno</th>
-              <th class="th-matricula">Matrícula</th>
-              <th class="th-idade">Idade</th>
-              <th class="th-turma">Turma</th>
-              <th class="th-diagnostico">Diagnóstico</th>
-              <th class="th-status">Status</th>
-            </tr>
-          </thead>
+              <tr>
+                <th class="th-aluno">Aluno</th>
+                <th class="th-matricula">Matrícula</th>
+                <th class="th-idade">Idade</th>
+                <th class="th-turma">Turma</th>
+                <th class="th-diagnostico">Diagnóstico</th>
+                <th class="th-status">Status</th>
+              </tr>
+            </thead>
           <tbody>
             @for (aluno of estudantes(); track aluno.id) {
               <tr
@@ -351,5 +351,5 @@
   [isVisible]="modalAlunoAberto()"
   [aluno]="modalAlunoData()"
   [abaInicial]="abaSolicitada()"
-  (fecharModal)="fecharModalAluno()">
+  (fecharModal)="fecharModalAluno($event)">
 </app-aluno-modal>

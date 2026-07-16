@@ -14,6 +14,7 @@ import { extname } from 'path';
 import { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
 import { CreateAulaEstudanteDto } from './dtos/create-aula.dto.js';
 import { CriarEstudanteDto } from './dtos/criar-estudante.dto.js';
+import { AtualizarEstudanteDto } from './dtos/atualizar-estudante.dto.js';
 
 /**
  * Validador customizado de tipo de arquivo baseado em mimetype.
@@ -92,6 +93,31 @@ export class EstudantesController {
     }
 
     return this.estudanteService.criar(dto, arquivo, escolaId);
+  }
+
+  /**
+   * PATCH /estudantes/:id
+   * Atualiza um estudante manualmente.
+   */
+  @Patch(':id')
+  @ApiOperation({ summary: 'Atualiza um estudante e seu responsável' })
+  @UseInterceptors(
+    FileInterceptor('arquivo', {
+      storage: diskStorage({
+        destination: './uploads/fotos',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  async atualizar(
+    @Param('id') id: string,
+    @Body() dto: AtualizarEstudanteDto,
+    @UploadedFile() arquivo?: Express.Multer.File,
+  ) {
+    return this.estudanteService.atualizar(id, dto, arquivo);
   }
 
   /**
@@ -363,4 +389,10 @@ export class EstudantesController {
     return this.estudanteService.registrarChamadaLote(createBatchDto);
   }
 
+  @Delete(':id')
+  @ApiOperation({ summary: 'Soft delete de um estudante' })
+  @ApiResponse({ status: 200, description: 'Estudante desativado com sucesso.' })
+  async desativar(@Param('id') id: string) {
+    return this.estudanteService.desativar(id);
+  }
 }

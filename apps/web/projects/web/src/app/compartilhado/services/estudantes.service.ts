@@ -193,4 +193,14 @@ export class EstudantesService {
   criar(formData: FormData): Observable<unknown> {
     return this.http.post(`${this.baseUrl}/estudantes`, formData);
   }
+
+  // --- ATUALIZAÇÃO ---
+  atualizarEstudante(id: string, formData: FormData): Observable<unknown> {
+    return this.http.patch(`${this.baseUrl}/estudantes/${id}`, formData);
+  }
+
+  // --- DESATIVAÇÃO ---
+  desativarEstudante(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/estudantes/${id}`);
+  }
 }

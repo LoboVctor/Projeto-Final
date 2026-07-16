@@ -3,20 +3,27 @@ import {
   EventEmitter,
   Output,
   ChangeDetectionStrategy,
+  OnInit,
+  inject,
   input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   EstudanteVisaoGeral,
   EspecificidadeVisaoGeral } from '../../../../compartilhado/models/estudante-visao-geral.model';
 import { EspecificidadeModalComponent } from './modais/especificidade-modal/especificidade-modal.component';
+import { ModalEditarAlunoComponent } from './modais/modal-editar-aluno/modal-editar-aluno.component';
+
+import { AuthService } from '../../../../nucleo/services/auth';
 
 @Component({
   selector: 'app-bloco-visao-geral',
-  imports: [CommonModule, EspecificidadeModalComponent],
+  imports: [CommonModule, EspecificidadeModalComponent, ModalEditarAlunoComponent],
   templateUrl: './bloco-visao-geral.component.html',
   styleUrls: ['./bloco-visao-geral.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush })
-export class BlocoVisaoGeralComponent {
+export class BlocoVisaoGeralComponent implements OnInit {
+  private authService = inject(AuthService);
+
   readonly visaoGeralData = input<EstudanteVisaoGeral | null>(null);
   readonly loading = input<boolean>(false);
   readonly error = input<string | null>(null);
@@ -27,12 +34,26 @@ export class BlocoVisaoGeralComponent {
 
   showModalEspecificidade = false;
   especificidadeParaEditar: EspecificidadeVisaoGeral | null = null;
+  
+  showModalEditarAluno = false;
 
-  // TODO: Substituir pela injeção de AuthService
-  userRole: 'PROFESSOR' | 'COORDENADOR' = 'PROFESSOR';
+  userRole: string = 'PROFESSOR';
+
+  ngOnInit() {
+    this.userRole = this.authService.getRole() || 'PROFESSOR';
+  }
 
   editarInformacoes(): void {
-    alert('Funcionalidade de edição de Informações Gerais em desenvolvimento.');
+    this.showModalEditarAluno = true;
+  }
+
+  fecharModalEditarAluno(): void {
+    this.showModalEditarAluno = false;
+  }
+
+  onAlunoEditado(): void {
+    this.fecharModalEditarAluno();
+    this.tentarNovamente.emit();
   }
 
   get especificidadesFiltradas(): EspecificidadeVisaoGeral[] {

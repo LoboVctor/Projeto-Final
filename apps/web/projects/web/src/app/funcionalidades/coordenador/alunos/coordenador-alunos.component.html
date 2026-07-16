@@ -118,8 +118,8 @@
           aria-label="Filtrar por status"
         >
           <option value="">Status</option>
-          <option value="PENDENTE">Apenas Pendentes</option>
-          <option value="CONCLUIDO">Concluídos</option>
+          <option value="CONCLUIDO">Ativos</option>
+          <option value="PENDENTE">Inativos</option>
         </select>
         <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="6 9 12 15 18 9" />
@@ -260,6 +260,7 @@
               <th class="th-turma">Turma</th>
               <th class="th-diagnostico text-center">Diagnóstico</th>
               <th class="th-status">Status</th>
+              <th class="th-acoes">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -306,10 +307,36 @@
                   }
                 </td>
                 <!-- Status -->
-                <td class="td-status">
+                                <td class="td-status">
                   <span class="tag-status" [class.tag-status--ativo]="aluno.statusMatricula">
                     {{ getStatusLabel(aluno) }}
                   </span>
+                </td>
+                <!-- Ações -->
+                <td class="td-acoes" (click)="$event.stopPropagation()">
+                  <div class="acoes-wrapper">
+                    <button
+                      class="btn-acoes"
+                      (click)="toggleMenu(aluno.id, $event)"
+                      [attr.aria-expanded]="menuAbertoId() === aluno.id"
+                      [attr.aria-label]="'Ações para ' + aluno.nomeCompleto"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+                      </svg>
+                    </button>
+
+                    @if (menuAbertoId() === aluno.id) {
+                      <div class="acoes-dropdown" role="menu">
+                        <button class="acoes-item acoes-item--danger" role="menuitem" (click)="confirmarDesativacao(aluno); fecharMenus()">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/>
+                          </svg>
+                          Desativar
+                        </button>
+                      </div>
+                    }
+                  </div>
                 </td>
               </tr>
             }
@@ -449,3 +476,25 @@
   (fechar)="fecharModalCadastrarAluno()"
   (salvo)="onAlunoCadastrado()">
 </app-modal-cadastrar-aluno>
+
+  <!-- Modal de Confirmação de Exclusão -->
+  @if (modalConfirmacaoAberto()) {
+    <div class="modal-overlay" role="dialog" aria-modal="true" (click)="fecharModalConfirmacao()">
+      <div class="modal-container modal-container--pequeno" (click)="$event.stopPropagation()">
+        <div class="confirmacao-icone">⚠️</div>
+        <h2 class="confirmacao-titulo">Desativar Aluno?</h2>
+        <p class="confirmacao-desc">
+          <strong>{{ alunoParaDesativar()?.nomeCompleto }}</strong> perderá o acesso ao sistema, porém todos os seus registros serão mantidos. Esta ação pode ser revertida.
+        </p>
+        <div class="confirmacao-acoes">
+          <button class="btn-cancelar" (click)="fecharModalConfirmacao()">Cancelar</button>
+          <button class="btn-confirmar-danger" (click)="executarDesativacao()" [disabled]="desativarLoading()">
+            @if (desativarLoading()) { Desativando... } @else { Sim, Desativar }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+
+

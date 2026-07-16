@@ -190,6 +190,10 @@ export class AlunoModalComponent implements OnChanges {
     this.estudantesService.getVisaoGeral(this.aluno.id).subscribe({
       next: (dados) => {
         this.visaoGeralData.set(dados);
+        if (this.aluno) {
+          this.aluno.nome = dados.nomeCompleto;
+          this.aluno.turma = dados.turma ? dados.turma.nome : 'Sem turma';
+        }
         this.loadingVisaoGeral.set(false);
       },
       error: () => {

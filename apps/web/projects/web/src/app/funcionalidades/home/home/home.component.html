@@ -501,6 +501,6 @@
 <!-- ═══ Modal: Detalhes do Aluno (com suporte a abaInicial) ═══ -->
 @if (alunoEmDestaque()) {
 <app-aluno-modal [aluno]="alunoEmDestaque()!" [isVisible]="true" [abaInicial]="abaDestino()"
-  (fecharModal)="fecharAlunoModal()">
+  (fecharModal)="fecharAlunoModal($event)">
 </app-aluno-modal>
 }

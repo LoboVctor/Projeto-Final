@@ -345,9 +345,12 @@ export class HomeComponent implements OnInit {
   }
 
   /** Fecha o modal do aluno e reseta o destino de aba */
-  fecharAlunoModal(): void {
+  fecharAlunoModal(houveModificacao: boolean = false): void {
     this.alunoEmDestaque.set(null);
     this.abaDestino.set(null);
+    if (houveModificacao) {
+      this.carregarTurmaEEstudantes(this.authService.getLoggedUserId() ?? '');
+    }
   }
 
   carregarProximosEventos(): void {
