@@ -68,21 +68,24 @@
               </svg>
             </button>
             @if (isInfoGeraisOpen()) {
-            <div class="flex flex-col bg-blue-50/50 pb-2 px-4 space-y-1">
+            <div class="flex flex-col bg-blue-50/50 pb-2 space-y-1">
               <button (click)="abrirVisaoGeral()" [class.font-bold]="isVisaoGeralExpanded()"
-                class="flex items-center space-x-2 text-sm text-blue-800 p-2 rounded hover:bg-blue-100/80 transition-colors text-left cursor-pointer">
+                [class.bg-blue-100]="isVisaoGeralExpanded()"
+                class="w-full flex items-center space-x-2 text-sm text-blue-800 px-4 py-2 hover:bg-blue-100/80 transition-colors text-left cursor-pointer">
                 <div class="w-1.5 h-1.5 rounded-full"
                   [ngClass]="isVisaoGeralExpanded() ? 'bg-blue-600' : 'bg-blue-400'"></div>
                 <span>Visão Geral</span>
               </button>
               <button (click)="abrirSaude()" [class.font-bold]="isSaudeExpanded()"
-                class="flex items-center space-x-2 text-sm text-blue-800 p-2 rounded hover:bg-blue-100/80 transition-colors text-left cursor-pointer">
+                [class.bg-blue-100]="isSaudeExpanded()"
+                class="w-full flex items-center space-x-2 text-sm text-blue-800 px-4 py-2 hover:bg-blue-100/80 transition-colors text-left cursor-pointer">
                 <div class="w-1.5 h-1.5 rounded-full" [ngClass]="isSaudeExpanded() ? 'bg-blue-600' : 'bg-blue-400'">
                 </div>
                 <span>Saúde</span>
               </button>
               <button (click)="abrirRelatorios()" [class.font-bold]="isRelatoriosExpanded()"
-                class="flex items-center space-x-2 text-sm text-blue-800 p-2 rounded hover:bg-blue-100/80 transition-colors text-left cursor-pointer">
+                [class.bg-blue-100]="isRelatoriosExpanded()"
+                class="w-full flex items-center space-x-2 text-sm text-blue-800 px-4 py-2 hover:bg-blue-100/80 transition-colors text-left cursor-pointer">
                 <div class="w-1.5 h-1.5 rounded-full"
                   [ngClass]="isRelatoriosExpanded() ? 'bg-blue-600' : 'bg-blue-400'"></div>
                 <span>Relatórios</span>
@@ -90,7 +93,8 @@
             </div>
             }
           </div>
-          <button (click)="onAgenda()"
+          <button (click)="onAgenda()" [class.bg-amber-100]="isAgendaExpanded()"
+            [class.font-bold]="isAgendaExpanded()"
             class="w-full flex items-center justify-between bg-amber-50 hover:bg-amber-100 text-amber-700 p-4 rounded-xl transition-colors group cursor-pointer">
             <div class="flex items-center space-x-3 font-semibold">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -108,7 +112,8 @@
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
           </button>
-          <button (click)="onDashboard()"
+          <button (click)="onDashboard()" [class.bg-green-100]="isDashboardExpanded()"
+            [class.font-bold]="isDashboardExpanded()"
             class="w-full flex items-center justify-between bg-green-50 hover:bg-green-100 text-green-700 p-4 rounded-xl transition-colors group cursor-pointer">
             <div class="flex items-center space-x-3 font-semibold">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"

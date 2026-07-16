@@ -186,6 +186,10 @@ export class TurmaGraficosComponent implements OnDestroy {
           indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
+          animation: {
+            duration: 800,
+            easing: 'easeOutQuart',
+          },
           layout: { 
             padding: { top: -10, bottom: 0, left: 0, right: 0 } 
           },
@@ -265,6 +269,10 @@ export class TurmaGraficosComponent implements OnDestroy {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          animation: {
+            duration: 800,
+            easing: 'easeOutQuart',
+          },
           plugins: { legend: { display: false } },
           scales: {
             y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f3f4f6' } },
@@ -304,6 +312,10 @@ export class TurmaGraficosComponent implements OnDestroy {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          animation: {
+            duration: 800,
+            easing: 'easeOutQuart',
+          },
           plugins: { legend: { display: false } },
           scales: {
             y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f3f4f6' } },
@@ -343,6 +355,10 @@ export class TurmaGraficosComponent implements OnDestroy {
           indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
+          animation: {
+            duration: 800,
+            easing: 'easeOutQuart',
+          },
           layout: { 
             padding: { top: -10, bottom: 0, left: 0, right: 0 } 
           },

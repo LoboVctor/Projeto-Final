@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsOptional, Min, Max } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class UpdateAvaliacaoMetaDto {
   @IsInt()

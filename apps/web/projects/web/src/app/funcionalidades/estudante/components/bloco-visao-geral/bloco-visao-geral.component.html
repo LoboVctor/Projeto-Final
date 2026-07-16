@@ -17,14 +17,6 @@
     </div>
 
     <div class="flex items-center space-x-3">
-      <button (click)="editarInformacoes()"
-        class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5 cursor-pointer">
-        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-        </svg>
-        Editar
-      </button>
       <button (click)="onRecolher()"
         class="close-button-centered absolute top-[24px] right-[24px] w-10 h-10 text-gray-400 hover:text-gray-700 hover:bg-gray-200/50 rounded-full transition-colors cursor-pointer"
         aria-label="Fechar modal">
@@ -89,10 +81,10 @@
     </div>
     <!-- Informações Acadêmicas -->
     <div>
-      <div class="flex items-center space-x-2 mb-3">
-        <h3 class="font-bold text-blue-700 font-sora">Informações Acadêmicas</h3>
+      <div class="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-gray-100">
+        <h3 class="text-base font-bold font-['Sora'] text-blue-700 m-0 leading-none">Informações Acadêmicas</h3>
         @if (userRole === 'PROFESSOR') {
-        <span class="flex items-center text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+        <span class="inline-flex items-center text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -103,10 +95,8 @@
         }
       </div>
 
-      <!-- Ajuste no Grid: md:grid-cols-12 para permitir controle assimétrico do espaço -->
       <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
-        
-        <!-- 1º CARD: Turma e Turno (Ganhou destaque com md:col-span-5) -->
+
         <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center space-x-3 md:col-span-5">
           <div class="bg-blue-50 text-blue-500 p-2 rounded-lg shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -127,7 +117,6 @@
           </div>
         </div>
 
-        <!-- 2º CARD: Professor Regente (md:col-span-4) -->
         <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center space-x-3 md:col-span-4">
           <div class="bg-blue-50 text-blue-500 p-2 rounded-lg shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -143,7 +132,6 @@
           </div>
         </div>
 
-        <!-- 3º CARD: Ano Letivo (md:col-span-3) -->
         <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex items-center space-x-3 md:col-span-3">
           <div class="bg-blue-50 text-blue-500 p-2 rounded-lg shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -163,10 +151,10 @@
     </div>
     <!-- Informações Pessoais -->
     <div>
-      <div class="flex items-center space-x-2 mb-3">
-        <h3 class="font-bold text-blue-700 font-sora">Informações Pessoais</h3>
+      <div class="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-gray-100">
+        <h3 class="text-base font-bold font-['Sora'] text-blue-700 m-0 leading-none">Informações Pessoais</h3>
         @if (userRole === 'PROFESSOR') {
-        <span class="flex items-center text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+        <span class="inline-flex items-center text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -242,20 +230,16 @@
     </div>
     <!-- Especificidades -->
     <div>
-      <div class="flex items-center justify-between mb-3">
-        <div class="flex items-center space-x-2">
-          <h3 class="font-bold text-blue-700 font-sora">Especificidades</h3>
-        </div>
-        <div class="flex items-center space-x-2">
-          <button (click)="abrirModalEspecificidade()"
-            class="text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5 cursor-pointer">
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-            Editar
-          </button>
-        </div>
+      <div class="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-gray-100">
+        <h3 class="text-base font-bold font-['Sora'] text-blue-700 m-0 leading-none">Especificidades</h3>
+        <button (click)="abrirModalEspecificidade()"
+          class="inline-flex items-center justify-center text-xs font-semibold px-3 py-1.5 bg-transparent border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 gap-1.5 cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+          Editar
+        </button>
       </div>
       @if (especificidadesFiltradas.length === 0) {
       <div class="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-8 text-center">
@@ -265,25 +249,45 @@
       @if (especificidadesFiltradas.length > 0) {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Bloco de Gatilhos -->
-        <div class="bg-red-50/40 border border-red-200 rounded-xl p-4 flex flex-col h-full">
+        <div class="bg-red-50/40 border border-red-200 rounded-xl p-4 flex flex-col">
           <h5 class="text-red-800 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-red-200 m-0">
             Gatilhos
           </h5>
           @if (gatilhos.length > 0) {
-          <div class="space-y-3 flex-1">
-            @for (espec of gatilhos; track espec) {
-            <div class="bg-white border-l-4 border-red-500 p-3 rounded shadow-sm">
-              <strong class="text-red-700 block mb-1 text-xs uppercase">{{
-                espec.descricao
-                }}</strong>
-              @if (espec.observacao) {
-              <p class="text-red-900 text-sm m-0 leading-relaxed">
-                {{ espec.observacao }}
-              </p>
+          @let itemGatilho = getItem(gatilhos, paginaGatilhos());
+          @if (itemGatilho) {
+          <div class="flex-1">
+            <div class="bg-white border-l-4 border-red-500 p-3 rounded shadow-sm group relative">
+              <div class="pointer-events-none absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap z-10 shadow-xs"
+                [class]="classesCategoriaPorTipo(itemGatilho.tipo)">
+                {{ itemGatilho.categoria }}
+              </div>
+              <strong class="text-red-700 block mb-1 text-xs uppercase">{{ itemGatilho.descricao }}</strong>
+              @if (itemGatilho.observacao) {
+              <p class="text-red-900 text-sm m-0 leading-relaxed">{{ itemGatilho.observacao }}</p>
               }
+            </div>
+            @if (gatilhos.length > 1) {
+            <div class="flex items-center justify-center gap-2 mt-3">
+              <button (click)="navegarPagina(paginaGatilhos, -1, gatilhos.length)"
+                [disabled]="paginaGatilhos() === 0"
+                class="w-6 h-6 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span class="text-[10px] font-bold text-red-600">{{ paginaGatilhos() + 1 }} de {{ gatilhos.length }}</span>
+              <button (click)="navegarPagina(paginaGatilhos, 1, gatilhos.length)"
+                [disabled]="paginaGatilhos() === gatilhos.length - 1"
+                class="w-6 h-6 flex items-center justify-center rounded-full text-red-600 hover:bg-red-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
             }
           </div>
+          }
           } @else {
           <div class="flex-1 flex items-center justify-center py-6">
             <p class="text-red-400/70 text-sm text-center font-medium m-0">
@@ -293,25 +297,45 @@
           }
         </div>
         <!-- Bloco de Comportamentos Atípicos -->
-        <div class="bg-blue-50/40 border border-blue-200 rounded-xl p-4 flex flex-col h-full">
+        <div class="bg-blue-50/40 border border-blue-200 rounded-xl p-4 flex flex-col">
           <h5 class="text-blue-700 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-blue-200 m-0">
             Comportamentos Atípicos
           </h5>
           @if (comportamentosAtipicos.length > 0) {
-          <div class="space-y-3 flex-1">
-            @for (espec of comportamentosAtipicos; track espec) {
-            <div class="bg-white border-l-4 border-blue-500 p-3 rounded shadow-sm">
-              <strong class="text-blue-700 block mb-1 text-xs uppercase">{{
-                espec.descricao
-                }}</strong>
-              @if (espec.observacao) {
-              <p class="text-blue-900 text-sm m-0 leading-relaxed">
-                {{ espec.observacao }}
-              </p>
+          @let itemComportamento = getItem(comportamentosAtipicos, paginaComportamentos());
+          @if (itemComportamento) {
+          <div class="flex-1">
+            <div class="bg-white border-l-4 border-blue-500 p-3 rounded shadow-sm group relative">
+              <div class="pointer-events-none absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap z-10 shadow-xs"
+                [class]="classesCategoriaPorTipo(itemComportamento.tipo)">
+                {{ itemComportamento.categoria }}
+              </div>
+              <strong class="text-blue-700 block mb-1 text-xs uppercase">{{ itemComportamento.descricao }}</strong>
+              @if (itemComportamento.observacao) {
+              <p class="text-blue-900 text-sm m-0 leading-relaxed">{{ itemComportamento.observacao }}</p>
               }
+            </div>
+            @if (comportamentosAtipicos.length > 1) {
+            <div class="flex items-center justify-center gap-2 mt-3">
+              <button (click)="navegarPagina(paginaComportamentos, -1, comportamentosAtipicos.length)"
+                [disabled]="paginaComportamentos() === 0"
+                class="w-6 h-6 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span class="text-[10px] font-bold text-blue-600">{{ paginaComportamentos() + 1 }} de {{ comportamentosAtipicos.length }}</span>
+              <button (click)="navegarPagina(paginaComportamentos, 1, comportamentosAtipicos.length)"
+                [disabled]="paginaComportamentos() === comportamentosAtipicos.length - 1"
+                class="w-6 h-6 flex items-center justify-center rounded-full text-blue-600 hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
             }
           </div>
+          }
           } @else {
           <div class="flex-1 flex items-center justify-center py-6">
             <p class="text-blue-400/70 text-sm text-center font-medium m-0">
@@ -321,26 +345,45 @@
           }
         </div>
         <!-- Bloco de Protocolos de Contenção -->
-        <div class="bg-emerald-50/40 border border-emerald-200 rounded-xl p-4 flex flex-col h-full">
-          <h5
-            class="text-emerald-800 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-emerald-200 m-0">
+        <div class="bg-emerald-50/40 border border-emerald-200 rounded-xl p-4 flex flex-col">
+          <h5 class="text-emerald-800 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-emerald-200 m-0">
             Protocolos de Contenção
           </h5>
           @if (protocolosContencao.length > 0) {
-          <div class="space-y-3 flex-1">
-            @for (espec of protocolosContencao; track espec) {
-            <div class="bg-white border-l-4 border-emerald-500 p-3 rounded shadow-sm">
-              <strong class="text-emerald-700 block mb-1 text-xs uppercase">{{
-                espec.descricao
-                }}</strong>
-              @if (espec.observacao) {
-              <p class="text-emerald-900 text-sm m-0 leading-relaxed">
-                {{ espec.observacao }}
-              </p>
+          @let itemProtocolo = getItem(protocolosContencao, paginaProtocolos());
+          @if (itemProtocolo) {
+          <div class="flex-1">
+            <div class="bg-white border-l-4 border-emerald-500 p-3 rounded shadow-sm group relative">
+              <div class="pointer-events-none absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap z-10 shadow-xs"
+                [class]="classesCategoriaPorTipo(itemProtocolo.tipo)">
+                {{ itemProtocolo.categoria }}
+              </div>
+              <strong class="text-emerald-700 block mb-1 text-xs uppercase">{{ itemProtocolo.descricao }}</strong>
+              @if (itemProtocolo.observacao) {
+              <p class="text-emerald-900 text-sm m-0 leading-relaxed">{{ itemProtocolo.observacao }}</p>
               }
+            </div>
+            @if (protocolosContencao.length > 1) {
+            <div class="flex items-center justify-center gap-2 mt-3">
+              <button (click)="navegarPagina(paginaProtocolos, -1, protocolosContencao.length)"
+                [disabled]="paginaProtocolos() === 0"
+                class="w-6 h-6 flex items-center justify-center rounded-full text-emerald-600 hover:bg-emerald-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span class="text-[10px] font-bold text-emerald-600">{{ paginaProtocolos() + 1 }} de {{ protocolosContencao.length }}</span>
+              <button (click)="navegarPagina(paginaProtocolos, 1, protocolosContencao.length)"
+                [disabled]="paginaProtocolos() === protocolosContencao.length - 1"
+                class="w-6 h-6 flex items-center justify-center rounded-full text-emerald-600 hover:bg-emerald-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
             }
           </div>
+          }
           } @else {
           <div class="flex-1 flex items-center justify-center py-6">
             <p class="text-emerald-400/70 text-sm text-center font-medium m-0">

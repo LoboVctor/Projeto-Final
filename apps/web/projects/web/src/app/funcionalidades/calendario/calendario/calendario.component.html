@@ -1,10 +1,27 @@
-<div class="flex flex-col gap-4 p-4 sm:p-6 lg:p-8 bg-[#F7F5FA] h-full overflow-y-auto relative" (click)="fecharPopup()">
+<div class="flex flex-col gap-4 pt-10 pb-4 px-5 bg-[#F7F5FA] h-full overflow-y-auto relative" (click)="fecharPopup()">
 
   <!-- ── Cabeçalho ──────────────────────────────────────────────────────────── -->
-  <header class="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-[#E8E3EF]">
-    <div>
-      <h1 class="text-2xl font-bold text-[#2D1E40]">{{ nomeDoMes() }}</h1>
-      <p class="text-[#686177] mt-0.5 text-sm">Gerencie eventos e datas importantes da escola.</p>
+  <div>
+    <h1 class="text-2xl sm:text-3xl font-bold text-[#6C3CC9]">Calendário</h1>
+    <p class="text-[#686177] mt-1 text-sm">Gerencie eventos e datas importantes da escola.</p>
+  </div>
+
+  <!-- ── Linha de controles do calendário ─────────────────────────────────── -->
+  <div class="flex justify-between items-center flex-wrap gap-3">
+    <div class="flex items-center gap-3">
+      <span class="text-lg font-bold text-[#2D1E40] min-w-[180px]">{{ nomeDoMes() }}</span>
+      <div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-200 gap-0.5">
+        <button (click)="mudarMes(-1)"
+          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm transition-all cursor-pointer border-none text-gray-500 hover:text-[#6C3CC9] font-bold text-lg"
+          aria-label="Mês anterior">&#8249;</button>
+        <button (click)="mudarMes(1)"
+          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm transition-all cursor-pointer border-none text-gray-500 hover:text-[#6C3CC9] font-bold text-lg"
+          aria-label="Próximo mês">&#8250;</button>
+      </div>
+      <button (click)="irParaHoje()"
+        class="px-4 py-2 text-sm font-semibold text-[#6C3CC9] bg-[#F3EEFF] rounded-xl hover:bg-[#6C3CC9] hover:text-white active:scale-95 transition-all cursor-pointer border border-[#6C3CC9]/20">
+        Hoje
+      </button>
     </div>
 
     <div class="flex items-center gap-3">
@@ -19,22 +36,8 @@
         </svg>
         Novo Evento
       </button>
-
-      <button (click)="irParaHoje()"
-        class="px-4 py-2 text-sm font-semibold text-[#6C3CC9] bg-[#F3EEFF] rounded-xl hover:bg-[#6C3CC9] hover:text-white active:scale-95 transition-all cursor-pointer border border-[#6C3CC9]/20">
-        Hoje
-      </button>
-
-      <div class="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-200 gap-0.5">
-        <button (click)="mudarMes(-1)"
-          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm transition-all cursor-pointer border-none text-gray-500 hover:text-[#6C3CC9] font-bold text-lg"
-          aria-label="Mês anterior">&#8249;</button>
-        <button (click)="mudarMes(1)"
-          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm transition-all cursor-pointer border-none text-gray-500 hover:text-[#6C3CC9] font-bold text-lg"
-          aria-label="Próximo mês">&#8250;</button>
-      </div>
     </div>
-  </header>
+  </div>
 
   <!-- ── Grade do Calendário ──────────────────────────────────────────────────── -->
   <div class="bg-white rounded-2xl shadow-sm border border-[#E8E3EF] overflow-y-auto">
@@ -86,43 +89,25 @@
 
   <!-- ── Modal Criação / Edição ────────────────────────────────────────────────── -->
   @if (modalAberto()) {
-  <div class="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex justify-center items-center z-50 p-4"
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in"
     (click)="fecharModal()">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[440px] overflow-hidden border border-[#E8E3EF]"
-      style="animation: fadeInScale 0.2s ease-out;" (click)="$event.stopPropagation()">
-      <!-- Header -->
-      <div class="flex items-center gap-3 p-6 pb-5 border-b border-[#F0EBF8]">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" [class.bg-[#F3EEFF]]="!modoEdicao()"
-          [class.bg-[#FFF7E0]]="modoEdicao()">
-          @if (modoEdicao()) {
-          <svg class="w-5 h-5 text-[#D97706]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-          } @else {
-          <svg class="w-5 h-5 text-[#6C3CC9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          }
-        </div>
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-gray-100"
+      (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between p-5 border-b border-gray-100 bg-slate-50">
         <div>
-          <h2 class="text-lg font-bold text-[#2D1E40] leading-tight">{{ tituloModal() }}</h2>
-          <p class="text-xs text-[#686177] mt-0.5">
+          <h3 class="text-lg font-bold font-['Sora'] text-slate-700 m-0">{{ tituloModal() }}</h3>
+          <p class="text-xs text-slate-500 m-0 mt-0.5">
             {{ modoEdicao() ? 'Altere os dados e salve para atualizar' : 'Preencha os dados do evento escolar' }}
           </p>
         </div>
-        <button (click)="fecharModal()"
-          class="ml-auto w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all border-none cursor-pointer shrink-0"
-          aria-label="Fechar modal">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+        <button (click)="fecharModal()" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
-      <!-- Corpo -->
-      <div class="p-6 flex flex-col gap-4">
+      <div class="p-6 space-y-5 m-0">
         @if (erroForm()) {
         <div class="flex items-center gap-2 bg-red-50 text-red-600 p-3 rounded-xl text-sm border border-red-100">
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,70 +118,96 @@
         </div>
         }
 
-        <!-- Título -->
-        <div>
-          <label class="block text-xs font-bold text-[#2D1E40] mb-1.5">
-            Título <span class="text-red-400">*</span>
-          </label>
+        <div class="flex flex-col gap-1.5">
+          <div class="flex justify-between items-center">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">Título
+              @if (tituloInvalido()) {
+                <span class="text-red-500">*</span>
+              }
+            </label>
+            <span class="text-[10px] font-semibold text-slate-400">{{ formTitulo().length }}/80</span>
+          </div>
           <input type="text" [ngModel]="formTitulo()" (ngModelChange)="formTitulo.set($event)"
+            maxlength="80"
             placeholder="Ex: Conselho de Classe"
-            class="w-full px-4 py-2.5 bg-[#F7F5FA] border border-[#E8E3EF] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6C3CC9]/25 focus:border-[#6C3CC9] transition-all text-[#2D1E40] text-sm placeholder-gray-400">
+            class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm"
+            [class.border-red-300]="tituloInvalido() && formTitulo().length > 0"
+          />
+          @if (tituloInvalido() && formTitulo().length > 0) {
+            <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+              @if (formTitulo().trim().length === 0) {
+                O título é obrigatório.
+              }
+              @if (formTitulo().trim().length > 0 && /^\d+$/.test(formTitulo().trim())) {
+                O título não pode conter apenas números.
+              }
+              @if (formTitulo().trim().length > 0 && /^-+$/.test(formTitulo().trim())) {
+                O título não pode conter apenas hífens.
+              }
+            </div>
+          }
         </div>
 
-        <!-- Data e Horário -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-[#2D1E40] mb-1.5">
-              Data <span class="text-red-400">*</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">Data
+              @if (!formData()) {
+                <span class="text-red-500">*</span>
+              }
             </label>
             <input type="date" [ngModel]="formData()" (ngModelChange)="formData.set($event)"
-              class="w-full px-3 py-2.5 bg-[#F7F5FA] border border-[#E8E3EF] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6C3CC9]/25 focus:border-[#6C3CC9] transition-all text-[#2D1E40] text-sm">
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm font-medium"
+            />
           </div>
-          <div>
-            <label class="block text-xs font-bold text-[#2D1E40] mb-1.5">
-              Horário <span class="text-red-400">*</span>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">Horário
+              @if (!formHorario()) {
+                <span class="text-red-500">*</span>
+              }
             </label>
             <input type="time" [ngModel]="formHorario()" (ngModelChange)="formHorario.set($event)"
-              class="w-full px-3 py-2.5 bg-[#F7F5FA] border border-[#E8E3EF] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6C3CC9]/25 focus:border-[#6C3CC9] transition-all text-[#2D1E40] text-sm">
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm font-medium"
+            />
           </div>
         </div>
 
-        <!-- Descrição -->
-        <div>
-          <label class="block text-xs font-bold text-[#2D1E40] mb-1.5">
-            Descrição <span class="text-[#686177] font-normal">(Opcional)</span>
-          </label>
+        <div class="flex flex-col gap-1.5">
+          <div class="flex justify-between items-center">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">Descrição
+              <span class="text-slate-400 font-normal">(Opcional)</span>
+            </label>
+            <span class="text-[10px] font-semibold text-slate-400">{{ formDescricao().length }}/500</span>
+          </div>
           <textarea [ngModel]="formDescricao()" (ngModelChange)="formDescricao.set($event)" rows="3"
+            maxlength="500"
             placeholder="Detalhes do evento"
-            class="w-full px-4 py-2.5 bg-[#F7F5FA] border border-[#E8E3EF] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6C3CC9]/25 focus:border-[#6C3CC9] transition-all text-[#2D1E40] text-sm resize-none placeholder-gray-400"></textarea>
+            class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm resize-none"
+            [class.border-red-300]="descricaoInvalida()"
+          ></textarea>
+          @if (descricaoInvalida()) {
+            <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+              @if (formDescricao().trim().length === 0) {
+                A descrição não pode conter apenas espaços em branco.
+              }
+              @if (formDescricao().trim().length > 0 && /^\d+$/.test(formDescricao().trim())) {
+                A descrição não pode conter apenas números.
+              }
+              @if (formDescricao().trim().length > 0 && /^-+$/.test(formDescricao().trim())) {
+                A descrição não pode conter apenas hífens.
+              }
+            </div>
+          }
         </div>
       </div>
 
-      <!-- Footer -->
-      <div class="flex justify-end gap-3 px-6 pb-6">
-        <button (click)="fecharModal()"
-          class="px-5 py-2.5 rounded-xl font-semibold text-sm text-[#686177] bg-[#F7F5FA] hover:bg-gray-200 active:scale-95 transition-all border border-[#E8E3EF] cursor-pointer">
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 px-6 pb-6">
+        <button (click)="fecharModal()" type="button"
+          class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
           Cancelar
         </button>
-        <button (click)="salvarEvento()" [disabled]="salvandoEvento()"
-          class="px-6 py-2.5 rounded-xl font-semibold text-sm text-white active:scale-95 transition-all border-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed min-w-[130px] flex justify-center items-center gap-2 shadow-sm"
-          [class.bg-[#6C3CC9]]="!modoEdicao()" [class.hover:bg-[#5a32a8]]="!modoEdicao()"
-          [class.shadow-[#6C3CC9]/30]="!modoEdicao()" [class.bg-[#D97706]]="modoEdicao()"
-          [class.hover:bg-[#b45309]]="modoEdicao()" [class.shadow-[#D97706]/30]="modoEdicao()">
-          @if (salvandoEvento()) {
-          <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-            </path>
-          </svg>
-          Salvando...
-          } @else if (modoEdicao()) {
-          Salvar
-          } @else {
-          Salvar
-          }
+        <button (click)="salvarEvento()" [disabled]="formInvalido() || salvandoEvento()" type="button"
+          class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer">
+          {{ modoEdicao() ? 'Atualizar' : 'Adicionar' }}
         </button>
       </div>
     </div>
