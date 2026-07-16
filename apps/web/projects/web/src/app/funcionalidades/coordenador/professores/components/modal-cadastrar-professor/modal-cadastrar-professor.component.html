@@ -1,0 +1,195 @@
+@if (isOpen) {
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+  <div
+    class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-gray-100 max-h-[90vh]">
+    <div class="flex items-center justify-between p-5 border-b border-gray-100 bg-slate-50 shrink-0">
+      <div>
+        <h3 class="text-lg font-bold font-['Sora'] text-slate-700 m-0">
+          Cadastrar Professor
+        </h3>
+        <p class="text-xs text-slate-500 m-0 mt-0.5">
+          Preencha os dados abaixo para registrar um novo educador.
+        </p>
+      </div>
+      <button (click)="emitirFechar()" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+        [disabled]="loading">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="overflow-y-auto p-6">
+      <form [formGroup]="form" (ngSubmit)="salvar()" class="space-y-5 m-0">
+        @if (erro) {
+        <div
+          class="p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200 font-medium flex items-start gap-2">
+          <svg class="w-4 h-4 mt-0.5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+          <span>{{ erro }}</span>
+        </div>
+        }
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1.5 md:col-span-2">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">Nome Completo
+              <span class="text-red-500">*</span>
+            </label>
+            <input type="text" formControlName="nome" placeholder="Nome completo do professor"
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
+              [class.border-red-300]="deveMostrarObrigatorio('nome')" />
+            @if (deveMostrarObrigatorio('nome')) {
+            <div class="text-[10px] font-semibold text-red-500 mt-0.5">O nome é obrigatório (mín. 3 caracteres).</div>
+            }
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">Matrícula
+              <span class="text-red-500">*</span>
+            </label>
+            <input type="text" formControlName="matricula" placeholder="Ex: MAT2024"
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
+              [class.border-red-300]="deveMostrarObrigatorio('matricula')" />
+            @if (deveMostrarObrigatorio('matricula')) {
+            <div class="text-[10px] font-semibold text-red-500 mt-0.5">A matrícula é obrigatória.</div>
+            }
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">CPF
+              <span class="text-red-500">*</span>
+            </label>
+            <input type="text" formControlName="cpf" placeholder="Apenas números" maxlength="11"
+              (input)="apenasNumeros($event, 'cpf')"
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
+              [class.border-red-300]="deveMostrarObrigatorio('cpf')" />
+            @if (deveMostrarObrigatorio('cpf')) {
+            <div class="text-[10px] font-semibold text-red-500 mt-0.5">CPF inválido. Use 11 dígitos.</div>
+            }
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">E-mail
+              <span class="text-red-500">*</span>
+            </label>
+            <input type="email" formControlName="email" placeholder="professor@escola.com"
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
+              [class.border-red-300]="deveMostrarObrigatorio('email')" />
+            @if (deveMostrarObrigatorio('email')) {
+            <div class="text-[10px] font-semibold text-red-500 mt-0.5">E-mail inválido.</div>
+            }
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">Telefone
+              <span class="text-red-500">*</span>
+            </label>
+            <input type="text" formControlName="telefone" placeholder="Ex: 11999999999" maxlength="11"
+              (input)="apenasNumeros($event, 'telefone')"
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
+              [class.border-red-300]="deveMostrarObrigatorio('telefone')" />
+            @if (deveMostrarObrigatorio('telefone')) {
+            <div class="text-[10px] font-semibold text-red-500 mt-0.5">Telefone é obrigatório.</div>
+            }
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">Tipo de Educador
+              <span class="text-red-500">*</span>
+            </label>
+            <select formControlName="tipo"
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium"
+              [class.border-red-300]="deveMostrarObrigatorio('tipo')">
+              <option value="" disabled selected>Selecione um tipo</option>
+              <option value="REGENTE">Regente</option>
+              <option value="ATENDIMENTO">Atendimento (AEE)</option>
+              <option value="COORDENADOR">Coordenador</option>
+            </select>
+            @if (deveMostrarObrigatorio('tipo')) {
+            <div class="text-[10px] font-semibold text-red-500 mt-0.5">Tipo é obrigatório.</div>
+            }
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">Data de Contratação
+              <span class="text-red-500">*</span>
+            </label>
+            <input type="date" formControlName="dataContratacao"
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
+              [class.border-red-300]="deveMostrarObrigatorio('dataContratacao')" />
+            @if (deveMostrarObrigatorio('dataContratacao')) {
+            <div class="text-[10px] font-semibold text-red-500 mt-0.5">Data é obrigatória.</div>
+            }
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Turmas (Opcional)</label>
+          <div class="relative z-10">
+            <input type="text" [value]="termoBuscaTurma" (input)="filtrarTurmas($event)"
+              (focus)="mostrarDropdownTurmas = true" placeholder="Buscar turma"
+              class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm" />
+
+            @if (mostrarDropdownTurmas) {
+            <div
+              class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              @for (turma of turmasFiltradas; track turma.id) {
+              <div class="px-4 py-2 hover:bg-purple-50 cursor-pointer text-sm text-slate-700"
+                (click)="selecionarTurma(turma)">
+                {{ turma.nome }} ({{ turma.etapa || 'Sem Etapa' }})
+              </div>
+              }
+              @if (turmasFiltradas.length === 0) {
+              <div class="px-4 py-2 text-sm text-slate-500 text-center">Nenhuma turma encontrada.</div>
+              }
+            </div>
+            }
+          </div>
+
+          @if (turmasSelecionadas.length > 0) {
+          <div class="flex flex-wrap gap-2 mt-2">
+            @for (turma of turmasSelecionadas; track turma.id) {
+            <span
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+              {{ turma.nome }}
+              <button type="button" (click)="removerTurma(turma)"
+                class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-purple-400 hover:bg-purple-200 hover:text-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clip-rule="evenodd"></path>
+                </svg>
+              </button>
+            </span>
+            }
+          </div>
+          }
+        </div>
+
+      </form>
+    </div>
+
+    <div class="flex items-center justify-end gap-3 p-5 border-t border-gray-100 bg-slate-50 shrink-0">
+      <button type="button" (click)="emitirFechar()" [disabled]="loading"
+        class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+        Cancelar
+      </button>
+      <button type="button" (click)="salvar()" [disabled]="form.invalid || loading"
+        class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm flex items-center justify-center min-w-[120px] cursor-pointer">
+        @if (loading) {
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+          </path>
+        </svg>
+        }
+        Cadastrar
+      </button>
+    </div>
+  </div>
+</div>
+}

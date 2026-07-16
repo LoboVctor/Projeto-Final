@@ -139,10 +139,10 @@
                   <app-card-aluno
                     [nome]="nomeCurtoAluno(estudante.nomeCompleto)"
                     [matricula]="estudante.matricula"
-                    [foto]="estudante.foto"
+                    [foto]="getFotoUrlCard(estudante)"
                     [estudante]="estudante"
-                    [diagnostico]="estudante.diagnosticos.length > 0 ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo' : 'Sem Laudo'"
-                    [diagnosticos]="estudante.diagnosticos.length > 0 ? estudante.diagnosticos.map(d => d.diagnostico.tipo) : []"
+                    [diagnostico]="'Sem Laudo'"
+                    [diagnosticos]="getDiagnosticosCard(estudante)"
                     (abrirPerfil)="abrirDetalhesAluno(estudante)"
                   ></app-card-aluno>
                 }
@@ -205,7 +205,7 @@
                             <td class="px-6 py-3 text-center">
                               @if (aluno.diagnosticos.length > 0) {
                                 <div class="flex flex-wrap justify-center gap-1">
-                                  @for (d of aluno.diagnosticos; track d.diagnostico.nome) {
+                                  @for (d of aluno.diagnosticos; track $index) {
                                     <span class="px-2 py-0.5 rounded text-[10px] font-nunito font-bold border shadow-sm" [ngClass]="d.diagnostico.tipo | diagColor">
                                       {{ d.diagnostico.tipo | diagLabel }}
                                     </span>

@@ -295,7 +295,7 @@
                 <td class="td-diagnostico text-center">
                   @if (aluno.diagnosticos.length > 0) {
                     <div class="flex flex-wrap justify-center gap-1">
-                      @for (d of aluno.diagnosticos; track d.diagnostico.nome) {
+                      @for (d of aluno.diagnosticos; track $index) {
                         <span class="px-2 py-0.5 rounded text-[10px] font-nunito font-bold border shadow-sm" [ngClass]="d.diagnostico.tipo | diagColor">
                           {{ d.diagnostico.tipo | diagLabel }}
                         </span>
@@ -382,7 +382,7 @@
   [isVisible]="modalAlunoAberto()"
   [aluno]="modalAlunoData()"
   [abaInicial]="abaSolicitada()"
-  (fecharModal)="fecharModalAluno()">
+  (fecharModal)="fecharModalAluno($event)">
 </app-aluno-modal>
 
 
@@ -443,3 +443,9 @@
     </div>
   </div>
 }
+
+<app-modal-cadastrar-aluno 
+  [isOpen]="modalCadastrarAlunoAberto()"
+  (fechar)="fecharModalCadastrarAluno()"
+  (salvo)="onAlunoCadastrado()">
+</app-modal-cadastrar-aluno>

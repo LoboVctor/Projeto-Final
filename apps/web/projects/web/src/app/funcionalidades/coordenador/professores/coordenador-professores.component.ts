@@ -12,9 +12,11 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, debounceTime, switchMap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
 import { API_BASE_URL } from '../../../nucleo/config/api.config';
 import { AuditoriaService } from '../../../nucleo/services/auditoria.service';
 import { LoadingFlorComponent } from '../../../compartilhado/components/loading-flor/loading-flor.component';
+import { ModalCadastrarProfessorComponent } from './components/modal-cadastrar-professor/modal-cadastrar-professor.component';
 
 /** Modelo resumido do educador para listagem */
 export interface EducadorListagemItem {
@@ -42,7 +44,7 @@ export interface TurmaItem {
 @Component({
   selector: 'app-coordenador-professores',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, LoadingFlorComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, LoadingFlorComponent, ModalCadastrarProfessorComponent],
   templateUrl: './coordenador-professores.component.html',
   styleUrls: ['./coordenador-professores.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,6 +55,7 @@ export class CoordenadorProfessoresComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly fb = inject(FormBuilder);
   private readonly auditoriaService = inject(AuditoriaService);
+  private readonly route = inject(ActivatedRoute);
 
   private get apiUrl(): string {
     return `${this.baseUrl}/educadores`;
@@ -107,6 +110,22 @@ export class CoordenadorProfessoresComponent implements OnInit {
   fecharMenus(): void {
     this.menuAbertoId.set(null);
     this.dropdownCadastrarAberto.set(false);
+  }
+
+  // ─── Modal de Cadastro Manual ─────────────────────────────────────────────
+  modalCadastrarAberto = signal(false);
+
+  abrirModalCadastrarProfessor(): void {
+    this.fecharMenus();
+    this.modalCadastrarAberto.set(true);
+  }
+
+  fecharModalCadastrarProfessor(): void {
+    this.modalCadastrarAberto.set(false);
+  }
+
+  onProfessorCadastrado(): void {
+    this.dispararBusca();
   }
 
   baixarModeloCSV(): void {
@@ -282,6 +301,11 @@ export class CoordenadorProfessoresComponent implements OnInit {
   // ─── Busca e Paginação ────────────────────────────────────────────────────
 
   ngOnInit(): void {
+    // Ação rápida da Home: se vier com ?abrirModal=true, abre o modal de cadastro direto
+    if (this.route.snapshot.queryParams['abrirModal'] === 'true') {
+      this.abrirModalCadastrarProfessor();
+    }
+
     this.busca$
       .pipe(
         debounceTime(400),
@@ -403,8 +427,8 @@ export class CoordenadorProfessoresComponent implements OnInit {
     return filtros.length > 0 ? filtros.join('; ') : 'sem filtros';
   }
 
-  abrirModalCadastrarEducador() {
-    alert('Funcionalidade de cadastro manual em desenvolvimento.');
+  abrirModalCadastrarEducador(): void {
+    this.dropdownCadastrarAberto.set(true);
   }
 
   onTermoBuscaTurmaChange(termo: string): void {

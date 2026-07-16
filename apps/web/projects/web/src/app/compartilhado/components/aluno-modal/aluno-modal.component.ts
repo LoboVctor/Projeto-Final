@@ -9,7 +9,8 @@ import {
   input,
   effect,
   OnChanges,
-  SimpleChanges
+  SimpleChanges,
+  ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AlunoModalData } from '../../models/aluno-modal.model';
@@ -21,6 +22,8 @@ import { BlocoRelatoriosComponent } from '../../../funcionalidades/estudante/com
 import { BlocoAgendaComponent } from '../../../funcionalidades/estudante/components/bloco-agenda/bloco-agenda.component';
 import { BlocoDashboardComponent } from '../../../funcionalidades/estudante/components/bloco-dashboards/bloco-dashboard.component';
 import { CadastroResponsavelComponent } from '../../../funcionalidades/estudante/cadastro-responsavel/cadastro-responsavel.component';
+import { API_BASE_URL } from '../../../nucleo/config/api.config';
+import { DiagFullNamePipe } from '../../pipes/student.pipes';
 
 @Component({
   selector: 'app-aluno-modal',
@@ -31,7 +34,8 @@ import { CadastroResponsavelComponent } from '../../../funcionalidades/estudante
     BlocoRelatoriosComponent,
     BlocoAgendaComponent,
     BlocoDashboardComponent,
-    CadastroResponsavelComponent
+    CadastroResponsavelComponent,
+    DiagFullNamePipe
   ],
   templateUrl: './aluno-modal.component.html',
   styleUrls: ['./aluno-modal.component.css'],
@@ -39,6 +43,8 @@ import { CadastroResponsavelComponent } from '../../../funcionalidades/estudante
 })
 export class AlunoModalComponent implements OnChanges {
   private estudantesService = inject(EstudantesService);
+  private readonly baseUrl = inject(API_BASE_URL);
+  private cdr = inject(ChangeDetectorRef);
 
   readonly isVisible = input<boolean>(false);
   
@@ -47,7 +53,7 @@ export class AlunoModalComponent implements OnChanges {
   
   @Input() aluno: AlunoModalData | null = null;
 
-  @Output() fecharModal = new EventEmitter<void>();
+  @Output() fecharModal = new EventEmitter<boolean>();
 
   // Estados
   isInfoGeraisOpen = signal(false);
@@ -61,6 +67,8 @@ export class AlunoModalComponent implements OnChanges {
   visaoGeralData = signal<EstudanteVisaoGeral | null>(null);
   loadingVisaoGeral = signal(false);
   errorVisaoGeral = signal<string | null>(null);
+  // Tracks if any modification occurred while the modal was open
+  houveModificacao = signal<boolean>(false);
 
   constructor() {
     // Efeito reativo: Observa quando o modal abre para focar na aba correta
@@ -99,7 +107,8 @@ export class AlunoModalComponent implements OnChanges {
     this.isResponsavelExpanded.set(false);
     this.isInfoGeraisOpen.set(false);
     this.visaoGeralData.set(null);
-    this.fecharModal.emit();
+    this.fecharModal.emit(this.houveModificacao());
+    this.houveModificacao.set(false); // Reset on close
   }
 
   toggleInfoGerais(): void {
@@ -154,6 +163,17 @@ export class AlunoModalComponent implements OnChanges {
     this.isResponsavelExpanded.set(true);
   }
 
+  getFotoUrl(aluno: AlunoModalData): string {
+    if (!aluno.foto) {
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(aluno.nome)}&background=EDE9FE&color=4F46E5&size=64`;
+    }
+    if (aluno.foto.startsWith('http')) {
+      return aluno.foto;
+    }
+    const normalizedPath = aluno.foto.replace(/\\/g, '/');
+    return `${this.baseUrl}/${normalizedPath}`;
+  }
+
   recolherPaineis(): void {
     this.isVisaoGeralExpanded.set(false);
     this.isSaudeExpanded.set(false);
@@ -190,7 +210,23 @@ export class AlunoModalComponent implements OnChanges {
 
   forceReloadVisaoGeral(): void {
     this.visaoGeralData.set(null);
+    this.houveModificacao.set(true); // Registra que houve uma atualização a ser repassada para o parent
     this.carregarVisaoGeral();
+    if (this.aluno) {
+      this.estudantesService.getSaude(this.aluno.id).subscribe({
+        next: (saude) => {
+          if (this.aluno && saude.laudos && saude.laudos.length > 0) {
+            // Assume the first one or you can sort by createdAt descending
+            const laudosOrdenados = [...saude.laudos].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            const latestDiagnostico = laudosOrdenados[0]?.diagnostico;
+            this.aluno.diagnostico = latestDiagnostico || 'Sem diagnóstico';
+          } else if (this.aluno) {
+            this.aluno.diagnostico = 'Sem diagnóstico';
+          }
+          this.cdr.markForCheck();
+        }
+      });
+    }
   }
 
   recolherVisaoGeral(): void {

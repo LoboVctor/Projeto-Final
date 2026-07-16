@@ -20,6 +20,7 @@ export interface UsuarioLogado {
   escolaId?: string; // Incluindo o escolaId que vem no JWT
   educadorId?: string | null;
   responsavelId?: string | null;
+  deveMudarSenha?: boolean;
   educador?: PerfilResumido | null;
   responsavel?: PerfilResumido | null;
 }
@@ -90,6 +91,25 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return !!this.tokenSubject();
+  }
+
+  deveMudarSenha(): boolean {
+    return !!this.usuarioSubject()?.deveMudarSenha;
+  }
+
+  trocarSenhaPrimeiroAcesso(novaSenha: string): Observable<{ message: string }> {
+    return this.http.patch<{ message: string }>(`${this.API_URL}/primeiro-acesso`, { novaSenha }).pipe(
+      tap(() => {
+        const usuario = this.usuarioSubject();
+        if (usuario) {
+          const atualizado = { ...usuario, deveMudarSenha: false };
+          this.usuarioSubject.set(atualizado);
+          if (isPlatformBrowser(this.platformId)) {
+            localStorage.setItem('usuario_logado', JSON.stringify(atualizado));
+          }
+        }
+      })
+    );
   }
 
   getLoggedUserId(): string | null {

@@ -261,7 +261,7 @@
                 <!-- Diagnóstico -->
                 <td class="td-diagnostico">
                   @if (aluno.diagnosticos.length > 0) {
-                    @for (d of aluno.diagnosticos; track d.diagnostico.nome) {
+                    @for (d of aluno.diagnosticos; track $index) {
                       <span
                         [class]="'px-2 py-0.5 rounded text-[10px] font-nunito font-bold border inline-block m-0.5 ' + getCorDiagnostico(d.diagnostico.tipo)"
                       >
