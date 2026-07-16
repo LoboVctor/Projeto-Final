@@ -111,7 +111,7 @@
             <span class="text-4xl font-extrabold text-purple-300 leading-none animate-pulse">—</span>
             } @else {
             <span class="text-4xl font-extrabold text-[#6C3CC9] leading-none break-words">
-              {{ metricasEscola()?.diagnosticoPrincipal ?? '—' }}
+              {{ metricasEscola()?.diagnosticoPrincipal ? (metricasEscola()!.diagnosticoPrincipal! | diagLabel) : '—' }}
             </span>
             }
           </div>

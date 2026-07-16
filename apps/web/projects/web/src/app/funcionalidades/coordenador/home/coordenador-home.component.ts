@@ -22,11 +22,13 @@ import { TurmasService, MetricasEscola } from '../../../nucleo/services/turmas.s
 import { TurmaGraficosComponent } from '../../turma/components/turma-graficos/turma-graficos';
 import { KpisTurmaComponent } from '../../turma/components/kpis-turma/kpis-turma.component';
 import { CalendarioService, EventoCalendario } from '../../../compartilhado/services/calendario.service';
+import { DiagLabelPipe } from '../../../compartilhado/pipes/student.pipes';
 
 @Component({
   selector: 'app-coordenador-home',
   imports: [
     DatePipe,
+    DiagLabelPipe,
     TurmaGraficosComponent,
     KpisTurmaComponent,
   ],

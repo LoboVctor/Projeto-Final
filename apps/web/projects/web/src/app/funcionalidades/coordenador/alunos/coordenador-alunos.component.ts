@@ -124,11 +124,12 @@ export class CoordenadorAlunosComponent implements OnInit {
   readonly temResultados = computed(() => this.estudantes().length > 0);
 
   readonly tiposDiagnostico = [
+    'TEA',
     'TDAH',
-    'AUTISMO',
-    'DISLEXIA',
-    'SINDROME_DE_DOWN',
+    'SINDROME_DOWN',
+    'PARALISIA_CEREBRAL',
     'DEFICIENCIA_INTELECTUAL',
+    'DEFICIENCIA_MULTIPLA',
     'OUTRO',
   ];
 
