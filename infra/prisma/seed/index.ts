@@ -40,7 +40,8 @@ const prisma = new PrismaClient({ adapter });
 const SALT_ROUNDS = 12;
 const NUM_PROFESSORES = 12;
 const ALUNOS_POR_TURMA = 7;
-const DIAS_DE_HISTORICO = 90;
+// Garantia de 1 ano de histórico para o gráfico de teia (radar) comparar os semestres
+const DIAS_DE_HISTORICO = 365; 
 const URL_LAUDO_PADRAO = 'http://localhost:3000/api/v1/uploads/laudos/1781883929415-924710107.pdf';
 
 faker.seed(20260716);
@@ -61,13 +62,11 @@ const especificidadesBase: { tipo: TipoEspecificidade; categoria: CategoriaEspec
   { tipo: TipoEspecificidade.GATILHO_CRISE, categoria: CategoriaEspecificidade.SENSORIAL, descricao: 'Sons altos e repentinos desencadeiam crises de ansiedade.' },
   { tipo: TipoEspecificidade.GATILHO_CRISE, categoria: CategoriaEspecificidade.COMPORTAMENTAL, descricao: 'Mudanças abruptas de rotina desencadeiam crises.' },
   { tipo: TipoEspecificidade.CONTENCAO, categoria: CategoriaEspecificidade.MOTORA, descricao: 'Protocolo de contenção física suave em episódios de agitação.' },
-  { tipo: TipoEspecificidade.CONTENCAO, categoria: CategoriaEspecificidade.COMPORTAMENTAL, descricao: 'Protocolo de redirecionamento verbal em episódios de crise.' },
+  { tipo: TipoEspecificidade.CONTENCAO, categoria: CategoriaEspecificidade.COMPORTAMENTAL, descricao: 'Protocolo de redirecionamento verbal em episódios de crisis.' },
 ];
 
 const medicamentosBase = ['Risperidona', 'Metilfenidato', 'Sertralina', 'Ácido Valproico', 'Melatonina'];
-
 const bairrosBase = ['Centro', 'Tijuca', 'Copacabana', 'Botafogo', 'Méier', 'Madureira', 'Penha', 'Bangu', 'Campo Grande', 'Ipanema'];
-
 const eixos = Object.values(Eixos);
 const grausParentesco = Object.values(GrauParentesco);
 
@@ -84,7 +83,7 @@ function somenteDigitos(valor: string): string {
 }
 
 async function main() {
-  console.log('Iniciando seed...\n');
+  console.log('Iniciando seed com Série Temporal Anual e Variabilidade Recente...\n');
 
   console.log('Limpando dados anteriores...');
   await prisma.auditoriaExportacao.deleteMany();
@@ -101,6 +100,7 @@ async function main() {
   await prisma.registroDiario.deleteMany();
   await prisma.registroAula.deleteMany();
   await prisma.aula.deleteMany();
+  await prisma.areaAtendimento.deleteMany(); 
   await prisma.estudante.deleteMany();
   await prisma.turma.deleteMany();
   await prisma.usuario.deleteMany({ where: { role: { not: Role.COORDENADOR } } });
@@ -110,9 +110,15 @@ async function main() {
   await prisma.diagnostico.deleteMany();
   console.log('Limpeza concluída.');
 
-  // ==========================================
-  // ESCOLA E COORDENADOR ADMIN
-  // ==========================================
+  const nomesAreas = ['Regência', 'Artes', 'Educação Física', 'Natação', 'Informática'];
+  const areasMap: Record<string, any> = {};
+  for (const nome of nomesAreas) {
+    const area = await prisma.areaAtendimento.create({ 
+      data: { nome: nome, descricao: `Aulas de ${nome}` } 
+    });
+    areasMap[nome] = area;
+  }
+
   const escola = await prisma.escola.upsert({
     where: { id: '11111111-1111-1111-1111-111111111111' },
     update: {},
@@ -126,7 +132,6 @@ async function main() {
       codInep: '33000000',
     },
   });
-  console.log(` Escola criada: "${escola.nome}" (id: ${escola.id})`);
 
   const educadorAdmin = await prisma.educador.upsert({
     where: { id: '123e4567-e89b-42d3-8456-426614174999' },
@@ -144,7 +149,7 @@ async function main() {
   });
 
   const senhaAdminHash = await bcrypt.hash('Admin@1234', SALT_ROUNDS);
-  const admin = await prisma.usuario.upsert({
+  await prisma.usuario.upsert({
     where: { email: 'admin@escola.elo' },
     update: { senha: senhaAdminHash, deveMudarSenha: false, educadorId: educadorAdmin.id },
     create: {
@@ -155,45 +160,24 @@ async function main() {
       deveMudarSenha: false,
     },
   });
-  console.log(` Admin criado: "${admin.email}" (role: ${admin.role})`);
-
-  // ==========================================
-  // ENTIDADES AUXILIARES ESTÁTICAS
-  // ==========================================
-  console.log('\nCriando diagnósticos, especificidades e medicamentos...');
 
   const diagnosticos = [];
   for (const d of diagnosticosBase) {
-    diagnosticos.push(
-      await prisma.diagnostico.create({
-        data: { nome: d.nome, tipo: d.tipo, descricao: d.descricao },
-      }),
-    );
+    diagnosticos.push(await prisma.diagnostico.create({ data: { nome: d.nome, tipo: d.tipo, descricao: d.descricao } }));
   }
 
   const especificidades = [];
   for (const e of especificidadesBase) {
-    especificidades.push(
-      await prisma.especificidade.create({
-        data: { tipo: e.tipo, categoria: e.categoria, descricao: e.descricao },
-      }),
-    );
+    especificidades.push(await prisma.especificidade.create({ data: { tipo: e.tipo, categoria: e.categoria, descricao: e.descricao } }));
   }
 
   const medicamentos = [];
   for (const nome of medicamentosBase) {
     medicamentos.push(await prisma.medicamento.create({ data: { nome } }));
   }
-  console.log(` ${diagnosticos.length} diagnósticos, ${especificidades.length} especificidades e ${medicamentos.length} medicamentos criados.`);
-
-  // ==========================================
-  // LOOP DE PROFESSORES, TURMAS E ALUNOS
-  // ==========================================
-  console.log(`\nCriando ${NUM_PROFESSORES} professores, cada um com 1 turma e ${ALUNOS_POR_TURMA} alunos...`);
 
   const senhaProfHash = await bcrypt.hash('Prof@1234', SALT_ROUNDS);
-  const senhaResponsavelHash = await bcrypt.hash('Elo@1234', SALT_ROUNDS);
-
+  
   const todosEstudantesIds: string[] = [];
   const todosEducadores: { id: string; escolaId: string }[] = [educadorAdmin];
   const aulasRecorrentesPorTurma: { turmaId: string; educadorId: string; aulas: { id: string; diaSemana: DiaSemana }[] }[] = [];
@@ -206,18 +190,17 @@ async function main() {
 
   const diasSemanaDisponiveis = [DiaSemana.SEGUNDA, DiaSemana.TERCA, DiaSemana.QUARTA, DiaSemana.QUINTA, DiaSemana.SEXTA];
   const jsDayToDiaSemana: Record<number, DiaSemana | null> = {
-    0: null,
-    1: DiaSemana.SEGUNDA,
-    2: DiaSemana.TERCA,
-    3: DiaSemana.QUARTA,
-    4: DiaSemana.QUINTA,
-    5: DiaSemana.SEXTA,
-    6: null,
+    0: null, 1: DiaSemana.SEGUNDA, 2: DiaSemana.TERCA, 3: DiaSemana.QUARTA, 4: DiaSemana.QUINTA, 5: DiaSemana.SEXTA, 6: null,
   };
 
   for (let p = 1; p <= NUM_PROFESSORES; p++) {
-    const nomeProfessor = faker.person.fullName();
+    const sexoProfessor = faker.helpers.arrayElement(['male', 'female'] as const);
+    // Correção: Garantia de nomes sem títulos/prefixos para os professores
+    const nomeProfessor = `${faker.person.firstName(sexoProfessor)} ${faker.person.lastName(sexoProfessor)}`;
     const cpfProfessor = faker.helpers.replaceSymbols('###.###.###-##');
+
+    // Distribuição assimétrica de pendências focada estritamente nas últimas 48h úteis
+    const taxaEsquecimentoRegistros = faker.number.float({ min: 0.1, max: 0.9 });
 
     const educador = await prisma.educador.create({
       data: {
@@ -245,6 +228,7 @@ async function main() {
     const diagnosticoDaTurma = faker.helpers.arrayElement(diagnosticos);
     const numeroEtapa = faker.number.int({ min: 1, max: 3 });
     const etapaDaTurma = ([Etapa.ETAPA_1, Etapa.ETAPA_2, Etapa.ETAPA_3])[numeroEtapa - 1];
+    
     const nomeDiagnosticoTitulo = diagnosticoDaTurma.nome
       .split(' ')
       .map((palavra) => (palavra.length > 2 ? palavra[0].toUpperCase() + palavra.slice(1).toLowerCase() : palavra.toLowerCase()))
@@ -262,29 +246,37 @@ async function main() {
       },
     });
 
-    // Cronograma semanal (3 dias aleatórios da turma)
-    const diasDaTurma = faker.helpers.arrayElements(diasSemanaDisponiveis, 3);
+    const diasDaTurma = faker.helpers.arrayElements(diasSemanaDisponiveis, 5);
     const aulasDaTurma: { id: string; diaSemana: DiaSemana }[] = [];
+    
+    const gradeHorariaTemplate = [
+      { inicio: '08:00', fim: '08:50', getArea: () => areasMap['Regência'].id },
+      { inicio: '08:50', fim: '09:40', getArea: () => faker.helpers.arrayElement(Object.values(areasMap)).id },
+      { inicio: '10:00', fim: '10:50', getArea: () => faker.helpers.arrayElement(Object.values(areasMap)).id },
+      { inicio: '10:50', fim: '11:40', getArea: () => areasMap['Regência'].id },
+    ];
+
     for (const dia of diasDaTurma) {
-      const aula = await prisma.aula.create({
-        data: {
-          turmaId: turma.id,
-          educadorId: educador.id,
-          diaSemana: dia,
-          horarioInicio: criarDataComHorario('08:00'),
-          horarioFim: criarDataComHorario('12:00'),
-        },
-      });
-      aulasDaTurma.push({ id: aula.id, diaSemana: dia });
+      for (const slot of gradeHorariaTemplate) {
+        const aula = await prisma.aula.create({
+          data: {
+            turmaId: turma.id,
+            educadorId: educador.id,
+            areaId: slot.getArea(),
+            diaSemana: dia,
+            horarioInicio: criarDataComHorario(slot.inicio),
+            horarioFim: criarDataComHorario(slot.fim),
+          },
+        });
+        aulasDaTurma.push({ id: aula.id, diaSemana: dia });
+      }
     }
     aulasRecorrentesPorTurma.push({ turmaId: turma.id, educadorId: educador.id, aulas: aulasDaTurma });
 
-    console.log(` [${p}/${NUM_PROFESSORES}] Professor "${nomeProfessor}" e turma "${turma.nome}" criados.`);
-
-    // Loop de alunos
     for (let a = 1; a <= ALUNOS_POR_TURMA; a++) {
-      const sexo = faker.helpers.arrayElement([Sexo.MASCULINO, Sexo.FEMININO]);
-      const nomeCompleto = faker.person.fullName({ sex: sexo === Sexo.MASCULINO ? 'male' : 'female' });
+      const sexoEstudante = faker.helpers.arrayElement([Sexo.MASCULINO, Sexo.FEMININO]);
+      // Correção: Garantia de nomes sem títulos/prefixos para os estudantes
+      const nomeCompleto = `${faker.person.firstName(sexoEstudante === Sexo.MASCULINO ? 'male' : 'female')} ${faker.person.lastName()}`;
       const dataNascimento = faker.date.birthdate({ min: 4, max: 10, mode: 'age' });
       const cpfEstudante = faker.helpers.replaceSymbols('###.###.###-##');
       const matricula = `2026${String(p).padStart(2, '0')}${String(a).padStart(2, '0')}`;
@@ -296,7 +288,7 @@ async function main() {
           nomeCompleto,
           dataNascimento,
           cpf: cpfEstudante,
-          sexo,
+          sexo: sexoEstudante,
           foto: `https://api.dicebear.com/10.x/dylan/svg?facialHairVariant=&moodVariant=happy&backgroundColor=&hairColor=000000,2c1a0b,53261d,d9b380&skinColor=895129,b78b61,e1c4a3&seed=${seedAvatar}`,
           formaComunicacao: faker.helpers.arrayElement([Fcom.VERBAL, Fcom.NAO_VERBAL]),
           statusMatricula: true,
@@ -309,7 +301,6 @@ async function main() {
       });
       todosEstudantesIds.push(estudante.id);
 
-      // Documento de laudo médico (URL padrão, conforme decisão do plano)
       await prisma.documentoDiagnostico.create({
         data: {
           tipo: TipoDocumento.LAUDO_MEDICO,
@@ -320,19 +311,13 @@ async function main() {
         },
       });
 
-      // Especificidades sorteadas (0 a 2)
       const especificidadesSorteadas = faker.helpers.arrayElements(especificidades, faker.number.int({ min: 0, max: 2 }));
       for (const esp of especificidadesSorteadas) {
         await prisma.estudanteEspecificidade.create({
-          data: {
-            estudanteId: estudante.id,
-            especificidadeId: esp.id,
-            obsReacao: faker.lorem.sentence({ min: 8, max: 16 }),
-          },
+          data: { estudanteId: estudante.id, especificidadeId: esp.id, obsReacao: faker.lorem.sentence({ min: 8, max: 16 }) },
         });
       }
 
-      // Medicamento sorteado (50% de chance)
       if (faker.datatype.boolean()) {
         const medicamento = faker.helpers.arrayElement(medicamentos);
         await prisma.estudanteMedicamento.create({
@@ -348,13 +333,14 @@ async function main() {
         });
       }
 
-      // Responsável (apenas o registro + vínculo com o estudante, sem Usuario)
-      const nomeResponsavel = faker.person.fullName();
+      const sexoResp = faker.helpers.arrayElement(['male', 'female'] as const);
+      // Correção: Garantia de nomes sem títulos/prefixos para os responsáveis
+      const nomeResponsavel = `${faker.person.firstName(sexoResp)} ${faker.person.lastName(sexoResp)}`;
       const responsavel = await prisma.responsavel.create({
         data: {
           cpf: somenteDigitos(faker.helpers.replaceSymbols('###########')),
           nomeCompleto: nomeResponsavel,
-          sexo: faker.helpers.arrayElement([Sexo.MASCULINO, Sexo.FEMININO]),
+          sexo: sexoResp === 'male' ? Sexo.MASCULINO : Sexo.FEMININO,
           email: faker.internet.email({ firstName: nomeResponsavel.split(' ')[0] }).toLowerCase(),
           telefone: somenteDigitos(faker.helpers.replaceSymbols('21#########')),
           bairro: faker.helpers.arrayElement(bairrosBase),
@@ -371,7 +357,6 @@ async function main() {
         },
       });
 
-      // Estudo de Caso (1 registro, com o educador da turma como participante)
       await prisma.estudoCaso.create({
         data: {
           estudanteId: estudante.id,
@@ -381,49 +366,59 @@ async function main() {
         },
       });
 
-      // Relatório Semestral (1º semestre de 2026) + Metas de Desenvolvimento + Pibis
-      const relatorio = await prisma.relatorioSemestral.create({
-        data: {
-          estudanteId: estudante.id,
-          semestre: Semestre.PRIMEIRO,
-          ano: 2026,
-          parecerGlobalDesenvolvimento: faker.lorem.paragraph(),
-          status: faker.helpers.arrayElement([StatusRelatorio.EM_REVISAO, StatusRelatorio.CONCLUIDO]),
-          dataFechamento: faker.date.recent({ days: 30 }),
-        },
-      });
+      // Configuração semestral retroativa e atual para alimentar os comparativos do gráfico de teia (radar)
+      const configuracoesSemestrais = [
+        { semestre: Semestre.SEGUNDO, ano: 2025 },
+        { semestre: Semestre.PRIMEIRO, ano: 2026 }
+      ];
 
-      for (const eixo of eixos) {
-        const scoreFinal = gerarNotaAleatoria(0, 5);
-        const meta = await prisma.metaDesenvolvimento.create({
+      for (const config of configuracoesSemestrais) {
+        const relatorio = await prisma.relatorioSemestral.create({
           data: {
-            relatorioSemestralId: relatorio.id,
-            descricao: faker.lorem.sentence({ min: 6, max: 12 }),
-            eixoDesenvolvimento: eixo,
-            scoreFinal,
-            parecer: faker.lorem.sentence({ min: 8, max: 14 }),
+            estudanteId: estudante.id,
+            semestre: config.semestre,
+            ano: config.ano,
+            parecerGlobalDesenvolvimento: faker.lorem.paragraph(),
+            status: StatusRelatorio.CONCLUIDO,
+            dataFechamento: faker.date.recent({ days: 30 }),
           },
         });
 
-        for (const bimestre of [Bimestre.PRIMEIRO, Bimestre.SEGUNDO]) {
-          await prisma.pibi.create({
+        for (const eixo of eixos) {
+          const scoreFinal = gerarNotaAleatoria(0, 5);
+          const meta = await prisma.metaDesenvolvimento.create({
             data: {
-              metaId: meta.id,
-              bimestre,
-              status: faker.helpers.arrayElement([StatusRelatorio.EM_REVISAO, StatusRelatorio.CONCLUIDO]),
-              scoreAtingibilidade: gerarNotaAleatoria(0, 5),
-              parecerEvolutivo: faker.lorem.sentence({ min: 8, max: 14 }),
+              relatorioSemestralId: relatorio.id,
+              descricao: faker.lorem.sentence({ min: 6, max: 12 }),
+              eixoDesenvolvimento: eixo,
+              scoreFinal,
+              parecer: faker.lorem.sentence({ min: 8, max: 14 }),
             },
           });
+
+          for (const bimestre of [Bimestre.PRIMEIRO, Bimestre.SEGUNDO]) {
+            await prisma.pibi.create({
+              data: {
+                metaId: meta.id,
+                bimestre,
+                status: StatusRelatorio.CONCLUIDO,
+                scoreAtingibilidade: gerarNotaAleatoria(0, 5),
+                parecerEvolutivo: faker.lorem.sentence({ min: 8, max: 14 }),
+              },
+            });
+          }
         }
       }
 
-      // Histórico de registros diários (dias úteis retroativos)
+      // Histórico de 365 dias úteis gerado como preenchido (Semestre Atual e Anterior)
       for (let i = 1; i <= DIAS_DE_HISTORICO; i++) {
         const dataRegistro = new Date(hoje);
         dataRegistro.setUTCDate(hoje.getUTCDate() - i);
         const diaDaSemana = dataRegistro.getUTCDay();
         if (diaDaSemana === 0 || diaDaSemana === 6) continue;
+
+        const diaSemanaEnum = jsDayToDiaSemana[diaDaSemana];
+        const aulasDoDia = aulasDaTurma.filter((au) => au.diaSemana === diaSemanaEnum);
 
         registrosDiariosMock.push({
           estudanteId: estudante.id,
@@ -439,24 +434,21 @@ async function main() {
           anotacoes: 'Registro diário gerado automaticamente via seed script.',
         });
 
-        const diaSemanaEnum = jsDayToDiaSemana[diaDaSemana];
-        const aulaDoDia = diaSemanaEnum ? aulasDaTurma.find((au) => au.diaSemana === diaSemanaEnum) : undefined;
-
-        if (aulaDoDia) {
+        for (const aula of aulasDoDia) {
           let status: StatusAula = StatusAula.REALIZADA;
           let estevePresente = faker.number.float({ min: 0, max: 1 }) > 0.12;
 
-          if (i % 25 === 0) {
+          if (i % 50 === 0) {
             status = StatusAula.FERIADO;
             estevePresente = false;
-          } else if (i % 40 === 0) {
+          } else if (i % 80 === 0) {
             status = StatusAula.FALTA_EDUCADOR;
             estevePresente = false;
           }
 
           registrosAulasMock.push({
             estudanteId: estudante.id,
-            aulaId: aulaDoDia.id,
+            aulaId: aula.id,
             data: dataRegistro,
             status_aula: status,
             presenca: estevePresente,
@@ -466,25 +458,29 @@ async function main() {
         }
       }
 
-      // Registros pendentes (hoje e ontem, ainda não preenchidos)
+      // LÓGICA DE VARIABILIDADE CONCENTRADA EXCLUSIVAMENTE EM HOJE E ONTEM
       const dataOntem = new Date(hoje);
       dataOntem.setUTCDate(hoje.getUTCDate() - 1);
+      
       for (const dataPendente of [dataOntem, hoje]) {
         const diaDaSemana = dataPendente.getUTCDay();
         if (diaDaSemana === 0 || diaDaSemana === 6) continue;
 
-        registrosDiariosMock.push({
-          estudanteId: estudante.id,
-          educadorId: educador.id,
-          data: dataPendente,
-          scoreComportamento: 0,
-          scoreInteracao: 0,
-          scoreFoco: 0,
-          scoreAutonomia: 0,
-          statusAlimentacao: 0,
-          usoBanheiro: 0,
-          preenchido: false,
-        });
+        // O teste estocástico baseado na taxa de cada professor roda apenas aqui nas últimas 48h úteis
+        if (faker.number.float({ min: 0, max: 1 }) <= taxaEsquecimentoRegistros) {
+          registrosDiariosMock.push({
+            estudanteId: estudante.id,
+            educadorId: educador.id,
+            data: dataPendente,
+            scoreComportamento: 0,
+            scoreInteracao: 0,
+            scoreFoco: 0,
+            scoreAutonomia: 0,
+            statusAlimentacao: 0,
+            usoBanheiro: 0,
+            preenchido: false,
+          });
+        }
       }
     }
   }
@@ -497,10 +493,9 @@ async function main() {
   console.log(` ${registrosAulasMock.length} registros de aula criados.`);
 
   // ==========================================
-  // EVENTOS DE CALENDÁRIO (Aulas com isEvento = true)
+  // EVENTOS DE CALENDÁRIO
   // ==========================================
   console.log('\nCriando eventos de calendário...');
-
   const tiposEvento = [
     { titulo: 'Reunião de Pais e Mestres', descricao: 'Encontro geral para alinhamento pedagógico do bimestre.' },
     { titulo: 'Passeio ao Museu de Ciências', descricao: 'Atividade extracurricular com foco em estímulo sensorial.' },
@@ -509,7 +504,7 @@ async function main() {
     { titulo: 'Festa Junina da Escola', descricao: 'Evento comemorativo aberto à comunidade escolar.' },
   ];
 
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 15; i++) {
     const educadorDoEvento = faker.helpers.arrayElement(todosEducadores);
     const tipoEvento = faker.helpers.arrayElement(tiposEvento);
     const dataEvento = faker.date.soon({ days: 60, refDate: hoje });
@@ -528,7 +523,6 @@ async function main() {
 
   await prisma.aula.createMany({ data: eventosMock });
   console.log(` ${eventosMock.length} eventos de calendário criados.`);
-
   console.log('\n Seed concluído com sucesso!');
   console.log('─────────────────────────────────────────');
   console.log(' COORDENAÇÃO:');

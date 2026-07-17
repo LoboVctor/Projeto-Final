@@ -2,13 +2,13 @@ import { Component, input, effect, ElementRef, ViewChild, OnDestroy, inject, sig
 import { DecimalPipe, NgClass, DatePipe } from '@angular/common';
 import { Chart, registerables } from 'chart.js';
 import { TurmasService } from '../../../../nucleo/services/turmas.service';
-
+import { BlocoDashboardComponent } from '../../../estudante/components/bloco-dashboards/bloco-dashboard.component';
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-kpis-turma',
   standalone: true,
-  imports: [DecimalPipe, NgClass, DatePipe],
+  imports: [DecimalPipe, NgClass, DatePipe, BlocoDashboardComponent],
   templateUrl: './kpis-turma.component.html',
   styleUrls: ['./kpis-turma.component.css']
 })
@@ -113,6 +113,22 @@ export class KpisTurmaComponent implements OnDestroy {
   categoriaSelecionada = signal<string | null>(null);
   semanaAtualVisualizada = signal<Date>(this.obterInicioSemanaAtual());
   private historicoChart: Chart | null = null;
+
+  private descricoesCategorias: Record<string, string> = {
+    'Alimentação': 'Avalia a aceitação alimentar do estudante, sua independência ao comer e a presença de eventuais restrições ou seletividades durante as refeições.',
+    'Banheiro': 'Acompanha o nível de independência para usar o banheiro, solicitar ajuda quando necessário e realizar sua própria higiene pessoal.',
+    'Autonomia': 'Mede a capacidade do estudante de realizar tarefas diárias práticas e de seguir a rotina escolar com o mínimo de suporte físico ou verbal.',
+    'Comportamento': 'Observa a regulação emocional perante frustrações, a presença de comportamentos atípicos ou crises e a adequação às regras do ambiente.',
+    'Interação Social': 'Avalia a iniciativa para brincar, a capacidade de compartilhar, o contato visual e a comunicação estabelecida com colegas e educadores.',
+    'Foco nas Atividades': 'Mede o tempo de atenção sustentada, o engajamento na tarefa em execução e a capacidade de concluir as atividades pedagógicas propostas.'
+  };
+
+  obterDescricaoCategoria(categoria: string | null): string {
+    if (!categoria || !this.descricoesCategorias[categoria]) {
+      return 'Acompanhamento de desenvolvimento da rotina escolar.';
+    }
+    return this.descricoesCategorias[categoria];
+  }
 
   private obterInicioSemanaAtual(): Date {
     const data = new Date();
@@ -232,13 +248,12 @@ export class KpisTurmaComponent implements OnDestroy {
           {
             label: 'Máximo (5)',
             data: trackBackground,
-            backgroundColor: '#f3f4f6',
+            backgroundColor: '#fef3c7',
             borderRadius: 20,
             borderSkipped: false,
             barThickness: 16,
             grouped: false,
             order: 2,
-            hoverBackgroundColor: '#f3f4f6'
           }
         ]
       },

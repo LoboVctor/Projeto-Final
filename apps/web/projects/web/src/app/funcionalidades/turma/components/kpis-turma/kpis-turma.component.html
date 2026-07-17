@@ -44,8 +44,8 @@
         <p class="text-xs font-medium text-gray-400 text-center mb-2">Desempenho geral da turma</p>
         
         <div class="flex items-center text-xs font-semibold" [ngClass]="dados.mediaGeral.variacao >= 0 ? 'text-green-600' : 'text-red-500'">
-          <span class="text-base font-black mr-1 leading-none">{{ dados.mediaGeral.variacao >= 0 ? '↑' : '↓' }}</span>
-          <span>{{ dados.mediaGeral.variacao | number:'1.1-1' }} em relação ao período anterior</span>
+          <span class="text-xl font-black mr-1 leading-none">{{ dados.mediaGeral.variacao >= 0 ? '↑' : '↓' }}</span>
+          <span>{{ dados.mediaGeral.variacao >= 0 ? '+' : '' }}{{ dados.mediaGeral.variacao | number:'1.1-1' }} em relação ao período anterior</span>
         </div>
       </div>
 
@@ -81,12 +81,11 @@
           </div>
         </div>
 
-
         <p class="text-xs font-medium text-gray-400 text-center mb-2">Frequência geral da turma</p>
         
         <div class="flex items-center text-xs font-semibold" [ngClass]="dados.frequencia.variacao >= 0 ? 'text-green-600' : 'text-red-500'">
-          <span class="text-base font-black mr-1 leading-none">{{ dados.frequencia.variacao >= 0 ? '↑' : '↓' }}</span>
-          <span>{{ dados.frequencia.variacao >= 0 ? '+' : '' }}{{ dados.frequencia.variacao | number:'1.1-1' }}% em relação ao período anterior</span>
+          <span class="text-xl font-black mr-1 leading-none">{{ dados.frequencia.variacao >= 0 ? '↑' : '↓' }}</span>
+          <span>{{ dados.frequencia.variacao >= 0 ? '+' : '' }}{{ dados.frequencia.variacao | number:'1.1-1' }} em relação ao período anterior</span>
         </div>
 
       </div>
@@ -119,9 +118,9 @@
           </p>
 
           <div class="mt-auto flex items-end justify-between w-full gap-2 pt-3">
-            <div class="flex items-center text-[10px] font-semibold" [ngClass]="dados.categorias[item.key]?.variacao >= 0 ? 'text-green-600' : 'text-red-500'">
-              <span class="text-xs font-black mr-1 leading-none mt-[1px]">{{ dados.categorias[item.key]?.variacao >= 0 ? '↑' : '↓' }}</span>
-              <span class="line-clamp-2 leading-tight">{{ dados.categorias[item.key]?.variacao | number:'1.1-1' }} em relação ao período anterior</span>
+            <div class="flex items-center text-xs font-semibold" [ngClass]="dados.categorias[item.key]?.variacao >= 0 ? 'text-green-600' : 'text-red-500'">
+              <span class="text-xl font-black mr-1 leading-none">{{ dados.categorias[item.key]?.variacao >= 0 ? '↑' : '↓' }}</span>
+              <span class="line-clamp-2 leading-tight">{{ dados.categorias[item.key]?.variacao >= 0 ? '+' : '' }}{{ dados.categorias[item.key]?.variacao | number:'1.1-1' }} em relação ao período anterior</span>
             </div>
             
             <button (click)="abrirDetalheCategoria(item.title)"
@@ -149,7 +148,7 @@
     
         <div class="flex items-center justify-between p-4 border-b border-gray-100 bg-slate-50 shrink-0">
           <div>
-            <h3 class="text-sm font-bold font-['Sora'] text-slate-700 m-0">Evolução Histórica: {{ categoriaSelecionada() }}</h3>
+            <h3 class="text-sm font-bold font-sora text-slate-700 m-0">Evolução Histórica: {{ categoriaSelecionada() }}</h3>
             <p class="text-xs text-slate-500 mt-1 m-0">Acompanhamento dos indicadores do período</p>
           </div>
           <button (click)="fecharDetalheCategoria()"
@@ -161,14 +160,30 @@
         </div>
     
         <div class="flex-1 bg-slate-50/50 p-6 flex flex-col overflow-y-auto">
+          
+          <!-- Card Informativo do Eixo de Desenvolvimento Replicado -->
+          <div class="bg-purple-50/80 border border-purple-100 rounded-xl p-4 mb-6 flex items-start space-x-3 shrink-0 shadow-sm">
+            <div class="mt-0.5 text-elo-roxo-principal shrink-0">
+              <svg xmlns="http://www.w3.org/2000/xl" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </div>
+            <div class="flex-1 flex items-center">
+          <p class="text-sm text-purple-950 leading-relaxed m-0 font-medium">
+            {{ obterDescricaoCategoria(categoriaSelecionada()) }}
+          </p>
+        </div>
+          </div>
+
           <div class="flex justify-center mb-8 shrink-0">
               <div class="flex items-center justify-between bg-white border border-gray-200 rounded-xl p-1 shadow-sm w-72">
                 <button (click)="navegarSemana(-1)" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-purple-50 hover:text-elo-roxo-principal transition-colors cursor-pointer">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
                 </button>
                 <div class="flex flex-col items-center">
-                  <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Semana atual</span>
-                  <span class="text-sm font-bold text-gray-700 font-nunito">{{ semanaAtualVisualizada() | date:'dd/MM' }} a {{ semanaAtualFim() | date:'dd/MM' }}</span>
+                  <span class="text-sm font-bold text-elo-roxo-principal tracking-wide font-sora">{{ semanaAtualVisualizada() | date:'dd/MM' }} a {{ semanaAtualFim() | date:'dd/MM' }}</span>
                 </div>
                 <button (click)="navegarSemana(1)" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-purple-50 hover:text-elo-roxo-principal transition-colors cursor-pointer" [disabled]="!podeNavegarProximaSemana()">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
