@@ -40,7 +40,6 @@ const prisma = new PrismaClient({ adapter });
 const SALT_ROUNDS = 12;
 const NUM_PROFESSORES = 12;
 const ALUNOS_POR_TURMA = 7;
-// Garantia de 1 ano de histórico para o gráfico de teia (radar) comparar os semestres
 const DIAS_DE_HISTORICO = 365; 
 const URL_LAUDO_PADRAO = 'http://localhost:3000/api/v1/uploads/laudos/1781883929415-924710107.pdf';
 
@@ -195,11 +194,9 @@ async function main() {
 
   for (let p = 1; p <= NUM_PROFESSORES; p++) {
     const sexoProfessor = faker.helpers.arrayElement(['male', 'female'] as const);
-    // Correção: Garantia de nomes sem títulos/prefixos para os professores
     const nomeProfessor = `${faker.person.firstName(sexoProfessor)} ${faker.person.lastName(sexoProfessor)}`;
     const cpfProfessor = faker.helpers.replaceSymbols('###.###.###-##');
 
-    // Distribuição assimétrica de pendências focada estritamente nas últimas 48h úteis
     const taxaEsquecimentoRegistros = faker.number.float({ min: 0.1, max: 0.9 });
 
     const educador = await prisma.educador.create({
@@ -275,7 +272,6 @@ async function main() {
 
     for (let a = 1; a <= ALUNOS_POR_TURMA; a++) {
       const sexoEstudante = faker.helpers.arrayElement([Sexo.MASCULINO, Sexo.FEMININO]);
-      // Correção: Garantia de nomes sem títulos/prefixos para os estudantes
       const nomeCompleto = `${faker.person.firstName(sexoEstudante === Sexo.MASCULINO ? 'male' : 'female')} ${faker.person.lastName()}`;
       const dataNascimento = faker.date.birthdate({ min: 4, max: 10, mode: 'age' });
       const cpfEstudante = faker.helpers.replaceSymbols('###.###.###-##');
@@ -334,7 +330,6 @@ async function main() {
       }
 
       const sexoResp = faker.helpers.arrayElement(['male', 'female'] as const);
-      // Correção: Garantia de nomes sem títulos/prefixos para os responsáveis
       const nomeResponsavel = `${faker.person.firstName(sexoResp)} ${faker.person.lastName(sexoResp)}`;
       const responsavel = await prisma.responsavel.create({
         data: {
@@ -366,7 +361,6 @@ async function main() {
         },
       });
 
-      // Configuração semestral retroativa e atual para alimentar os comparativos do gráfico de teia (radar)
       const configuracoesSemestrais = [
         { semestre: Semestre.SEGUNDO, ano: 2025 },
         { semestre: Semestre.PRIMEIRO, ano: 2026 }
@@ -411,7 +405,7 @@ async function main() {
       }
 
       // Histórico de 365 dias úteis gerado como preenchido (Semestre Atual e Anterior)
-      for (let i = 1; i <= DIAS_DE_HISTORICO; i++) {
+      for (let i = 2; i <= DIAS_DE_HISTORICO; i++) {
         const dataRegistro = new Date(hoje);
         dataRegistro.setUTCDate(hoje.getUTCDate() - i);
         const diaDaSemana = dataRegistro.getUTCDay();
@@ -458,7 +452,6 @@ async function main() {
         }
       }
 
-      // LÓGICA DE VARIABILIDADE CONCENTRADA EXCLUSIVAMENTE EM HOJE E ONTEM
       const dataOntem = new Date(hoje);
       dataOntem.setUTCDate(hoje.getUTCDate() - 1);
       
@@ -466,21 +459,20 @@ async function main() {
         const diaDaSemana = dataPendente.getUTCDay();
         if (diaDaSemana === 0 || diaDaSemana === 6) continue;
 
-        // O teste estocástico baseado na taxa de cada professor roda apenas aqui nas últimas 48h úteis
-        if (faker.number.float({ min: 0, max: 1 }) <= taxaEsquecimentoRegistros) {
-          registrosDiariosMock.push({
-            estudanteId: estudante.id,
-            educadorId: educador.id,
-            data: dataPendente,
-            scoreComportamento: 0,
-            scoreInteracao: 0,
-            scoreFoco: 0,
-            scoreAutonomia: 0,
-            statusAlimentacao: 0,
-            usoBanheiro: 0,
-            preenchido: false,
-          });
-        }
+        const seEsqueceu: boolean = faker.number.float({ min: 0, max: 1 }) <= taxaEsquecimentoRegistros;
+        registrosDiariosMock.push({
+          estudanteId: estudante.id,
+          educadorId: educador.id,
+          data: dataPendente,
+          scoreComportamento: seEsqueceu ? 0 : gerarNotaAleatoria(3, 5),
+          scoreInteracao: seEsqueceu ? 0 : gerarNotaAleatoria(2, 5),
+          scoreFoco: seEsqueceu ? 0 : gerarNotaAleatoria(3, 5),
+          scoreAutonomia: seEsqueceu ? 0 : gerarNotaAleatoria(2, 5),
+          statusAlimentacao: seEsqueceu ? 0 : gerarNotaAleatoria(4, 5),
+          usoBanheiro: seEsqueceu ? 0 : gerarNotaAleatoria(3, 5),
+          preenchido: !seEsqueceu, 
+          anotacoes: seEsqueceu ? null : 'Registro recente preenchido.',
+        });
       }
     }
   }
