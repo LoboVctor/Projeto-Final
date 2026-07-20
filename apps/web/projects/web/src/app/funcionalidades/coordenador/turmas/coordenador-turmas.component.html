@@ -3,17 +3,20 @@
     <!-- Cabeçalho -->
     <div class="main-header">
       <div class="main-title-block">
-        <h1 class="main-title">
-          {{ turmaSelecionada() ? turmaSelecionada()!.nome : 'Turmas' }}
+        <h1 class="main-title">Painel da Turma
+          <span class="text-xl sm:text-2xl font-semibold text-[#4A248A]/60"> · Coordenador</span>
         </h1>
         @if (turmaSelecionada()) {
+          <span class="text-base font-semibold text-[#4A248A] mt-0.5">
+            {{ nomeTurmaExibicao(turmaSelecionada()!) }}
+          </span>
           <span class="turma-badge">
             {{ turmaSelecionada()!.anoLetivo }} · {{ turmaSelecionada()!.turno | slice: 0 : 3 }}
           </span>
         }
 
         @if (turmas().length > 0) {
-          <div class="turma-selector-dropdown mt-2 sm:mt-0 relative max-w-xs w-full sm:w-64">
+          <div class="turma-selector-dropdown mt-2 sm:mt-0 relative max-w-md w-full sm:w-auto min-w-[200px]">
             <select
               class="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[#6C3CC9] focus:border-transparent transition-all cursor-pointer hover:bg-gray-50 hover:border-gray-300"
               (change)="onTurmaSelecionadaChange($event)"
@@ -22,7 +25,7 @@
               <option value="" disabled [selected]="!turmaSelecionada()">Selecione uma turma</option>
               @for (turma of turmas(); track turma.id) {
                 <option [value]="turma.id" [selected]="turmaSelecionada()?.id === turma.id">
-                  {{ turma.nome }}
+                  {{ nomeTurmaExibicao(turma) }}
                 </option>
               }
             </select>
@@ -46,55 +49,85 @@
     }
 
     @if (!loading() && !error() && turmaSelecionada()) {
-      <div class="big-numbers-row mt-4">
-        <div class="big-number-card">
-          <div class="big-number-icon big-number-icon--purple">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <!-- Big Numbers — padrão visual -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+
+        <!-- Card 1: Total de Alunos (Verde) -->
+        <div class="bg-gradient-to-br from-white via-emerald-50/50 to-emerald-100/40 rounded-2xl shadow-sm hover:shadow-md border border-[#E8E3EF] hover:border-emerald-400/50 py-6 px-5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 group relative overflow-hidden min-h-[120px]">
+          <div class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-emerald-400 opacity-20 blur-2xl pointer-events-none"></div>
+          <div class="w-12 h-12 rounded-2xl bg-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
           </div>
-          <div class="big-number-info">
-            <span class="big-number-label">Total de Alunos</span>
-            <span class="big-number-value" [class.is-loading]="loadingEstudantes()">{{ turmaSelecionada()!._count.estudantes }}</span>
+          <div class="flex flex-col min-w-0">
+            <p class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-1">Total de Alunos</p>
+            @if (loadingEstudantes()) {
+              <span class="text-4xl font-extrabold text-emerald-300 leading-none animate-pulse">—</span>
+            } @else {
+              <span class="text-4xl font-extrabold text-emerald-600 leading-none">{{ turmaSelecionada()!._count.estudantes }}</span>
+            }
           </div>
         </div>
-        <div class="big-number-card">
-          <div class="big-number-icon big-number-icon--blue">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+        <!-- Card 2: Idade Predominante (Azul) -->
+        <div class="bg-gradient-to-br from-white via-blue-50/50 to-blue-100/40 rounded-2xl shadow-sm hover:shadow-md border border-[#E8E3EF] hover:border-blue-400/50 py-6 px-5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 group relative overflow-hidden min-h-[120px]">
+          <div class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-blue-400 opacity-20 blur-2xl pointer-events-none"></div>
+          <div class="w-12 h-12 rounded-2xl bg-blue-100/80 flex items-center justify-center text-blue-600 shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/>
               <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
           </div>
-          <div class="big-number-info">
-            <span class="big-number-label">Idade Predominante</span>
-            <span class="big-number-value" [class.is-loading]="loadingEstudantes()">
-              @if (metricas()?.idadePredominante !== null && metricas()?.idadePredominante !== undefined) { {{ metricas()!.idadePredominante }} anos } @else { — }
-            </span>
+          <div class="flex flex-col min-w-0">
+            <p class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-1">Idade Predominante</p>
+            @if (loadingEstudantes()) {
+              <span class="text-4xl font-extrabold text-blue-300 leading-none animate-pulse">—</span>
+            } @else {
+              <span class="text-4xl font-extrabold text-blue-600 leading-none">
+                @if (metricas()?.idadePredominante !== null && metricas()?.idadePredominante !== undefined) { {{ metricas()!.idadePredominante }}<span class="text-xl font-black uppercase tracking-wider ml-1">ANOS</span> } @else { — }
+              </span>
+            }
           </div>
         </div>
-        <div class="big-number-card">
-          <div class="big-number-icon big-number-icon--amber">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+        <!-- Card 3: Diagnóstico Principal (Âmbar) -->
+        <div class="bg-gradient-to-br from-white via-amber-50/50 to-amber-100/40 rounded-2xl shadow-sm hover:shadow-md border border-[#E8E3EF] hover:border-amber-400/50 py-6 px-5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 group relative overflow-hidden min-h-[120px]">
+          <div class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-amber-400 opacity-20 blur-2xl pointer-events-none"></div>
+          <div class="w-12 h-12 rounded-2xl bg-amber-100/80 flex items-center justify-center text-amber-600 shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
           </div>
-          <div class="big-number-info">
-            <span class="big-number-label">Diagnóstico Principal</span>
-            <span class="big-number-value big-number-value--sm" [class.is-loading]="loadingEstudantes()">{{ diagnosticoPrincipalLabel() }}</span>
+          <div class="flex flex-col min-w-0">
+            <p class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-1">Diagnóstico Principal</p>
+            @if (loadingEstudantes()) {
+              <span class="text-4xl font-extrabold text-amber-300 leading-none animate-pulse">—</span>
+            } @else {
+              <span class="text-2xl font-extrabold text-amber-600 leading-none">{{ diagnosticoPrincipalLabel() }}</span>
+            }
           </div>
         </div>
-        <div class="big-number-card">
-          <div class="big-number-icon big-number-icon--green">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+        <!-- Card 4: Comunicação Principal (Roxo) -->
+        <div class="bg-gradient-to-br from-white via-purple-50/50 to-violet-100/40 rounded-2xl shadow-sm hover:shadow-md border border-[#E8E3EF] hover:border-[#6C3CC9]/40 py-6 px-5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 group relative overflow-hidden min-h-[120px]">
+          <div class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-purple-500 opacity-15 blur-2xl pointer-events-none"></div>
+          <div class="w-12 h-12 rounded-2xl bg-purple-100/80 flex items-center justify-center text-[#6C3CC9] shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
           </div>
-          <div class="big-number-info">
-            <span class="big-number-label">Comunicação Principal</span>
-            <span class="big-number-value big-number-value--sm" [class.is-loading]="loadingEstudantes()">{{ comunicacaoPrincipalLabel() }}</span>
+          <div class="flex flex-col min-w-0">
+            <p class="text-xs font-bold text-[#686177] uppercase tracking-wider mb-1">Comunicação Principal</p>
+            @if (loadingEstudantes()) {
+              <span class="text-4xl font-extrabold text-purple-300 leading-none animate-pulse">—</span>
+            } @else {
+              <span class="text-2xl font-extrabold text-[#6C3CC9] leading-none">{{ comunicacaoPrincipalLabel() }}</span>
+            }
           </div>
         </div>
+
       </div>
     }
 
@@ -196,7 +229,7 @@
                             
                             <!-- Coluna: Turma -->
                             <td class="px-6 py-3 text-sm text-gray-600 font-medium">
-                              {{ turmaSelecionada()?.nome }}
+                              {{ turmaSelecionada() ? nomeTurmaExibicao(turmaSelecionada()!) : '' }}
                             </td>
                             
                             <!-- Coluna: Diagnóstico -->

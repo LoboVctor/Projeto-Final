@@ -85,7 +85,7 @@ export function buildAlunoModalData(
     nome: aluno.nomeCompleto,
     turma: buildTurmaLabel(aluno.turmas),
     diagnostico: buildDiagnosticoLabel(aluno.diagnosticos),
-    nivelSuporte: 'Nivel 1 de Suporte',
+    nivelSuporte: 'Nível 1 de Suporte',
     foto: buildFotoUrl(aluno.nomeCompleto, aluno.foto, baseUrl),
   };
 }

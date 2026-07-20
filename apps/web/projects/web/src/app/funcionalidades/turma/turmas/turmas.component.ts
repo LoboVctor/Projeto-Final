@@ -205,7 +205,19 @@ export class TurmasComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Exibe apenas primeiro nome + último sobrenome, sem "..." — igual ao comportamento da Home */
+  nomeTurmaExibicao(turma: import('../../../nucleo/services/turmas.service').TurmaResumo): string {
+    // Remove qualquer sufixo de etapa já existente no nome (evita duplicação), inclusive com reticências
+    const nomeBase = turma.nome
+      .replace(/\s*[-–]\s*(etapa_?\d+|etapa\s*\d+)[.\s]*$/i, '')
+      .trim();
+    if (!turma.etapa) return nomeBase || turma.nome;
+    // Formata o enum ETAPA_1 → Etapa 1, ou mantém se já vier formatado
+    const etapaLabel = turma.etapa
+      .replace(/^ETAPA_?(\d+)$/i, 'Etapa $1')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    return `${nomeBase} - ${etapaLabel}`;
+  }
+
   nomeCurtoAluno(nomeCompleto: string): string {
     if (!nomeCompleto) return '';
     const partes = nomeCompleto.trim().split(/\s+/);

@@ -210,15 +210,33 @@ export class AlunoModalComponent implements OnChanges {
     return etapaLimpa.charAt(0).toUpperCase() + etapaLimpa.slice(1).toLowerCase();
   }
 
+  getNomeTurmaLimpo(): string {
+    const nomeBruto = this.visaoGeralData()?.turma?.nome || this.aluno?.turma || '';
+    const etapaBruta = this.visaoGeralData()?.turma?.etapa;
+    
+    const nomeBase = nomeBruto
+      .replace(/\s*[-–]\s*(etapa_?\d+|etapa\s*\d+)[.\s]*$/i, '')
+      .trim();
+
+    if (!etapaBruta) {
+      const match = nomeBruto.match(/[-–]\s*(etapa_?\d+|etapa\s*\d+)[.\s]*$/i);
+      if (match) {
+        return `${nomeBase} - ${this.formatarEtapa(match[1])}`;
+      }
+      return nomeBruto;
+    }
+    
+    return `${nomeBase} - ${this.formatarEtapa(etapaBruta)}`;
+  }
+
   forceReloadVisaoGeral(): void {
     this.visaoGeralData.set(null);
-    this.houveModificacao.set(true); // Registra que houve uma atualização a ser repassada para o parent
+    this.houveModificacao.set(true); 
     this.carregarVisaoGeral();
     if (this.aluno) {
       this.estudantesService.getSaude(this.aluno.id).subscribe({
         next: (saude) => {
           if (this.aluno && saude.laudos && saude.laudos.length > 0) {
-            // Assume the first one or you can sort by createdAt descending
             const laudosOrdenados = [...saude.laudos].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
             const latestDiagnostico = laudosOrdenados[0]?.diagnostico;
             this.aluno.diagnostico = latestDiagnostico || 'Sem diagnóstico';
