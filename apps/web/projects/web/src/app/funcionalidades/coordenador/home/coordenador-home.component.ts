@@ -250,7 +250,7 @@ export class CoordenadorHomeComponent implements OnInit {
 
   irParaCalendarioDoEvento(evento: EventoCalendario): void {
     const dataStr = evento.dataEvento.substring(0, 10);
-    this.router.navigate(['/calendario'], {
+    this.router.navigate(['coordenador/calendario'], {
       queryParams: { data: dataStr, eventoId: evento.id },
     });
   }

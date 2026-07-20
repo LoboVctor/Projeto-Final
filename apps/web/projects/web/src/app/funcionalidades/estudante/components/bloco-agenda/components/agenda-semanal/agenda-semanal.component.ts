@@ -14,6 +14,14 @@ function textoInvalido(valor: string): boolean {
   return false;
 }
 
+function getDiaUtilValido(date: Date): Date {
+  const adjusted = new Date(date);
+  adjusted.setHours(0, 0, 0, 0); 
+  if (adjusted.getDay() === 0) adjusted.setDate(adjusted.getDate() - 2); 
+  if (adjusted.getDay() === 6) adjusted.setDate(adjusted.getDate() - 1); 
+  return adjusted;
+}
+
 @Component({
   selector: 'app-agenda-semanal',
   standalone: true,
@@ -27,19 +35,51 @@ export class AgendaSemanalComponent implements OnInit {
   carregando = signal(true);
   agenda = signal<DiaAgenda[]>([]);
 
-  dataBase = signal<Date>(new Date());
+  dataBase = signal<Date>(getDiaUtilValido(new Date()));
   visaoAtiva = signal<'dia' | 'semana'>('semana');
 
   agendaFiltrada = computed(() => {
     const visao = this.visaoAtiva();
     const dados = this.agenda();
     
+    const diasUteis = dados.filter((d: DiaAgenda) => {
+      const [ano, mes, dia] = d.data.split('-').map(Number);
+      const dataObj = new Date(ano!, mes! - 1, dia!);
+      const diaSemana = dataObj.getDay();
+      return diaSemana >= 1 && diaSemana <= 5;
+    });
+
     if (visao === 'dia') {
       const baseIso = this.formatarDataLocal(this.dataBase());
-      return dados.filter((d: DiaAgenda) => d.data === baseIso);
+      return diasUteis.filter((d: DiaAgenda) => d.data === baseIso);
     }
     
-    return dados;
+    return diasUteis;
+  });
+
+  podeNavegarProximo = computed<boolean>(() => {
+    const dataAtual = this.dataBase();
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    if (this.visaoAtiva() === 'dia') {
+      const amanha = new Date(dataAtual);
+      do {
+        amanha.setDate(amanha.getDate() + 1);
+      } while (amanha.getDay() === 0 || amanha.getDay() === 6);
+      
+      return amanha <= hoje;
+    } else {
+      const inicioSemanaAtual = new Date(dataAtual);
+      inicioSemanaAtual.setDate(inicioSemanaAtual.getDate() - inicioSemanaAtual.getDay());
+      inicioSemanaAtual.setHours(0, 0, 0, 0);
+      
+      const inicioSemanaHoje = new Date(hoje);
+      inicioSemanaHoje.setDate(inicioSemanaHoje.getDate() - inicioSemanaHoje.getDay());
+      inicioSemanaHoje.setHours(0, 0, 0, 0);
+      
+      return inicioSemanaAtual < inicioSemanaHoje;
+    }
   });
 
   ngOnInit() {
@@ -69,15 +109,24 @@ export class AgendaSemanalComponent implements OnInit {
     });
   }
 
-  /** Avança na direção correta de acordo com o modo de visualização ativo */
   navegar(direcao: number) {
-    const novaData = new Date(this.dataBase());
+    if (direcao === 1 && !this.podeNavegarProximo()) return;
+
+    let novaData = new Date(this.dataBase());
     const visao = this.visaoAtiva();
 
     if (visao === 'dia') {
-      novaData.setDate(novaData.getDate() + direcao);
+      do {
+        novaData.setDate(novaData.getDate() + direcao);
+      } while (novaData.getDay() === 0 || novaData.getDay() === 6);
     } else {
       novaData.setDate(novaData.getDate() + direcao * 7);
+    }
+
+    const hoje = new Date();
+    hoje.setHours(23, 59, 59, 999);
+    if (novaData > hoje) {
+      novaData = getDiaUtilValido(new Date());
     }
 
     this.dataBase.set(novaData);
@@ -85,7 +134,7 @@ export class AgendaSemanalComponent implements OnInit {
   }
 
   irParaHoje() {
-    this.dataBase.set(new Date());
+    this.dataBase.set(getDiaUtilValido(new Date()));
     this.carregarAgenda();
   }
 
@@ -94,7 +143,6 @@ export class AgendaSemanalComponent implements OnInit {
     this.carregarAgenda();
   }
 
-  /** Formata a data no padrão local (YYYY-MM-DD) sem conversão UTC */
   formatarDataLocal(date: Date): string {
     const ano = date.getFullYear();
     const mes = String(date.getMonth() + 1).padStart(2, '0');
@@ -102,7 +150,6 @@ export class AgendaSemanalComponent implements OnInit {
     return `${ano}-${mes}-${dia}`;
   }
 
-  // --- Lógica do Modal Adicionar Aula ---
   private readonly authService = inject(AuthService);
   private readonly http = inject(HttpClient);
   private readonly baseUrl = inject(API_BASE_URL);
@@ -131,9 +178,7 @@ export class AgendaSemanalComponent implements OnInit {
     return fim <= inicio;
   });
 
-  formAulaInvalido = computed(() =>
-    this.nomeAulaInvalido() || this.horarioInvalido()
-  );
+  formAulaInvalido = computed(() => this.nomeAulaInvalido() || this.horarioInvalido());
 
   abrirModalAdicionarAula() {
     this.modalAdicionarAberto.set(true);
@@ -174,18 +219,16 @@ export class AgendaSemanalComponent implements OnInit {
       return;
     }
 
-    // Validar horário duplicado: checar se já existe aula no mesmo dia com sobreposicão
     const inicio = this.novoHorarioInicio();
     const fim = this.novoHorarioFim();
-
     const diaSelecionado = this.novoDiaSemana();
     const diasAgenda = this.agenda();
     const diaEncontrado = diasAgenda.find((d: DiaAgenda) => d.diaSemana === diaSelecionado);
+    
     if (diaEncontrado && diaEncontrado.eventos && diaEncontrado.eventos.length > 0) {
       const conflito = diaEncontrado.eventos.find((e: EventoAgenda) => {
         const eInicio = e.horarioInicio ?? '';
         const eFim = e.horarioFim ?? '';
-        // Sobreposicão: novo inicio < fim existente E novo fim > inicio existente
         return inicio < eFim && fim > eInicio;
       });
       if (conflito) {
@@ -214,7 +257,7 @@ export class AgendaSemanalComponent implements OnInit {
           this.aulaSalva.set(true);
           setTimeout(() => {
             this.fecharModalAdicionarAula();
-            this.carregarAgenda(); // recarrega a agenda
+            this.carregarAgenda(); 
           }, 1500);
         },
         error: (err: unknown) => {
@@ -225,4 +268,3 @@ export class AgendaSemanalComponent implements OnInit {
       });
   }
 }
-

@@ -2,7 +2,7 @@
 <div
   class="flex-1 bg-gray-50/50 p-6 md:p-8 rounded-r-3xl overflow-y-auto overflow-x-hidden max-w-full relative w-full modal-scroll-area">
 
-  <!-- Cabeçalho — idêntico ao padrão Visão Geral / Saúde -->
+  <!-- Cabeçalho -->
   <div class="flex items-center justify-between mb-8">
     <div class="flex items-center space-x-3 text-amber-700">
       <div class="bg-amber-50 p-2 rounded-full flex items-center justify-center w-10 h-10 border border-amber-100">
@@ -36,7 +36,6 @@
     </div>
   </div>
 
-  <!-- Erro de carregamento da API -->
   @if (erroCarregamento()) {
   <div class="bg-red-50 border border-red-100 rounded-xl p-6 text-center mb-6">
     <p class="text-red-700 font-medium mb-3">{{ erroCarregamento() }}</p>
@@ -47,7 +46,6 @@
   </div>
   }
 
-  <!-- Erro de Validação Local (UUID inválido) -->
   @if (erroValidacao()) {
   <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start space-x-3 mb-6 shadow-sm">
     <div class="bg-red-100 p-1.5 rounded-full flex-shrink-0 mt-0.5">
@@ -73,7 +71,6 @@
   </div>
   }
 
-  <!-- Estado: Loading inicial (quando não há dados da semana) -->
   @if (loading() && semanaAtual().length === 0) {
   <div class="animate-pulse space-y-4">
     <div class="h-12 bg-gray-200 rounded-xl w-72"></div>
@@ -83,14 +80,10 @@
   }
 
   @if (semanaAtual().length > 0) {
-  <!-- Seletor de data integrado movido para baixo -->
-
-  <!-- Bloco de notas amarelo -->
   <div
     class="agenda-notebook rounded-2xl border border-amber-200 shadow-md overflow-hidden relative w-full max-w-full box-border transition-opacity duration-300"
     [class.opacity-60]="loading()" [class.pointer-events-none]="loading()">
 
-    <!-- Linha de espiral decorativa do topo -->
     <div
       class="h-3 bg-amber-300/40 flex items-center px-4 space-x-4 pl-[65px] absolute top-0 w-full z-10 pointer-events-none">
       @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
@@ -98,7 +91,6 @@
       }
     </div>
 
-    <!-- Seletor de data integrado — barra compacta dentro do caderno -->
     <div class="pl-[65px] pr-4 pt-7 pb-2 border-b border-amber-200/70 flex items-center justify-between mt-1">
       <div class="grid grid-cols-[28px_minmax(260px,320px)_28px] items-center justify-center gap-1">
         <button (click)="mudarData(-1)"
@@ -121,7 +113,7 @@
               <line x1="8" x2="8" y1="2" y2="6" />
               <line x1="3" x2="21" y1="10" y2="10" />
             </svg>
-            <input type="date" [value]="dataInputValue" (change)="onInputData($event)"
+            <input type="date" [value]="dataInputValue" [max]="dataMaximaPermitida" (change)="onInputData($event)"
               class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" aria-label="Selecionar data" />
           </div>
           <span
@@ -130,8 +122,8 @@
             }}</span>
         </div>
 
-        <button (click)="mudarData(1)"
-          class="w-6 h-6 flex items-center justify-center rounded hover:bg-amber-100 text-amber-700 transition-colors cursor-pointer justify-self-center"
+        <button (click)="mudarData(1)" [disabled]="isProximoDiaFuturo()"
+          class="w-6 h-6 flex items-center justify-center rounded text-amber-700 transition-colors cursor-pointer justify-self-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-amber-100 disabled:hover:bg-transparent"
           aria-label="Próximo dia">
           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -141,12 +133,8 @@
       </div>
     </div>
 
-    <!-- Container Grid para limitar larguras de colunas sem overflow -->
     <div class="grid grid-cols-1 lg:grid-cols-[minmax(220px,38%)_minmax(0,1fr)] min-h-[380px] w-full max-w-full">
-
-      <!-- Coluna Esquerda: Observações do Dia -->
-      <div
-        class="lg:border-r-3 border-amber-200/60 pt-[14px] pb-6 pr-6 pl-[65px] flex flex-col relative min-w-0 max-w-full">
+      <div class="lg:border-r-3 border-amber-200/60 pt-[14px] pb-6 pr-6 pl-[65px] flex flex-col relative min-w-0 max-w-full">
         <div class="flex items-center space-x-3 mb-5">
           <div class="flex items-center space-x-2">
             <div class="w-8 h-8 flex items-center justify-center bg-amber-100 rounded-lg text-amber-700 flex-shrink-0">
@@ -187,7 +175,6 @@
         </div>
       </div>
 
-      <!-- Coluna Direita: Score Diário -->
       <div class="pt-[14px] pb-6 px-6 flex flex-col relative z-10 min-w-0 max-w-full">
         <div class="flex items-center space-x-3 mb-5">
           <div class="flex items-center space-x-2">

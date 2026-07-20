@@ -1,7 +1,6 @@
 <div class="h-auto flex flex-col w-full mt-8 gap-4">
 
   <div class="flex justify-between items-center px-1 mb-4 pb-2 border-b border-gray-100">
-    
     <div class="flex items-center gap-3">
       <h3 class="text-base font-bold text-amber-700 font-sora m-0">Horários Semanais</h3>
     </div>
@@ -135,8 +134,8 @@
               <path d="m15 18-6-6 6-6" />
             </svg>
           </button>
-          <button (click)="navegar(1)"
-            class="px-3 py-1.5 hover:bg-gray-50 text-gray-600 transition-colors cursor-pointer">
+          <button (click)="navegar(1)" [disabled]="!podeNavegarProximo()"
+            class="px-3 py-1.5 hover:bg-gray-50 text-gray-600 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2">
               <path d="m9 18 6-6-6-6" />
@@ -172,7 +171,7 @@
       </div>
     } @else {
         <div class="grid gap-2 md:gap-3 h-auto w-full" [ngClass]="{
-                  'grid-cols-1 md:grid-cols-7': visaoAtiva() === 'semana',
+                  'grid-cols-1 md:grid-cols-5': visaoAtiva() === 'semana',
                   'grid-cols-1': visaoAtiva() === 'dia'
                 }">
 
