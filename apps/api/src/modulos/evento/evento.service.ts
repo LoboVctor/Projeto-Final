@@ -12,12 +12,14 @@ export class EventoService {
     private readonly eventoRepositorio: IEventoRepositorio,
   ) {}
 
-  async buscarEventosDoMes(mes: number, ano: number, escolaId: string) {
+  async buscarEventosDoMes(mes: number, ano: number, escolaId: string, role: string, educadorId: string | null) {
     try {
       return await this.eventoRepositorio.buscarEventosDoMes(
         mes,
         ano,
         escolaId,
+        role,
+        educadorId,
       );
     } catch (error) {
       this.logger.error(`Erro ao buscar eventos do mês ${mes}/${ano}`, error);
@@ -52,9 +54,9 @@ export class EventoService {
     }
   }
 
-  async buscarProximosEventos(escolaId: string, limite: number) {
+  async buscarProximosEventos(escolaId: string, limite: number, role: string, educadorId: string | null) {
     try {
-      return await this.eventoRepositorio.buscarProximosEventos(escolaId, limite);
+      return await this.eventoRepositorio.buscarProximosEventos(escolaId, limite, role, educadorId);
     } catch (error) {
       this.logger.error('Erro ao buscar próximos eventos', error);
       throw error;

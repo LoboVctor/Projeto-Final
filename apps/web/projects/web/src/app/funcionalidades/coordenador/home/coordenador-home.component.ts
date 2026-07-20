@@ -75,7 +75,7 @@ export class CoordenadorHomeComponent implements OnInit {
   loadingEventos = signal(false);
 
   readonly paginaEventosAtual = signal(0);
-  readonly eventosPorPagina = 2;
+  readonly eventosPorPagina = 5;
 
   readonly totalPaginasEventos = computed(() =>
     Math.ceil(this.proximosEventos().length / this.eventosPorPagina)
@@ -216,7 +216,7 @@ export class CoordenadorHomeComponent implements OnInit {
 
     this.loadingEventos.set(true);
     this.calendarioService
-      .buscarProximosEventos(schoolId, 4)
+      .buscarProximosEventos(schoolId, 30)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (eventos) => {

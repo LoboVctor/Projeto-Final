@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -36,11 +37,14 @@ export class EventoController {
     @Query('mes') mes: string,
     @Query('ano') ano: string,
     @Query('escolaId') escolaId: string,
+    @Request() req: { user: { role: string; educadorId?: string | null } },
   ) {
     return this.eventoService.buscarEventosDoMes(
       Number(mes),
       Number(ano),
       escolaId,
+      req.user.role,
+      req.user.educadorId ?? null,
     );
   }
 
@@ -51,8 +55,14 @@ export class EventoController {
   async buscarProximosEventos(
     @Query('escolaId') escolaId: string,
     @Query('limite') limite = '4',
+    @Request() req: { user: { role: string; educadorId?: string | null } },
   ) {
-    return this.eventoService.buscarProximosEventos(escolaId, Number(limite));
+    return this.eventoService.buscarProximosEventos(
+      escolaId,
+      Number(limite),
+      req.user.role,
+      req.user.educadorId ?? null,
+    );
   }
 
   @Post()

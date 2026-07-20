@@ -3,7 +3,7 @@
   <!-- ═══ Título Principal ═══ -->
   <div>
     <h1 class="text-2xl sm:text-3xl font-bold text-[#6C3CC9]">Visão Geral</h1>
-    <p class="text-[#686177] mt-1 text-sm">Acompanhe as métricas, pendências e o desempenho global da escola.</p>
+    <p class="text-[#686177] mt-1 text-sm">Acompanhe as métricas, pendências e o desempenho global do CEE.</p>
   </div>
 
   <!-- ═══ Grid Principal: Coluna Principal + Lateral (340px) ═══ -->
@@ -12,7 +12,7 @@
     <!-- ─── Coluna Principal ─── -->
     <div class="flex flex-col gap-8 h-full">
 
-      <!-- Big Numbers da Escola (4 cards com gradientes Tailwind) -->
+      <!-- Big Numbers do CEE (4 cards com gradientes Tailwind) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
         <!-- Card 1: Total de Alunos (Verde) -->
@@ -119,7 +119,7 @@
 
       </div>
 
-      <!-- ─── Bloco de Abas: Perfil da Escola + Métricas ─── -->
+      <!-- ─── Bloco de Abas: Perfil do CEE + Métricas ─── -->
       <div class="bg-white rounded-2xl shadow-sm border border-[#E8E3EF] flex flex-col flex-1 min-h-[420px]">
 
         <!-- Cabeçalho com abas -->
@@ -128,7 +128,7 @@
             [class]="abaGraficos() === 'perfil'
               ? 'px-4 py-2.5 text-sm font-bold text-[#6C3CC9] border-b-2 border-[#6C3CC9] -mb-px bg-transparent cursor-pointer outline-none transition-colors duration-200'
               : 'px-4 py-2.5 text-sm font-semibold text-[#686177] border-b-2 border-transparent -mb-px bg-transparent cursor-pointer outline-none transition-colors duration-200 hover:text-[#6C3CC9]'">
-            Perfil da Escola
+            Perfil do CEE
           </button>
           <button id="btn-aba-metricas" (click)="trocarAbaGraficos('metricas')"
             [class]="abaGraficos() === 'metricas'
@@ -296,11 +296,11 @@
 
       <!-- Próximos Eventos -->
       <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-[#E8E3EF] flex flex-col flex-1">
-        <h3 class="text-base font-semibold text-[#6C3CC9] mb-2.5">Próximos Eventos</h3>
-        <div class="flex flex-col gap-1.5 flex-1">
+        <h3 class="text-base font-semibold text-[#6C3CC9] mb-2.5 shrink-0">Próximos Eventos</h3>
+        <div class="flex flex-col gap-3 flex-1">
           @if (loadingEventos()) {
-          <div class="flex flex-col gap-1.5">
-            @for (i of [1,2]; track i) {
+          <div class="flex flex-col gap-3">
+            @for (i of [1,2,3,4,5]; track i) {
             <div class="h-12 bg-gray-100 animate-pulse rounded-xl"></div>
             }
           </div>
@@ -317,17 +317,16 @@
           </div>
           } @else {
           @for (evento of eventosVisiveis(); track evento.id) {
-          <div
-            class="flex gap-2 items-center bg-[#F7F5FA] hover:bg-[#F0E6FF] border border-transparent hover:border-[#E8E3EF] rounded-xl px-2 py-1.5 hover:shadow-sm transition-all duration-300 group">
-            <button type="button"
-              class="w-9 h-9 rounded-lg bg-gradient-to-b from-[#6C3CC9] to-[#4A248A] text-white flex flex-col items-center justify-center shrink-0 shadow hover:shadow-[0_0_0_2px_rgba(108,60,201,0.35)] hover:scale-105 focus:outline-none focus:shadow-[0_0_0_3px_rgba(108,60,201,0.5)] transition-all duration-200 cursor-pointer"
-              (click)="irParaCalendarioDoEvento(evento)"
+          <div (click)="irParaCalendarioDoEvento(evento)"
+            class="flex gap-2 items-center bg-[#F7F5FA] hover:bg-[#F0E6FF] border border-transparent hover:border-[#E8E3EF] rounded-xl px-2 py-1.5 hover:shadow-sm transition-all duration-300 group cursor-pointer">
+            <div
+              class="w-9 h-9 rounded-lg bg-gradient-to-b from-[#6C3CC9] to-[#4A248A] text-white flex flex-col items-center justify-center shrink-0 shadow transition-all duration-200"
               [attr.aria-label]="'Abrir evento ' + evento.titulo + ' no calendário'">
               <span class="text-[13px] font-black leading-none">{{ evento.dataEvento | date:'dd':'UTC' }}</span>
               <span class="text-[7px] uppercase font-bold leading-none mt-0.5 opacity-90">
                 {{ evento.dataEvento | date:'MMM':'UTC' }}
               </span>
-            </button>
+            </div>
             <div class="flex-1 min-w-0">
               <p
                 class="text-[12px] font-bold text-[#2D1E40] leading-tight group-hover:text-[#6C3CC9] transition-colors whitespace-normal break-words">
@@ -340,31 +339,30 @@
             </div>
           </div>
           }
-          <!-- Paginação discreta -->
-          @if (deveMostrarPaginacaoEventos()) {
-          <div class="flex items-center justify-center gap-2 pt-1.5">
-            <button type="button" (click)="paginaAnteriorEventos()" [disabled]="paginaEventosAtual() === 0"
-              class="w-6 h-6 rounded-md flex items-center justify-center text-[#6C3CC9] bg-[#F0E6FF] hover:bg-[#E0D0FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
-            <span class="text-[11px] font-semibold text-[#6C3CC9]">
-              {{ paginaEventosAtual() + 1 }} de {{ totalPaginasEventos() }}
-            </span>
-            <button type="button" (click)="proximaPaginaEventos()"
-              [disabled]="paginaEventosAtual() >= totalPaginasEventos() - 1"
-              class="w-6 h-6 rounded-md flex items-center justify-center text-[#6C3CC9] bg-[#F0E6FF] hover:bg-[#E0D0FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-          </div>
-          }
           }
         </div>
+        @if (!loadingEventos() && deveMostrarPaginacaoEventos()) {
+        <div class="flex items-center justify-center gap-2 pt-2.5 mt-auto shrink-0">
+          <button type="button" (click)="paginaAnteriorEventos()" [disabled]="paginaEventosAtual() === 0"
+            class="w-6 h-6 rounded-md flex items-center justify-center text-[#6C3CC9] bg-[#F0E6FF] hover:bg-[#E0D0FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <span class="text-[11px] font-semibold text-[#6C3CC9]">
+            {{ paginaEventosAtual() + 1 }} de {{ totalPaginasEventos() }}
+          </span>
+          <button type="button" (click)="proximaPaginaEventos()"
+            [disabled]="paginaEventosAtual() >= totalPaginasEventos() - 1"
+            class="w-6 h-6 rounded-md flex items-center justify-center text-[#6C3CC9] bg-[#F0E6FF] hover:bg-[#E0D0FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
+        }
       </div>
 
     </div>
