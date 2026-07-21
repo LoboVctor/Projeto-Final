@@ -25,9 +25,9 @@
         <h2 class="text-2xl font-bold text-elo-texto-principal font-sora text-center">
           {{ aluno.nome }}
         </h2>
-        <div class="text-center mt-1.5 w-full overflow-hidden">
-          <p class="text-elo-texto-secundario text-sm md:text-base mt-1 truncate">
-            <span class="truncate">Turma {{ visaoGeralData()?.turma?.nome || aluno.turma }} - {{ formatarEtapa(visaoGeralData()?.turma?.etapa) }}</span>
+        <div class="text-center mt-1.5 w-full">
+          <p class="text-elo-texto-secundario text-sm md:text-base mt-1 break-words">
+            <span>Turma {{ getNomeTurmaLimpo() }}</span>
           </p>
         </div>
         <div class="w-full bg-[#F3EEFC] border border-elo-lavanda/30 rounded-2xl p-4 mt-6 flex items-start space-x-3">
@@ -45,7 +45,7 @@
             <p class="text-elo-roxo-principal text-sm mt-1 leading-snug">
               {{ aluno.diagnostico | diagFullName }}
             </p>
-            <p class="text-elo-roxo-principal text-sm font-medium">{{ aluno.nivelSuporte }}</p>
+            <p class="text-elo-roxo-principal text-sm mt-1 leading-snug">{{ aluno.nivelSuporte }}</p>
           </div>
         </div>
         <div class="w-full mt-6 space-y-3">

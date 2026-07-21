@@ -183,7 +183,18 @@ export class CoordenadorTurmasComponent implements OnInit {
     }
   }
 
-  /** Exibe apenas primeiro nome + último sobrenome (igual ao padrão da tela de turmas do professor) */
+
+  nomeTurmaExibicao(turma: import('../../../nucleo/services/turmas.service').TurmaResumo): string {
+    const nomeBase = turma.nome
+      .replace(/\s*[-–]\s*(etapa_?\d+|etapa\s*\d+)[.\s]*$/i, '')
+      .trim();
+    if (!turma.etapa) return nomeBase || turma.nome;
+    const etapaLabel = turma.etapa
+      .replace(/^ETAPA_?(\d+)$/i, 'Etapa $1')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    return `${nomeBase} - ${etapaLabel}`;
+  }
+
   nomeCurtoAluno(nomeCompleto: string): string {
     if (!nomeCompleto) return '';
     const partes = nomeCompleto.trim().split(/\s+/);

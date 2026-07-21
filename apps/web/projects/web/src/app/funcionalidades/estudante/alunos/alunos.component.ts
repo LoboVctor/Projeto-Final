@@ -273,8 +273,8 @@ export class AlunosComponent implements OnInit {
       id: aluno.id,
       nome: aluno.nomeCompleto,
       turma: this.getTurmaLabel(aluno),
-      diagnostico: this.getDiagnosticoLabel(aluno),
-      nivelSuporte: '',
+      diagnostico: aluno.diagnosticos[0]?.diagnostico?.tipo || '-',
+      nivelSuporte: 'Nível 1 de Suporte',
       foto: aluno.foto ?? undefined,
     };
   }

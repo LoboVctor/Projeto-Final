@@ -25,7 +25,6 @@ const MAPA_CORES_DIAG: Record<string, string> = {
   'OUTRO': 'bg-[#F3F4F6] text-[#374151] border-[#D1D5DB]/40',
 };
 
-/** Retorna a classe de cor para um dado tipo de diagnóstico */
 function corParaDiag(tipo: string): string {
   return MAPA_CORES_DIAG[tipo.toUpperCase()] ?? 'bg-[#E8E3EF] text-[#4A248A] border-[#B79CED]/30';
 }
@@ -41,14 +40,13 @@ export class CardAlunoComponent {
   nome = input.required<string>();
   foto = input<string | null>();
   diagnostico = input.required<string>();
-  /** Lista completa de tipos de diagnóstico (ex: ['TEA', 'TDAH']). Quando fornecida, substitui o badge único. */
   diagnosticos = input<string[]>();
   matricula = input.required<number>();
   estudante = input.required<EstudanteCardInput>();
+  nivelSuporte = input<string | null>();
 
   idade = computed(() => calcularIdade(this.estudante().dataNascimento));
 
-  /** Lista de {tipo, classe} para renderizar os badges. Prefere `diagnosticos`, cai em `diagnostico`. */
   tagsDeDiagnostico = computed<Array<{ tipo: string; classe: string }>>(() => {
     const multi = this.diagnosticos();
     if (multi && multi.length > 0) {
@@ -58,7 +56,6 @@ export class CardAlunoComponent {
     return [{ tipo: single, classe: corParaDiag(single) }];
   });
 
-  /** Mantém retrocompatibilidade — classe de cor para o diagnóstico único */
   classeCorTag = computed(() => corParaDiag(this.diagnostico()));
 
   abrirPerfil = output<void>();

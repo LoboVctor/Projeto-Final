@@ -254,7 +254,7 @@ async function main() {
       data: {
         escolaId: escola.id,
         educadorId: educador.id,
-        nome: `${nomeDiagnosticoTitulo} - Etapa ${numeroEtapa}`,
+        nome: nomeDiagnosticoTitulo,
         turno: faker.helpers.arrayElement([Turno.MATUTINO, Turno.VESPERTINO, Turno.INTEGRAL]),
         anoLetivo: 2026,
         etapa: etapaDaTurma,
