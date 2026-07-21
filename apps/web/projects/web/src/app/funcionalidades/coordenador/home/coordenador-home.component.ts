@@ -250,7 +250,7 @@ export class CoordenadorHomeComponent implements OnInit {
 
   irParaCalendarioDoEvento(evento: EventoCalendario): void {
     const dataStr = evento.dataEvento.substring(0, 10);
-    this.router.navigate(['/calendario'], {
+    this.router.navigate(['coordenador/calendario'], {
       queryParams: { data: dataStr, eventoId: evento.id },
     });
   }
@@ -295,7 +295,7 @@ export class CoordenadorHomeComponent implements OnInit {
       label: 'Registros Pendentes',
       data: dadosTop6.map(d => d.pendentes),
       backgroundColor: '#f97316',
-      borderWidth: 2,       
+      borderWidth: 2,      
       borderColor: '#ffffff',
       borderRadius: 4,      
       borderSkipped: false,
@@ -317,7 +317,7 @@ export class CoordenadorHomeComponent implements OnInit {
           indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
-          layout: { padding: 0 },
+          layout: { padding: { right: 30 } }, 
           scales: {
             x: { display: false, grid: { display: false }, border: { display: false } },
             y: { display: true, grid: { display: false }, border: { display: false }, ticks: { font: { family: 'Nunito', size: 14 }, crossAlign: 'far' } }
@@ -330,7 +330,26 @@ export class CoordenadorHomeComponent implements OnInit {
               }
             }
           }
-        }
+        },
+        plugins: [
+          {
+            id: 'barraFrequenciaLabels',
+            afterDatasetsDraw: (chart) => {
+              const { ctx } = chart;
+              chart.data.datasets.forEach((dataset, i) => {
+                const meta = chart.getDatasetMeta(i);
+                meta.data.forEach((bar, index) => {
+                  const data = dataset.data[index] as number;
+                  ctx.fillStyle = '#686177'; 
+                  ctx.font = 'bold 12px Nunito';
+                  ctx.textBaseline = 'middle';
+                  ctx.textAlign = 'left';
+                  ctx.fillText(data.toString(), bar.x + 8, bar.y);
+                });
+              });
+            }
+          }
+        ]
       });
     }
   }
@@ -344,7 +363,7 @@ export class CoordenadorHomeComponent implements OnInit {
       label: 'Registros Pendentes',
       data: dadosTop10.map(d => d.pendentes),
       backgroundColor: '#f97316',
-      borderWidth: 2,       
+      borderWidth: 2,      
       borderColor: '#ffffff',
       borderRadius: 4,      
       borderSkipped: false,
@@ -366,7 +385,7 @@ export class CoordenadorHomeComponent implements OnInit {
           indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
-          layout: { padding: 0 },
+          layout: { padding: { right: 30 } },
           scales: {
             x: { display: true, grid: { display: false }, border: { display: false }, title: { display: true, text: 'Nº de Pendências', font: { family: 'Nunito' } } },
             y: { display: true, grid: { display: false }, border: { display: false }, ticks: { font: { family: 'Nunito', size: 14 }, crossAlign: 'far' } }
@@ -379,7 +398,26 @@ export class CoordenadorHomeComponent implements OnInit {
               }
             }
           }
-        }
+        },
+        plugins: [
+          {
+            id: 'barraFrequenciaLabelsModal',
+            afterDatasetsDraw: (chart) => {
+              const { ctx } = chart;
+              chart.data.datasets.forEach((dataset, i) => {
+                const meta = chart.getDatasetMeta(i);
+                meta.data.forEach((bar, index) => {
+                  const data = dataset.data[index] as number;
+                  ctx.fillStyle = '#686177';
+                  ctx.font = 'bold 12px Nunito';
+                  ctx.textBaseline = 'middle';
+                  ctx.textAlign = 'left';
+                  ctx.fillText(data.toString(), bar.x + 8, bar.y);
+                });
+              });
+            }
+          }
+        ]
       });
     }
   }

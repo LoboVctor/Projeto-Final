@@ -36,13 +36,18 @@ export class BlocoDashboardComponent implements OnInit {
   nomeUsuarioLogado = signal<string>('');
   dataHoraAtual = signal<Date>(new Date());
 
-  labelNavegadorSemana = computed(() => {
+  labelNavegadorSemana = computed<string>(() => {
     const inicio = this.semanaAtualVisualizada();
     const fim = new Date(inicio);
     fim.setDate(fim.getDate() + 4);
 
-    const fmt = (d: Date) => `${d.getDate().toString().padStart(2, '0')} ${d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}`;
-    return `${fmt(inicio)} - ${fmt(fim)}`;
+    const fmt = (d: Date): string => {
+      const dia = d.getDate().toString().padStart(2, '0');
+      const mes = (d.getMonth() + 1).toString().padStart(2, '0');
+      return `${dia}/${mes}`;
+    };
+
+    return `${fmt(inicio)} a ${fmt(fim)}`;
   });
 
   podeAvancarSemana = computed(() => {
@@ -268,7 +273,18 @@ export class BlocoDashboardComponent implements OnInit {
         },
         scales: {
           y: { beginAtZero: true, max: 5, grid: { color: '#f3f4f6' } },
-          x: { grid: { display: false } }
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: {
+                family: "'Inter', sans-serif",
+                size: 12,
+                weight: 'bold'
+              },
+              color: '#6b7280'
+            },
+            border: { display: false }
+          }
         },
         plugins: { 
           legend: { display: false },
