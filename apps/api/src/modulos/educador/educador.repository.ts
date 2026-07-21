@@ -79,6 +79,7 @@ export class EducadorRepository {
           id: true,
           matricula: true,
           nome: true,
+          cpf: true,
           tipo: true,
           telefone: true,
           ativo: true,

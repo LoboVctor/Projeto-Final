@@ -17,12 +17,14 @@ import { API_BASE_URL } from '../../../nucleo/config/api.config';
 import { AuditoriaService } from '../../../nucleo/services/auditoria.service';
 import { LoadingFlorComponent } from '../../../compartilhado/components/loading-flor/loading-flor.component';
 import { ModalCadastrarProfessorComponent } from './components/modal-cadastrar-professor/modal-cadastrar-professor.component';
+import { CustomValidators } from '../../../compartilhado/validators/custom-validators';
 
 /** Modelo resumido do educador para listagem */
 export interface EducadorListagemItem {
   id: string;
   matricula: string;
   nome: string;
+  cpf?: string;
   tipo: string;
   telefone: string;
   ativo: boolean;
@@ -179,8 +181,8 @@ export class CoordenadorProfessoresComponent implements OnInit {
     this.editarErro.set(null);
 
     this.editarForm = this.fb.group({
-      nome: [prof.nome, [Validators.required, Validators.minLength(3)]],
-      cpf: [prof.tipo, []],  // CPF não está na listagem, iniciamos vazio para não forçar
+      nome: [prof.nome, [Validators.required, Validators.minLength(3), CustomValidators.textoInvalido()]],
+      cpf: [prof.cpf || '', [Validators.required, Validators.pattern(/^\d{11}$/)]],
       telefone: [prof.telefone, [Validators.required]],
       tipo: [prof.tipo, [Validators.required]],
     });
@@ -236,16 +238,29 @@ export class CoordenadorProfessoresComponent implements OnInit {
   }
 
   salvarEdicao(): void {
-    if (!this.editarForm.valid || !this.profEmEdicao()) return;
+    if (!this.editarForm.valid || !this.profEmEdicao()) {
+      this.editarForm.markAllAsTouched();
+      return;
+    }
     this.editarLoading.set(true);
     this.editarErro.set(null);
 
-    const dados = {
-      nome: this.editarForm.value.nome,
+    // Aplica trim() nos campos de texto antes do envio (padrão da aba Saúde)
+    const dados: any = {
+      nome: (this.editarForm.value.nome as string)?.trim(),
       telefone: this.editarForm.value.telefone,
       tipo: this.editarForm.value.tipo,
       turmaIds: Array.from(this.turmasSelecionadas()),
     };
+
+    // CPF: só envia se for modificado (limpo) e tiver 11 dígitos
+    const cpfControlValue = this.editarForm.value.cpf;
+    if (cpfControlValue) {
+      const cpfLimpo = String(cpfControlValue).replace(/\D/g, '');
+      if (cpfLimpo.length === 11) {
+        dados.cpf = cpfLimpo;
+      }
+    }
 
     this.http.patch(`${this.apiUrl}/${this.profEmEdicao()!.id}`, dados).subscribe({
       next: () => {
@@ -258,6 +273,21 @@ export class CoordenadorProfessoresComponent implements OnInit {
         this.editarLoading.set(false);
       },
     });
+  }
+
+  /** Verifica se um campo do editarForm está vazio (para exibir asterisco caso seja obrigatório e não preenchido). */
+  editarCampoTemRequired(controlName: string): boolean {
+    const control = this.editarForm?.get(controlName);
+    if (!control) return false;
+    const value = control.value;
+    return value === null || value === undefined || String(value).trim() === '';
+  }
+
+  apenasNumeros(event: any, campo: string) {
+    const inputValue = event.target.value;
+    const numeros = inputValue.replace(/\D/g, '');
+    this.editarForm.get(campo)?.setValue(numeros, { emitEvent: false });
+    event.target.value = numeros;
   }
 
   // ─── Desativação / Reativação ─────────────────────────────────────────────

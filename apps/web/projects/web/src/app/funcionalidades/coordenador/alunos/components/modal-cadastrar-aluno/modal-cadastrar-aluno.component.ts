@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EstudantesService } from '../../../../../compartilhado/services/estudantes.service';
 import { TurmasService, TurmaResumo } from '../../../../../nucleo/services/turmas.service';
+import { CustomValidators } from '../../../../../compartilhado/validators/custom-validators';
 
 @Component({
   selector: 'app-modal-cadastrar-aluno',
@@ -57,7 +58,7 @@ export class ModalCadastrarAlunoComponent implements OnInit {
 
   initForm() {
     this.form = this.fb.group({
-      nomeCompleto: ['', [Validators.required, Validators.minLength(3)]],
+      nomeCompleto: ['', [Validators.required, Validators.minLength(3), CustomValidators.textoInvalido()]],
       matricula: ['', Validators.required],
       cpf: ['', [Validators.required, Validators.pattern(/^\d{11}$/)]],
       dataNascimento: ['', Validators.required],
@@ -124,14 +125,21 @@ export class ModalCadastrarAlunoComponent implements OnInit {
   }
 
   salvar() {
-    if (this.form.invalid || this.loading) return;
+    if (this.form.invalid || this.loading) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
     this.loading = true;
     this.erro = '';
-    
+
+    // Aplica trim() nos campos de texto antes do envio (padrão da aba Saúde)
+    const valores = { ...this.form.value };
+    if (valores['nomeCompleto']) valores['nomeCompleto'] = valores['nomeCompleto'].trim();
+
     const formData = new FormData();
-    Object.keys(this.form.value).forEach(key => {
-      formData.append(key, this.form.value[key]);
+    Object.keys(valores).forEach(key => {
+      formData.append(key, valores[key]);
     });
 
     if (this.turmaSelecionada) {
@@ -155,8 +163,15 @@ export class ModalCadastrarAlunoComponent implements OnInit {
     });
   }
 
+  /** Controla o asterisco (*) no label: mostra quando inválido, independente de toque. */
   deveMostrarObrigatorio(controlName: string): boolean {
     const control = this.form.get(controlName);
-    return !control?.valid && (control?.touched || false);
+    return control?.invalid ?? false;
+  }
+
+  /** Controla bordas vermelhas e mensagens: apenas após o campo ter sido tocado. */
+  isCampoInvalido(controlName: string): boolean {
+    const control = this.form.get(controlName);
+    return (control?.invalid && control?.touched) ?? false;
   }
 }

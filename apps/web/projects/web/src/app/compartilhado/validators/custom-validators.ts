@@ -25,4 +25,25 @@ export class CustomValidators {
       return eNumerico ? null : { numericOnly: true };
     };
   }
+
+  /**
+   * Rejeita valores considerados inválidos para campos de texto livre:
+   * - apenas espaços em branco
+   * - apenas dígitos numéricos
+   * - apenas hífens
+   * Padrão extraído dos modais da aba "Saúde".
+   */
+  static textoInvalido(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+      if (!value) return null;
+
+      const normalizado = String(value).trim();
+      if (!normalizado) return { soEspacos: true };
+      if (/^\d+$/.test(normalizado)) return { soNumeros: true };
+      if (/^-+$/.test(normalizado)) return { soHifens: true };
+
+      return null;
+    };
+  }
 }
