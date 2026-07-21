@@ -10,10 +10,10 @@
     <div class="flex justify-between items-center mb-3 shrink-0">
       <div>
         <h3 class="text-lg font-sora font-bold text-gray-800">
-          {{ isVisaoEscola() ? 'Desempenho Diário da Escola' : 'Desempenho Diário da Turma' }}
+          {{ isVisaoEscola() ? 'Desempenho Diário' : 'Desempenho Diário da Turma' }}
         </h3>
         <p class="text-sm text-gray-500">
-          {{ isVisaoEscola() ? 'Média geral baseada nos registos de toda a escola.' : 'Média geral baseada nos registos dos alunos.' }}
+          {{ isVisaoEscola() ? 'Média geral baseada nos registos de todo o CEE.' : 'Média geral baseada nos registos dos alunos.' }}
         </p>
       </div>
       
@@ -114,7 +114,7 @@
             <span class="text-gray-400 font-medium">/5</span>
           </div>
           <p class="text-xs text-gray-400 m-0 mb-3 truncate">
-            {{ isVisaoEscola() ? 'Média da Escola' : 'Média da Turma' }}
+            {{ isVisaoEscola() ? 'Média do CEE' : 'Média da Turma' }}
           </p>
 
           <div class="mt-auto flex items-end justify-between w-full gap-2 pt-3">

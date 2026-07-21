@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { TipoEducador } from '@prisma-client';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import {
   IEventoRepositorio,
@@ -15,21 +16,42 @@ export class EventoRepository implements IEventoRepositorio {
     mes: number,
     ano: number,
     escolaId: string,
+    role: string,
+    educadorId: string | null,
   ): Promise<EventoListagem[]> {
     const dataInicial = new Date(ano, mes - 1, 1);
     const dataFinal = new Date(ano, mes, 0);
 
+    const isCoordenador = role === 'COORDENADOR';
+
+    const where = isCoordenador
+      ? {
+          isEvento: true,
+          dataEvento: {
+            gte: dataInicial,
+            lte: dataFinal,
+          },
+          educador: {
+            escolaId: escolaId,
+          },
+        }
+      : {
+          isEvento: true,
+          dataEvento: {
+            gte: dataInicial,
+            lte: dataFinal,
+          },
+          educador: {
+            escolaId: escolaId,
+          },
+          OR: [
+            { educador: { tipo: TipoEducador.COORDENADOR } },
+            { educadorId: educadorId ?? undefined },
+          ],
+        };
+
     return this.prisma.client.aula.findMany({
-      where: {
-        isEvento: true,
-        dataEvento: {
-          gte: dataInicial,
-          lte: dataFinal,
-        },
-        educador: {
-          escolaId: escolaId,
-        },
-      },
+      where,
       select: {
         id: true,
         titulo: true,
@@ -106,17 +128,32 @@ export class EventoRepository implements IEventoRepositorio {
   async buscarProximosEventos(
     escolaId: string,
     limite: number,
+    role: string,
+    educadorId: string | null,
   ): Promise<EventoListagem[]> {
     const agora = new Date();
-    // Normaliza para o início do dia atual (sem hora) para incluir eventos de hoje
     const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
 
+    const isCoordenador = role === 'COORDENADOR';
+
+    const where = isCoordenador
+      ? {
+          isEvento: true,
+          dataEvento: { gte: hoje },
+          educador: { escolaId },
+        }
+      : {
+          isEvento: true,
+          dataEvento: { gte: hoje },
+          educador: { escolaId },
+          OR: [
+            { educador: { tipo: TipoEducador.COORDENADOR } },
+            { educadorId: educadorId ?? undefined },
+          ],
+        };
+
     return this.prisma.client.aula.findMany({
-      where: {
-        isEvento: true,
-        dataEvento: { gte: hoje },
-        educador: { escolaId },
-      },
+      where,
       select: {
         id: true,
         titulo: true,

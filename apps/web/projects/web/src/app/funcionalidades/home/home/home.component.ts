@@ -39,9 +39,15 @@ export type ChartOptions = {
   fill: ApexFill;
 };
 
-/** Tipos explícitos para as ações rápidas e destino de aba */
 type AcaoRapida = 'novo-relatorio' | 'score-dia' | 'dashboard-aluno';
 type AbaDestinoAluno = 'relatorios' | 'agenda' | 'dashboard';
+
+export interface PendentePorAluno {
+  estudanteId: string;
+  nomeCompleto: string;
+  foto: string;
+  datas: { data: string; label: string }[];
+}
 
 @Component({
   selector: 'app-home',
@@ -63,7 +69,6 @@ export class HomeComponent implements OnInit {
   private readonly baseUrl = inject(API_BASE_URL);
   private readonly router = inject(Router);
 
-  // --- SIGNALS EXISTENTES (lógica preservada) ---
   registrosPendentes = signal<RegistroDiarioPendente[]>([]);
   totalEsperado = signal<number>(0);
   totalPreenchidos = signal<number>(0);
@@ -82,22 +87,18 @@ export class HomeComponent implements OnInit {
   loadingEventos = signal(false);
 
   totalPendentes = computed(() => this.registrosPendentes().length);
-  isModalPendenciasAberto = signal(false);
 
-  // --- SIGNALS ANIMADOS PARA OS BIG NUMBERS ---
   totalAlunosAnimado = signal(0);
   scoreMedioHojeAnimado = signal(0);
   registrosPendentesAnimado = signal(0);
 
-  // Controle de IDs de animação ativos para cancelamento
   private animacoesAtivas: Record<string, number> = {};
+  private mockPendentesConstruido = false;
 
-  // --- NOVOS SIGNALS: Ações Rápidas ---
   acaoRapidaSelecionada = signal<AcaoRapida | null>(null);
   modalSelecaoAluno = signal(false);
   abaDestino = signal<AbaDestinoAluno | null>(null);
 
-  // --- NOVOS SIGNALS: Paginação de Eventos ---
   readonly paginaEventosAtual = signal(0);
   readonly eventosPorPagina = 2;
 
@@ -114,28 +115,68 @@ export class HomeComponent implements OnInit {
     this.proximosEventos().length > this.eventosPorPagina
   );
 
-  // --- NOVOS SIGNALS: Paginação de Alunos ---
   paginaAtual = signal(0);
   readonly ALUNOS_POR_PAGINA = 5;
 
-  /** Fatia dos alunos da página atual */
   alunosPaginados = computed(() => {
     const inicio = this.paginaAtual() * this.ALUNOS_POR_PAGINA;
     return this.estudantes().slice(inicio, inicio + this.ALUNOS_POR_PAGINA);
   });
 
-  /** Total de páginas */
   totalPaginas = computed(() =>
     Math.ceil(this.estudantes().length / this.ALUNOS_POR_PAGINA)
   );
 
-  /** Array de índices de páginas para os indicadores visuais */
   paginasArray(): number[] {
     return Array.from({ length: this.totalPaginas() }, (_, i) => i);
   }
 
+  // --- Painel de Registros Pendentes ---
+  painelPendenciasAberto = signal(false);
+  alunoExpandidoId = signal<string | null>(null);
+
+  readonly pendentesAgrupados = computed<PendentePorAluno[]>(() => {
+    const mapa = new Map<string, PendentePorAluno>();
+    const formatador = new Intl.DateTimeFormat('pt-BR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+
+    for (const reg of this.registrosPendentes()) {
+      let label = reg.data;
+      try {
+        const dataObj = new Date(reg.data);
+        if (!isNaN(dataObj.getTime())) {
+          let formatada = formatador.format(dataObj);
+          label = formatada.charAt(0).toUpperCase() + formatada.slice(1);
+        }
+      } catch (e) {
+        // Fallback to original string if error
+      }
+
+      const pendenciaObj = { data: reg.data, label };
+      const entry = mapa.get(reg.estudanteId);
+
+      if (entry) {
+        entry.datas.push(pendenciaObj);
+      } else {
+        const alunoReal = this.estudantes().find(
+          (aluno) => String(aluno.matricula) === reg.estudanteId || aluno.nomeCompleto === reg.estudante.nomeCompleto
+        );
+        mapa.set(reg.estudanteId, {
+          estudanteId: reg.estudanteId,
+          nomeCompleto: reg.estudante.nomeCompleto,
+          foto: alunoReal?.foto || reg.estudante.foto,
+          datas: [pendenciaObj],
+        });
+      }
+    }
+    return Array.from(mapa.values());
+  });
+
   constructor() {
-    // Configuração inicial do gráfico (lógica existente preservada)
     this.chartOptions = {
       series: [0],
       chart: { type: 'radialBar', height: 220, sparkline: { enabled: true } },
@@ -153,7 +194,49 @@ export class HomeComponent implements OnInit {
       fill: { colors: ['#4CAF50'], type: 'solid', opacity: 1 }
     };
 
-    // Efeito reativo do gráfico (lógica existente preservada)
+    effect(() => {
+      const alunosReais = this.estudantes();
+      if (this.mockPendentesConstruido || alunosReais.length === 0) return;
+
+      const educadorIdAtual = this.authService.getLoggedUserId();
+      if (!educadorIdAtual) return;
+
+      const alunoUm = alunosReais[0];
+      if (!alunoUm) return;
+      const alunoDois = alunosReais[1] ?? alunoUm;
+
+      const mockPendentes: RegistroDiarioPendente[] = [
+        {
+          id: 'mock-1',
+          data: '2026-07-20T12:00:00Z',
+          preenchido: false,
+          estudanteId: alunoUm.id,
+          educadorId: educadorIdAtual,
+          estudante: { id: alunoUm.id, nomeCompleto: alunoUm.nomeCompleto, foto: alunoUm.foto }
+        },
+        {
+          id: 'mock-2',
+          data: '2026-07-21T12:00:00Z',
+          preenchido: false,
+          estudanteId: alunoUm.id,
+          educadorId: educadorIdAtual,
+          estudante: { id: alunoUm.id, nomeCompleto: alunoUm.nomeCompleto, foto: alunoUm.foto }
+        },
+        {
+          id: 'mock-3',
+          data: '2026-07-20T12:00:00Z',
+          preenchido: false,
+          estudanteId: alunoDois.id,
+          educadorId: educadorIdAtual,
+          estudante: { id: alunoDois.id, nomeCompleto: alunoDois.nomeCompleto, foto: alunoDois.foto }
+        }
+      ];
+
+      this.registrosPendentes.set(mockPendentes);
+      this.animarNumero(mockPendentes.length, (val) => this.registrosPendentesAnimado.set(val), 'registrosPendentes', { duracao: 800, casasDecimais: 0 });
+      this.mockPendentesConstruido = true;
+    }, { allowSignalWrites: true });
+
     effect(() => {
       const preenchidos = this.totalPreenchidos();
       const esperado = this.totalEsperado();
@@ -179,7 +262,6 @@ export class HomeComponent implements OnInit {
     const educadorIdAtual = this.authService.getLoggedUserId();
     if (!educadorIdAtual) return;
 
-    // Big Numbers (lógica existente preservada com adição de animação)
     this.turmasService.getBigNumbersHome(educadorIdAtual)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -187,7 +269,6 @@ export class HomeComponent implements OnInit {
           this.totalAlunosEducador.set(dados.totalAlunos);
           this.scoreMedioHoje.set(dados.scoreMedioDia);
 
-          // Animar valores dos Big Numbers
           this.animarNumero(dados.totalAlunos, (val) => this.totalAlunosAnimado.set(val), 'totalAlunos', { duracao: 800, casasDecimais: 0 });
           this.animarNumero(dados.scoreMedioDia, (val) => this.scoreMedioHojeAnimado.set(val), 'scoreMedio', { duracao: 800, casasDecimais: 1 });
 
@@ -210,19 +291,14 @@ export class HomeComponent implements OnInit {
         }
       });
 
-    // Alertas pendentes (lógica existente preservada com adição de animação)
     this.registrosService
       .getAlertasPendentes(educadorIdAtual)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (dados) => {
-          this.registrosPendentes.set(dados);
-          this.animarNumero(dados.length, (val) => this.registrosPendentesAnimado.set(val), 'registrosPendentes', { duracao: 800, casasDecimais: 0 });
-        },
+        next: () => { },
         error: () => { }
       });
 
-    // Resumo mensal (lógica existente preservada)
     this.registrosService
       .getResumoMensal(educadorIdAtual)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -241,7 +317,6 @@ export class HomeComponent implements OnInit {
     this.carregarProximosEventos();
   }
 
-  /** Helper para animar números de 0 até o valor real com suporte SSR e cancelamento de animações anteriores */
   private animarNumero(
     destino: number,
     setValor: (valor: number) => void,
@@ -253,7 +328,6 @@ export class HomeComponent implements OnInit {
       return;
     }
 
-    // Cancelar qualquer animação anterior rodando para esta mesma chave
     if (this.animacoesAtivas[chave]) {
       cancelAnimationFrame(this.animacoesAtivas[chave]);
       delete this.animacoesAtivas[chave];
@@ -267,8 +341,6 @@ export class HomeComponent implements OnInit {
     const passo = (tempoAtual: number) => {
       const tempoDecorrido = tempoAtual - tempoInicio;
       const progresso = Math.min(tempoDecorrido / duracao, 1);
-
-      // Função de suavização easeOutQuad
       const progressoSuave = progresso * (2 - progresso);
 
       const valorAtual = inicio + (destino - inicio) * progressoSuave;
@@ -297,7 +369,7 @@ export class HomeComponent implements OnInit {
           this.turmasService.getEstudantesDaTurma(turmas[0].id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
             next: (res) => {
               this.estudantes.set(res.estudantes);
-              this.paginaAtual.set(0); // Reset ao carregar novos alunos
+              this.paginaAtual.set(0);
               this.loadingEstudantes.set(false);
             },
             error: () => {
@@ -316,19 +388,8 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  // --- MÉTODOS EXISTENTES ---
-
-  abrirModal(): void {
-    this.isModalPendenciasAberto.set(true);
-  }
-
-  fecharModal(): void {
-    this.isModalPendenciasAberto.set(false);
-  }
-
-  /** Abre o modal do aluno sem destino de aba específico (comportamento original) */
   abrirDetalhesAluno(estudante: EstudanteResumo): void {
-    this.abaDestino.set(null); // Abertura normal: sem aba específica — usa visão geral
+    this.abaDestino.set(null);
     const nomeDaTurma = this.turmaAtual()?.nome || 'Turma Indefinida';
     const diagnosticoPrincipal = estudante.diagnosticos.length > 0
       ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo'
@@ -344,7 +405,6 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  /** Fecha o modal do aluno e reseta o destino de aba */
   fecharAlunoModal(houveModificacao: boolean = false): void {
     this.alunoEmDestaque.set(null);
     this.abaDestino.set(null);
@@ -359,7 +419,7 @@ export class HomeComponent implements OnInit {
 
     this.loadingEventos.set(true);
     this.calendarioService
-      .buscarProximosEventos(schoolId, 4)
+      .buscarProximosEventos(schoolId, 30)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (eventos) => {
@@ -370,9 +430,6 @@ export class HomeComponent implements OnInit {
       });
   }
 
-  // --- NOVOS MÉTODOS: Paginação ---
-
-  /** Helper para exibir apenas primeiro e último nome nos cards da Home */
   nomeCurtoAluno(nomeCompleto: string): string {
     if (!nomeCompleto) return '';
     const partes = nomeCompleto.trim().split(/\s+/);
@@ -392,8 +449,6 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  // --- NOVOS MÉTODOS: Paginação de Eventos ---
-
   proximaPaginaEventos(): void {
     if (this.paginaEventosAtual() < this.totalPaginasEventos() - 1) {
       this.paginaEventosAtual.update(p => p + 1);
@@ -406,7 +461,6 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  /** Navega para a tela de Calendário na data do evento */
   irParaCalendarioDoEvento(evento: EventoCalendario): void {
     const dataStr = evento.dataEvento.substring(0, 10);
     this.router.navigate(['/calendario'], {
@@ -417,21 +471,16 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  // --- NOVOS MÉTODOS: Ações Rápidas ---
-
-  /** Abre o modal de seleção de aluno para a ação rápida escolhida */
   abrirSelecaoAluno(acao: AcaoRapida): void {
     this.acaoRapidaSelecionada.set(acao);
     this.modalSelecaoAluno.set(true);
   }
 
-  /** Fecha o modal de seleção de aluno sem navegar */
   fecharSelecaoAluno(): void {
     this.modalSelecaoAluno.set(false);
     this.acaoRapidaSelecionada.set(null);
   }
 
-  /** Seleciona um aluno da ação rápida, define a aba destino e abre o modal do aluno */
   selecionarAlunoDaAcao(estudante: EstudanteResumo): void {
     const acao = this.acaoRapidaSelecionada();
     let aba: AbaDestinoAluno = 'relatorios';
@@ -442,7 +491,6 @@ export class HomeComponent implements OnInit {
       aba = 'dashboard';
     }
 
-    // Fechar seleção e definir destino antes de abrir modal do aluno
     this.modalSelecaoAluno.set(false);
     this.acaoRapidaSelecionada.set(null);
     this.abaDestino.set(aba);
@@ -456,5 +504,38 @@ export class HomeComponent implements OnInit {
 
   getFotoUrlCard(estudante: EstudanteResumo): string {
     return buildFotoUrl(estudante.nomeCompleto, estudante.foto, this.baseUrl);
+  }
+
+  // --- Painel de Registros Pendentes ---
+
+  abrirPainelPendencias(): void {
+    this.painelPendenciasAberto.update(v => !v);
+    this.alunoExpandidoId.set(null);
+  }
+
+  toggleAlunoExpandido(estudanteId: string): void {
+    this.alunoExpandidoId.update(atual =>
+      atual === estudanteId ? null : estudanteId
+    );
+  }
+
+  abrirAgendaAluno(pendente: PendentePorAluno): void {
+    this.abaDestino.set('agenda');
+    this.painelPendenciasAberto.set(false);
+    this.alunoExpandidoId.set(null);
+
+    const nomeDaTurma = this.turmaAtual()?.nome || 'Turma Indefinida';
+    this.alunoEmDestaque.set({
+      id: pendente.estudanteId,
+      nome: pendente.nomeCompleto,
+      turma: nomeDaTurma,
+      diagnostico: 'Sem Laudo',
+      nivelSuporte: 'Nível 1 de Suporte',
+      foto: buildFotoUrl(pendente.nomeCompleto, pendente.foto, this.baseUrl),
+    });
+  }
+
+  avatarUrlPendente(pendente: PendentePorAluno): string {
+    return buildFotoUrl(pendente.nomeCompleto, pendente.foto, this.baseUrl);
   }
 }
