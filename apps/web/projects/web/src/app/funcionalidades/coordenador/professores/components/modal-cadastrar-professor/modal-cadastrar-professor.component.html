@@ -34,93 +34,160 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5 md:col-span-2">
-            <label class="text-xs font-bold text-slate-600 font-['Sora']">Nome Completo
-              <span class="text-red-500">*</span>
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">
+              Nome Completo
+              @if (deveMostrarObrigatorio('nome')) {
+                <span class="text-red-500">*</span>
+              }
             </label>
             <input type="text" formControlName="nome" placeholder="Nome completo do professor"
               class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
-              [class.border-red-300]="deveMostrarObrigatorio('nome')" />
-            @if (deveMostrarObrigatorio('nome')) {
-            <div class="text-[10px] font-semibold text-red-500 mt-0.5">O nome é obrigatório (mín. 3 caracteres).</div>
+              [class.border-red-300]="isCampoInvalido('nome')" />
+            @if (isCampoInvalido('nome')) {
+              <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                @if (form.get('nome')?.hasError('required')) {
+                  O nome é obrigatório.
+                }
+                @if (form.get('nome')?.hasError('minlength')) {
+                  O nome deve ter no mínimo 3 caracteres.
+                }
+                @if (form.get('nome')?.hasError('soEspacos')) {
+                  O nome não pode conter apenas espaços em branco.
+                }
+                @if (form.get('nome')?.hasError('soNumeros')) {
+                  O nome não pode conter apenas números.
+                }
+                @if (form.get('nome')?.hasError('soHifens')) {
+                  O nome não pode conter apenas hífens.
+                }
+              </div>
             }
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-bold text-slate-600 font-['Sora']">Matrícula
-              <span class="text-red-500">*</span>
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">
+              Matrícula
+              @if (deveMostrarObrigatorio('matricula')) {
+                <span class="text-red-500">*</span>
+              }
             </label>
             <input type="text" formControlName="matricula" placeholder="Ex: MAT2024"
               class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
-              [class.border-red-300]="deveMostrarObrigatorio('matricula')" />
-            @if (deveMostrarObrigatorio('matricula')) {
-            <div class="text-[10px] font-semibold text-red-500 mt-0.5">A matrícula é obrigatória.</div>
+              [class.border-red-300]="isCampoInvalido('matricula')" />
+            @if (isCampoInvalido('matricula')) {
+              <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                @if (form.get('matricula')?.hasError('required')) {
+                  A matrícula é obrigatória.
+                }
+              </div>
             }
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-bold text-slate-600 font-['Sora']">CPF
-              <span class="text-red-500">*</span>
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">
+              CPF
+              @if (deveMostrarObrigatorio('cpf')) {
+                <span class="text-red-500">*</span>
+              }
             </label>
             <input type="text" formControlName="cpf" placeholder="Apenas números" maxlength="11"
               (input)="apenasNumeros($event, 'cpf')"
               class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
-              [class.border-red-300]="deveMostrarObrigatorio('cpf')" />
-            @if (deveMostrarObrigatorio('cpf')) {
-            <div class="text-[10px] font-semibold text-red-500 mt-0.5">CPF inválido. Use 11 dígitos.</div>
+              [class.border-red-300]="isCampoInvalido('cpf')" />
+            @if (isCampoInvalido('cpf')) {
+              <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                @if (form.get('cpf')?.hasError('required')) {
+                  O CPF é obrigatório.
+                }
+                @if (form.get('cpf')?.hasError('pattern')) {
+                  CPF inválido. Use 11 dígitos.
+                }
+              </div>
             }
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-bold text-slate-600 font-['Sora']">E-mail
-              <span class="text-red-500">*</span>
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">
+              E-mail
+              @if (deveMostrarObrigatorio('email')) {
+                <span class="text-red-500">*</span>
+              }
             </label>
             <input type="email" formControlName="email" placeholder="professor@escola.com"
               class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
-              [class.border-red-300]="deveMostrarObrigatorio('email')" />
-            @if (deveMostrarObrigatorio('email')) {
-            <div class="text-[10px] font-semibold text-red-500 mt-0.5">E-mail inválido.</div>
+              [class.border-red-300]="isCampoInvalido('email')" />
+            @if (isCampoInvalido('email')) {
+              <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                @if (form.get('email')?.hasError('required')) {
+                  O e-mail é obrigatório.
+                }
+                @if (form.get('email')?.hasError('email')) {
+                  E-mail inválido.
+                }
+              </div>
             }
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-bold text-slate-600 font-['Sora']">Telefone
-              <span class="text-red-500">*</span>
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">
+              Telefone
+              @if (deveMostrarObrigatorio('telefone')) {
+                <span class="text-red-500">*</span>
+              }
             </label>
             <input type="text" formControlName="telefone" placeholder="Ex: 11999999999" maxlength="11"
               (input)="apenasNumeros($event, 'telefone')"
               class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
-              [class.border-red-300]="deveMostrarObrigatorio('telefone')" />
-            @if (deveMostrarObrigatorio('telefone')) {
-            <div class="text-[10px] font-semibold text-red-500 mt-0.5">Telefone é obrigatório.</div>
+              [class.border-red-300]="isCampoInvalido('telefone')" />
+            @if (isCampoInvalido('telefone')) {
+              <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                @if (form.get('telefone')?.hasError('required')) {
+                  Telefone é obrigatório.
+                }
+              </div>
             }
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-bold text-slate-600 font-['Sora']">Tipo de Educador
-              <span class="text-red-500">*</span>
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">
+              Tipo de Educador
+              @if (deveMostrarObrigatorio('tipo')) {
+                <span class="text-red-500">*</span>
+              }
             </label>
             <select formControlName="tipo"
               class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm font-medium"
-              [class.border-red-300]="deveMostrarObrigatorio('tipo')">
+              [class.border-red-300]="isCampoInvalido('tipo')">
               <option value="" disabled selected>Selecione um tipo</option>
               <option value="REGENTE">Regente</option>
               <option value="ATENDIMENTO">Atendimento (AEE)</option>
               <option value="COORDENADOR">Coordenador</option>
             </select>
-            @if (deveMostrarObrigatorio('tipo')) {
-            <div class="text-[10px] font-semibold text-red-500 mt-0.5">Tipo é obrigatório.</div>
+            @if (isCampoInvalido('tipo')) {
+              <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                @if (form.get('tipo')?.hasError('required')) {
+                  Tipo é obrigatório.
+                }
+              </div>
             }
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-bold text-slate-600 font-['Sora']">Data de Contratação
-              <span class="text-red-500">*</span>
+            <label class="text-xs font-bold text-slate-600 font-['Sora']">
+              Data de Contratação
+              @if (deveMostrarObrigatorio('dataContratacao')) {
+                <span class="text-red-500">*</span>
+              }
             </label>
             <input type="date" formControlName="dataContratacao"
               class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm"
-              [class.border-red-300]="deveMostrarObrigatorio('dataContratacao')" />
-            @if (deveMostrarObrigatorio('dataContratacao')) {
-            <div class="text-[10px] font-semibold text-red-500 mt-0.5">Data é obrigatória.</div>
+              [class.border-red-300]="isCampoInvalido('dataContratacao')" />
+            @if (isCampoInvalido('dataContratacao')) {
+              <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                @if (form.get('dataContratacao')?.hasError('required')) {
+                  A data de contratação é obrigatória.
+                }
+              </div>
             }
           </div>
         </div>

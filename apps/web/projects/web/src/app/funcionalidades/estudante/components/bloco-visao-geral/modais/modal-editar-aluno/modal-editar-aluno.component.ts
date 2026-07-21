@@ -14,6 +14,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { EstudantesService } from '../../../../../../compartilhado/services/estudantes.service';
 import { TurmasService, TurmaResumo } from '../../../../../../nucleo/services/turmas.service';
 import { EstudanteVisaoGeral } from '../../../../../../compartilhado/models/estudante-visao-geral.model';
+import { CustomValidators } from '../../../../../../compartilhado/validators/custom-validators';
 
 @Component({
   selector: 'app-modal-editar-aluno',
@@ -57,19 +58,6 @@ export class ModalEditarAlunoComponent implements OnInit {
   }
 
   initForm() {
-    // Tenta isolar o CPF apenas com números se vier formatado
-    let cpfLimpo = this.visaoGeralData?.cpf?.replace(/\D/g, '') || '';
-    // Se o CPF original do backend estava obfuscado (ex: ***.***.123-45),
-    // o usuário terá que redigitar, ou o backend precisaria enviar sem ofuscar.
-    // Como a listagem ofusca o CPF no backend (`***.***.XXX`), precisaremos deixar o form flexível
-    // ou assumir que o usuário só irá atualizar o CPF se for limpar e digitar de novo.
-    // A melhor prática num cenário real seria buscar o estudante cru,
-    // mas usaremos o cpf do jeito que está, e só obrigamos padrão se ele for preenchido com 11 digitos limpos
-    // se vier obfuscado, limpamos e deixamos vazio para o usuário preencher se necessário.
-    if (cpfLimpo.length < 11) {
-      cpfLimpo = '';
-    }
-
     // A data de nascimento vem como string ISO no backend
     let dataNascimentoFormatada = '';
     if (this.visaoGeralData?.dataNascimento) {
@@ -78,19 +66,21 @@ export class ModalEditarAlunoComponent implements OnInit {
     }
 
     this.form = this.fb.group({
-      nomeCompleto: [this.visaoGeralData?.nomeCompleto || '', [Validators.required, Validators.minLength(3)]],
+      nomeCompleto: [this.visaoGeralData?.nomeCompleto || '', [Validators.required, Validators.minLength(3), CustomValidators.textoInvalido()]],
       matricula: [this.visaoGeralData?.matricula || '', Validators.required],
-      // O modelo EstudanteVisaoGeral tem CPF ofuscado, e não traz matrícula. Para evitar quebrar, vamos deixar cpf flexível ou vazio
-      cpf: [cpfLimpo, [Validators.pattern(/^\d{11}$/)]],
+      // O CPF é exibido como vem do backend (pode vir mascarado).
+      // O usuário deve redigitar um CPF válido (11 dígitos) para atualizá-lo.
+      // O campo fica em branco apenas se não houver CPF cadastrado.
+      cpf: [this.visaoGeralData?.cpf || '', [Validators.required, Validators.pattern(/^\d{11}$/)]],
       dataNascimento: [dataNascimentoFormatada, Validators.required],
       sexo: [this.visaoGeralData?.sexo || '', Validators.required],
       formaComunicacao: [this.visaoGeralData?.formaComunicacao || '', Validators.required],
 
-      nomeResponsavel: [this.visaoGeralData?.responsavel?.nomeCompleto || '', Validators.required],
+      nomeResponsavel: [this.visaoGeralData?.responsavel?.nomeCompleto || '', [Validators.required, CustomValidators.textoInvalido()]],
       cpfResponsavel: [this.visaoGeralData?.responsavel?.cpf || '', [Validators.required, Validators.pattern(/^\d{11}$/)]],
       telefoneResponsavel: [this.visaoGeralData?.responsavel?.telefone || '', Validators.required],
       emailResponsavel: [this.visaoGeralData?.responsavel?.email || '', [Validators.required, Validators.email]],
-      enderecoResponsavel: [this.visaoGeralData?.responsavel?.endereco || '', Validators.required],
+      enderecoResponsavel: [this.visaoGeralData?.responsavel?.endereco || '', [Validators.required, CustomValidators.textoInvalido()]],
     });
 
     if (this.visaoGeralData?.foto) {
@@ -175,12 +165,26 @@ export class ModalEditarAlunoComponent implements OnInit {
     this.erro = '';
     
     const formData = new FormData();
-    Object.keys(this.form.value).forEach(key => {
-      // Se cpf está vazio, não mandar para não sobreescrever com vazio
-      if (key === 'cpf' && !this.form.value[key]) {
+    // Aplica trim() nos campos de texto antes do envio (padrão da aba Saúde)
+    const valores = { ...this.form.value } as Record<string, string | null | undefined>;
+    const camposTexto: string[] = ['nomeCompleto', 'nomeResponsavel', 'enderecoResponsavel'];
+    camposTexto.forEach(campo => {
+      if (valores[campo]) valores[campo] = (valores[campo] as string).trim();
+    });
+
+    Object.keys(valores).forEach(key => {
+      // CPF: só envia se tiver 11 dígitos limpos (evita enviar valor mascarado do backend)
+      if (key === 'cpf') {
+        const cpfLimpo = String(valores[key] || '').replace(/\D/g, '');
+        if (cpfLimpo.length === 11) {
+          formData.append(key, cpfLimpo);
+        }
         return;
       }
-      formData.append(key, this.form.value[key]);
+      const valor = valores[key];
+      if (valor != null) {
+        formData.append(key, valor);
+      }
     });
 
     if (this.turmaSelecionada) {
@@ -204,8 +208,17 @@ export class ModalEditarAlunoComponent implements OnInit {
     });
   }
 
+  /** Controla o asterisco (*) no label: exibe quando o campo está sem valor (vazio). */
   deveMostrarObrigatorio(controlName: string): boolean {
     const control = this.form.get(controlName);
-    return !control?.valid && (control?.touched || false);
+    if (!control) return false;
+    const value = control.value;
+    return value === null || value === undefined || String(value).trim() === '';
+  }
+
+  /** Controla bordas vermelhas e mensagens: apenas após o campo ter sido tocado. */
+  isCampoInvalido(controlName: string): boolean {
+    const control = this.form.get(controlName);
+    return (control?.invalid && control?.touched) ?? false;
   }
 }

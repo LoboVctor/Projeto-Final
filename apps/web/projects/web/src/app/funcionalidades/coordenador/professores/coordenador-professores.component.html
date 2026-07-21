@@ -285,10 +285,53 @@
           <h3 class="modal-secao-titulo">Dados Pessoais</h3>
           <div class="modal-grid">
             <div class="campo-grupo campo-grupo--full">
-              <label class="campo-label" for="edit-nome">Nome Completo <span class="text-red-500">*</span></label>
-              <input id="edit-nome" class="campo-input" type="text" formControlName="nome" placeholder="Nome do professor" />
+              <label class="campo-label" for="edit-nome">
+                Nome Completo
+                @if (editarCampoTemRequired('nome')) {
+                  <span class="text-red-500">*</span>
+                }
+              </label>
+              <input id="edit-nome" class="campo-input" type="text" formControlName="nome" placeholder="Nome do professor"
+                [class.border-red-300]="editarForm.get('nome')?.invalid && editarForm.get('nome')?.touched" />
               @if (editarForm.get('nome')?.invalid && editarForm.get('nome')?.touched) {
-                <span class="campo-erro">Nome é obrigatório (mínimo 3 caracteres).</span>
+                <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                  @if (editarForm.get('nome')?.hasError('required')) {
+                    Nome é obrigatório.
+                  }
+                  @if (editarForm.get('nome')?.hasError('minlength')) {
+                    O nome deve ter no mínimo 3 caracteres.
+                  }
+                  @if (editarForm.get('nome')?.hasError('soEspacos')) {
+                    O nome não pode conter apenas espaços em branco.
+                  }
+                  @if (editarForm.get('nome')?.hasError('soNumeros')) {
+                    O nome não pode conter apenas números.
+                  }
+                  @if (editarForm.get('nome')?.hasError('soHifens')) {
+                    O nome não pode conter apenas hífens.
+                  }
+                </div>
+              }
+            </div>
+            <div class="campo-grupo">
+              <label class="campo-label" for="edit-cpf">
+                CPF
+                @if (editarCampoTemRequired('cpf')) {
+                  <span class="text-red-500">*</span>
+                }
+              </label>
+              <input id="edit-cpf" class="campo-input" type="text" formControlName="cpf" placeholder="Digite os 11 dígitos do CPF" maxlength="11"
+                (input)="apenasNumeros($event, 'cpf')"
+                [class.border-red-300]="editarForm.get('cpf')?.invalid && editarForm.get('cpf')?.touched" />
+              @if (editarForm.get('cpf')?.invalid && editarForm.get('cpf')?.touched) {
+                <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                  @if (editarForm.get('cpf')?.hasError('required')) {
+                    O CPF é obrigatório.
+                  }
+                  @if (editarForm.get('cpf')?.hasError('pattern')) {
+                    CPF inválido. Use 11 dígitos numéricos.
+                  }
+                </div>
               }
             </div>
             <div class="campo-grupo">
