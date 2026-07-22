@@ -3,8 +3,6 @@ import { EstudantesService } from '../../../compartilhado/services/estudantes.se
 
 @Component({
   selector: 'app-dashboard-responsavel',
-  standalone: true,
-  imports: [],
   templateUrl: './dashboard-responsavel.component.html',
   styleUrl: './dashboard-responsavel.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush 

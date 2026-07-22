@@ -7,10 +7,10 @@ import {
   ChangeDetectionStrategy,
   DestroyRef,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Subject, debounceTime, switchMap } from 'rxjs';
+import { Subject, debounceTime, switchMap, firstValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { API_BASE_URL } from '../../../nucleo/config/api.config';
@@ -18,6 +18,8 @@ import { AuditoriaService } from '../../../nucleo/services/auditoria.service';
 import { LoadingFlorComponent } from '../../../compartilhado/components/loading-flor/loading-flor.component';
 import { ModalCadastrarProfessorComponent } from './components/modal-cadastrar-professor/modal-cadastrar-professor.component';
 import { CustomValidators } from '../../../compartilhado/validators/custom-validators';
+import { ImportacaoRelatorio } from '../../../compartilhado/models/importacao-relatorio.model';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /** Modelo resumido do educador para listagem */
 export interface EducadorListagemItem {
@@ -45,8 +47,7 @@ export interface TurmaItem {
 
 @Component({
   selector: 'app-coordenador-professores',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, LoadingFlorComponent, ModalCadastrarProfessorComponent],
+  imports: [NgClass, FormsModule, ReactiveFormsModule, LoadingFlorComponent, ModalCadastrarProfessorComponent],
   templateUrl: './coordenador-professores.component.html',
   styleUrls: ['./coordenador-professores.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -246,7 +247,7 @@ export class CoordenadorProfessoresComponent implements OnInit {
     this.editarErro.set(null);
 
     // Aplica trim() nos campos de texto antes do envio (padrão da aba Saúde)
-    const dados: any = {
+    const dados: Record<string, unknown> = {
       nome: (this.editarForm.value.nome as string)?.trim(),
       telefone: this.editarForm.value.telefone,
       tipo: this.editarForm.value.tipo,
@@ -258,7 +259,7 @@ export class CoordenadorProfessoresComponent implements OnInit {
     if (cpfControlValue) {
       const cpfLimpo = String(cpfControlValue).replace(/\D/g, '');
       if (cpfLimpo.length === 11) {
-        dados.cpf = cpfLimpo;
+        dados['cpf'] = cpfLimpo;
       }
     }
 
@@ -283,11 +284,11 @@ export class CoordenadorProfessoresComponent implements OnInit {
     return value === null || value === undefined || String(value).trim() === '';
   }
 
-  apenasNumeros(event: any, campo: string) {
-    const inputValue = event.target.value;
-    const numeros = inputValue.replace(/\D/g, '');
+  apenasNumeros(event: Event, campo: string) {
+    const input = event.target as HTMLInputElement;
+    const numeros = input.value.replace(/\D/g, '');
     this.editarForm.get(campo)?.setValue(numeros, { emitEvent: false });
-    event.target.value = numeros;
+    input.value = numeros;
   }
 
   // ─── Desativação / Reativação ─────────────────────────────────────────────
@@ -422,9 +423,44 @@ export class CoordenadorProfessoresComponent implements OnInit {
 
   // ─── Exportação CSV ───────────────────────────────────────────────────────
 
-  exportarCSV(): void {
-    const professores = this.professores();
-    if (professores.length === 0) return;
+  exportandoCSV = signal(false);
+
+  /** Busca TODOS os educadores que casam com os filtros ativos, paginando em loop (ignora a página exibida em tela). */
+  private async buscarTodosOsEducadoresFiltrados(): Promise<EducadorListagemItem[]> {
+    const LIMITE_POR_REQUISICAO = 100;
+    const paramsBase: Record<string, string> = {};
+    const termo = this.termoBusca().trim();
+    if (termo) {
+      const isMatricula = /^\d+$/.test(termo);
+      if (isMatricula) {
+        paramsBase['matricula'] = termo;
+      } else {
+        paramsBase['nome'] = termo;
+      }
+    }
+    if (this.filtroTipo()) paramsBase['tipo'] = this.filtroTipo();
+    if (this.filtroStatus()) paramsBase['status'] = this.filtroStatus();
+
+    const todos: EducadorListagemItem[] = [];
+    let pagina = 1;
+    let totalPaginas = 1;
+
+    do {
+      const params = { ...paramsBase, page: String(pagina), limit: String(LIMITE_POR_REQUISICAO) };
+      const resposta = await firstValueFrom(this.http.get<PaginacaoEducadores>(this.apiUrl, { params }));
+      todos.push(...resposta.data);
+      totalPaginas = resposta.totalPaginas;
+      pagina++;
+    } while (pagina <= totalPaginas);
+
+    return todos;
+  }
+
+  async exportarCSV(): Promise<void> {
+    if (this.exportandoCSV()) return;
+    this.exportandoCSV.set(true);
+    const professores = await this.buscarTodosOsEducadoresFiltrados();
+    if (professores.length === 0) { this.exportandoCSV.set(false); return; }
 
     const cabecalho = ['Nome', 'Matrícula', 'Turma(s)', 'Tipo', 'Status'];
     const linhas = professores.map((p) => [
@@ -447,6 +483,7 @@ export class CoordenadorProfessoresComponent implements OnInit {
     link.click();
     URL.revokeObjectURL(url);
     this.auditoriaService.registrarDownload('PROFESSORES', 'CSV', this.buildDetalhes()).subscribe();
+    this.exportandoCSV.set(false);
   }
 
   private buildDetalhes(): string {
@@ -481,7 +518,7 @@ export class CoordenadorProfessoresComponent implements OnInit {
     this.isImporting.set(true);
     this.importResult.set(null);
 
-    this.http.post<any>(`${this.apiUrl}/importar-csv`, formData)
+    this.http.post<ImportacaoRelatorio>(`${this.apiUrl}/importar-csv`, formData)
       .subscribe({
         next: (res) => {
           this.isImporting.set(false);
@@ -492,7 +529,7 @@ export class CoordenadorProfessoresComponent implements OnInit {
           });
           this.dispararBusca();
         },
-        error: (err) => {
+        error: (err: HttpErrorResponse) => {
           this.isImporting.set(false);
           alert('Erro ao importar CSV: ' + (err.error?.message || err.message));
         }

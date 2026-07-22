@@ -7,7 +7,7 @@ import { FeedbackMessage, FeedbackType } from '../models/feedback.model';
 export class FeedbackService {
   private queue: FeedbackMessage[] = [];
   public currentFeedback = signal<FeedbackMessage | null>(null);
-  private timer: any = null;
+  private timer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {}
 

@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed, ChangeDetectionStrategy, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { NgClass, SlicePipe, DatePipe, isPlatformBrowser } from '@angular/common';
 import { TurmasService, TurmaResumo, EstudanteResumo, EstudantesPorTurmaResponse, MetricasTurma } from '../../../nucleo/services/turmas.service';
 import { AuthService } from '../../../nucleo/services/auth';
 import { DiagLabelPipe, DiagColorPipe } from '../../../compartilhado/pipes/student.pipes';
@@ -13,6 +13,7 @@ import { LoadingFlorComponent } from '../../../compartilhado/components/loading-
 import { jsPDF } from 'jspdf';
 import { toPng } from 'html-to-image';
 import { buildAlunoModalData, getDiagnosticosArrayForCard, buildFotoUrl } from '../../../compartilhado/utils/aluno-modal.utils';
+import { DiagnosticoVisibilidadeService } from '../../../compartilhado/services/diagnostico-visibilidade.service';
 
 import { API_BASE_URL } from '../../../nucleo/config/api.config';
 
@@ -45,7 +46,9 @@ const SEXO_LABEL: Record<string, string> = {
 @Component({
   selector: 'app-turmas-page',
   imports: [
-    CommonModule,
+    NgClass,
+    SlicePipe,
+    DatePipe,
     CardAlunoComponent,
     DiagLabelPipe,
     DiagColorPipe,
@@ -64,6 +67,7 @@ export class TurmasComponent implements OnInit, OnDestroy {
   private readonly auditoriaService = inject(AuditoriaService);
   private readonly baseUrl = inject(API_BASE_URL);
   private readonly platformId = inject(PLATFORM_ID);
+  protected readonly diagVis = inject(DiagnosticoVisibilidadeService);
 
   // ── ViewChild para captura do PDF ─────────────────────
   @ViewChild('relatorioTurma') relatorioTurma!: ElementRef;

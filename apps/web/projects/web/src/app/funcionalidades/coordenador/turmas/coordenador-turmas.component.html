@@ -3,39 +3,45 @@
     <!-- Cabeçalho -->
     <div class="main-header">
       <div class="main-title-block">
-        <h1 class="main-title">Painel da Turma
-          <span class="text-xl sm:text-2xl font-semibold text-[#4A248A]/60"> · Coordenador</span>
-        </h1>
-        @if (turmaSelecionada()) {
-          <span class="text-base font-semibold text-[#4A248A] mt-0.5">
-            {{ nomeTurmaExibicao(turmaSelecionada()!) }}
-          </span>
-          <span class="turma-badge">
-            {{ turmaSelecionada()!.anoLetivo }} · {{ turmaSelecionada()!.turno | slice: 0 : 3 }}
-          </span>
-        }
-
-        @if (turmas().length > 0) {
-          <div class="turma-selector-dropdown mt-2 sm:mt-0 relative max-w-md w-full sm:w-auto min-w-[200px]">
-            <select
-              class="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[#6C3CC9] focus:border-transparent transition-all cursor-pointer hover:bg-gray-50 hover:border-gray-300"
-              (change)="onTurmaSelecionadaChange($event)"
-              aria-label="Selecionar turma"
-            >
-              <option value="" disabled [selected]="!turmaSelecionada()">Selecione uma turma</option>
-              @for (turma of turmas(); track turma.id) {
-                <option [value]="turma.id" [selected]="turmaSelecionada()?.id === turma.id">
-                  {{ nomeTurmaExibicao(turma) }}
-                </option>
-              }
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="flex flex-col">
+            <h1 class="main-title">Painel da Turma
+              <span class="text-xl sm:text-2xl font-semibold text-[#4A248A]/60"> · Coordenador</span>
+            </h1>
+            @if (turmaSelecionada()) {
+              <span class="text-base font-semibold text-[#4A248A] mt-0.5">
+                {{ nomeTurmaExibicao(turmaSelecionada()!) }}
+              </span>
+            }
           </div>
-        }
+          @if (turmaSelecionada()) {
+            <span class="turma-badge">
+              {{ turmaSelecionada()!.anoLetivo }} · {{ turmaSelecionada()!.turno | slice: 0 : 3 }}
+            </span>
+          }
+
+          @if (turmas().length > 0) {
+            <div class="turma-selector-dropdown relative max-w-md w-full sm:w-auto min-w-[200px]">
+              <select
+                class="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[#6C3CC9] focus:border-transparent transition-all cursor-pointer hover:bg-gray-50 hover:border-gray-300"
+                (change)="onTurmaSelecionadaChange($event)"
+                aria-label="Selecionar turma"
+              >
+                <option value="" disabled [selected]="!turmaSelecionada()">Selecione uma turma</option>
+                @for (turma of turmas(); track turma.id) {
+                  <option [value]="turma.id" [selected]="turmaSelecionada()?.id === turma.id">
+                    {{ nomeTurmaExibicao(turma) }}
+                  </option>
+                }
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+          }
+        </div>
       </div>
     </div>
 
@@ -86,7 +92,7 @@
               <span class="text-4xl font-extrabold text-blue-300 leading-none animate-pulse">—</span>
             } @else {
               <span class="text-4xl font-extrabold text-blue-600 leading-none">
-                @if (metricas()?.idadePredominante !== null && metricas()?.idadePredominante !== undefined) { {{ metricas()!.idadePredominante }}<span class="text-xl font-black uppercase tracking-wider ml-1">ANOS</span> } @else { — }
+                @if (metricas()?.idadePredominante !== null && metricas()?.idadePredominante !== undefined) { {{ metricas()!.idadePredominante }}<span class="text-2xl uppercase tracking-wider ml-1">ANOS</span> } @else { — }
               </span>
             }
           </div>
@@ -105,7 +111,7 @@
             @if (loadingEstudantes()) {
               <span class="text-4xl font-extrabold text-amber-300 leading-none animate-pulse">—</span>
             } @else {
-              <span class="text-2xl font-extrabold text-amber-600 leading-none">{{ diagnosticoPrincipalLabel() }}</span>
+              <span class="text-2xl font-extrabold text-amber-600 leading-none" [class.diagnostico-blur]="!diagVis.visivel()">{{ diagnosticoPrincipalLabel() }}</span>
             }
           </div>
         </div>
@@ -237,7 +243,7 @@
                               @if (aluno.diagnosticos.length > 0) {
                                 <div class="flex flex-wrap justify-center gap-1">
                                   @for (d of aluno.diagnosticos; track $index) {
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-nunito font-bold border shadow-sm" [ngClass]="d.diagnostico.tipo | diagColor">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-nunito font-bold border shadow-sm" [ngClass]="d.diagnostico.tipo | diagColor" [class.diagnostico-blur]="!diagVis.visivel()">
                                       {{ d.diagnostico.tipo | diagLabel }}
                                     </span>
                                   }

@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, input, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common'; 
+import { Component, ChangeDetectionStrategy, inject, OnInit, input, signal, computed } from '@angular/core';
+import { NgClass, DatePipe, SlicePipe } from '@angular/common';
 import { EstudantesService } from '../../../../../../compartilhado/services/estudantes.service';
 import { AuthService } from '../../../../../../nucleo/services/auth';
 import { HttpClient } from '@angular/common/http';
@@ -24,9 +24,9 @@ function getDiaUtilValido(date: Date): Date {
 
 @Component({
   selector: 'app-agenda-semanal',
-  standalone: true,
-  imports: [CommonModule], 
-  templateUrl: './agenda-semanal.component.html'
+  imports: [NgClass, DatePipe, SlicePipe],
+  templateUrl: './agenda-semanal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AgendaSemanalComponent implements OnInit {
   estudanteId = input.required<string>(); 

@@ -7,7 +7,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
  */
 @Component({
   selector: 'app-loading-flor',
-  standalone: true,
   templateUrl: './loading-flor.component.html',
   styleUrl: './loading-flor.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

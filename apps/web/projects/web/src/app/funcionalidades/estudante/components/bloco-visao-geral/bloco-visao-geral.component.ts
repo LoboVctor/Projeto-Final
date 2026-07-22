@@ -1,14 +1,13 @@
 import {
   Component,
-  EventEmitter,
-  Output,
   ChangeDetectionStrategy,
   OnInit,
   inject,
   WritableSignal,
   input,
+  output,
   signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import {
   EstudanteVisaoGeral,
   EspecificidadeVisaoGeral } from '../../../../compartilhado/models/estudante-visao-geral.model';
@@ -19,7 +18,7 @@ import { AuthService } from '../../../../nucleo/services/auth';
 
 @Component({
   selector: 'app-bloco-visao-geral',
-  imports: [CommonModule, EspecificidadeModalComponent, ModalEditarAlunoComponent],
+  imports: [DatePipe, EspecificidadeModalComponent, ModalEditarAlunoComponent],
   templateUrl: './bloco-visao-geral.component.html',
   styleUrls: ['./bloco-visao-geral.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush })
@@ -30,31 +29,31 @@ export class BlocoVisaoGeralComponent implements OnInit {
   readonly loading = input<boolean>(false);
   readonly error = input<string | null>(null);
 
-  @Output() recolher = new EventEmitter<void>();
-  @Output() fechar = new EventEmitter<void>();
-  @Output() tentarNovamente = new EventEmitter<void>();
+  readonly recolher = output<void>();
+  readonly fechar = output<void>();
+  readonly tentarNovamente = output<void>();
 
-  showModalEspecificidade = false;
-  especificidadeParaEditar: EspecificidadeVisaoGeral | null = null;
-  
-  showModalEditarAluno = false;
+  showModalEspecificidade = signal(false);
+  especificidadeParaEditar = signal<EspecificidadeVisaoGeral | null>(null);
+
+  showModalEditarAluno = signal(false);
 
   paginaGatilhos = signal(0);
   paginaComportamentos = signal(0);
   paginaProtocolos = signal(0);
 
-  userRole: 'PROFESSOR' | 'COORDENADOR' = 'PROFESSOR';
+  userRole = signal<'PROFESSOR' | 'COORDENADOR'>('PROFESSOR');
 
   ngOnInit() {
-    this.userRole = (this.authService.getRole() as 'PROFESSOR' | 'COORDENADOR') || 'PROFESSOR';
+    this.userRole.set((this.authService.getRole() as 'PROFESSOR' | 'COORDENADOR') || 'PROFESSOR');
   }
 
   editarInformacoes(): void {
-    this.showModalEditarAluno = true;
+    this.showModalEditarAluno.set(true);
   }
 
   fecharModalEditarAluno(): void {
-    this.showModalEditarAluno = false;
+    this.showModalEditarAluno.set(false);
   }
 
   onAlunoEditado(): void {
@@ -134,11 +133,11 @@ export class BlocoVisaoGeralComponent implements OnInit {
   }
 
   abrirModalEspecificidade(): void {
-    this.showModalEspecificidade = true;
+    this.showModalEspecificidade.set(true);
   }
 
   fecharModalEspecificidade(): void {
-    this.showModalEspecificidade = false;
+    this.showModalEspecificidade.set(false);
   }
 
   onEspecificidadeSalva(): void {

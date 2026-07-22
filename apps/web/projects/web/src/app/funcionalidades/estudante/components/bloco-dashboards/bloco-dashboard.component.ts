@@ -1,5 +1,5 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, effect, inject, signal, computed, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, effect, inject, input, output, signal, computed, OnInit } from '@angular/core';
+import { NgClass, DatePipe, DecimalPipe } from '@angular/common';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -13,16 +13,16 @@ import { LoadingFlorComponent } from '../../../../compartilhado/components/loadi
 
 @Component({
   selector: 'app-bloco-dashboard',
-  standalone: true,
-  imports: [CommonModule, LoadingFlorComponent],
+  imports: [NgClass, DatePipe, DecimalPipe, LoadingFlorComponent],
   templateUrl: './bloco-dashboard.component.html',
-  styleUrls: ['./bloco-dashboard.component.css']
+  styleUrls: ['./bloco-dashboard.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BlocoDashboardComponent implements OnInit {
-  @Input({ required: true }) estudanteId!: string;
+  readonly estudanteId = input.required<string>();
   /** Nome do estudante — usado nos nomes dos arquivos exportados */
-  @Input() nomeEstudante: string = '';
-  @Output() recolher = new EventEmitter<void>();
+  readonly nomeEstudante = input<string>('');
+  readonly recolher = output<void>();
 
   private analyticsService = inject(AnalyticsService);
   private readonly auditoriaService = inject(AuditoriaService);
@@ -62,7 +62,7 @@ export class BlocoDashboardComponent implements OnInit {
   private historicoChart?: Chart;
 
   private dashboardResumo$ = toObservable(this.periodo).pipe(
-    switchMap(p => this.analyticsService.getDashboardSummary(this.estudanteId, p)),
+    switchMap(p => this.analyticsService.getDashboardSummary(this.estudanteId(), p)),
     catchError(() => of(null))
   );
   dashboardData = toSignal(this.dashboardResumo$);
@@ -195,8 +195,8 @@ export class BlocoDashboardComponent implements OnInit {
     const categoriaFormatada = mapaCategorias[categoria] || categoria;
 
     this.analyticsService.getAnalyticsHistorico(
-      this.estudanteId, 
-      this.periodo(), 
+      this.estudanteId(),
+      this.periodo(),
       categoriaFormatada, 
       strInicio, 
       strFim
@@ -324,7 +324,7 @@ export class BlocoDashboardComponent implements OnInit {
     let csv = '\ufeff'; 
     
     csv += `RELATÓRIO DE DESEMPENHO ANALÍTICO\n`;
-    csv += `Aluno:;${this.nomeEstudante || '—'}\n`;
+    csv += `Aluno:;${this.nomeEstudante() || '—'}\n`;
     csv += `Data de Geração:;${dataAtual} às ${horaAtual}\n`;
     csv += `Gerado por:;${this.nomeUsuarioLogado()}\n`;
     csv += `Período Analisado:;${periodoLabel}\n\n`;
@@ -344,17 +344,18 @@ export class BlocoDashboardComponent implements OnInit {
 
     Object.keys(data.categorias).forEach(key => {
       const cat = data.categorias[key];
+      if (!cat) return;
       const nomeCorreto = nomes[key] || key;
-      const descricao = this.descricoesCategorias[nomeCorreto] || ''; 
-      
-      csv += `${nomeCorreto};${cat.valor?.toFixed(2) || 0};${cat.variacao >= 0 ? '+' : ''}${cat.variacao?.toFixed(2) || 0};"${descricao}"\n`;
+      const descricao = this.descricoesCategorias[nomeCorreto] || '';
+
+      csv += `${nomeCorreto};${cat.valor.toFixed(2)};${cat.variacao >= 0 ? '+' : ''}${cat.variacao.toFixed(2)};"${descricao}"\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `Relatorio_Dashboard_${this.nomeEstudante ? this.nomeEstudante.replace(/\s+/g, '_') + '_' : ''}${this.periodo()}.csv`);
+    link.setAttribute('download', `Relatorio_Dashboard_${this.nomeEstudante() ? this.nomeEstudante().replace(/\s+/g, '_') + '_' : ''}${this.periodo()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -421,7 +422,7 @@ export class BlocoDashboardComponent implements OnInit {
       const pdfDinamico = new jsPDF('p', 'mm', [larguraPDF, alturaPDF]);
       pdfDinamico.addImage(imgData, 'PNG', 0, 0, larguraPDF, alturaPDF);
 
-      pdfDinamico.save(`Relatorio_Dashboard_${this.nomeEstudante ? this.nomeEstudante.replace(/\s+/g, '_') + '_' : ''}${this.periodo()}.pdf`);
+      pdfDinamico.save(`Relatorio_Dashboard_${this.nomeEstudante() ? this.nomeEstudante().replace(/\s+/g, '_') + '_' : ''}${this.periodo()}.pdf`);
       this.auditoriaService.registrarDownload('RELATORIO_DASHBOARD', 'PDF', this.buildDetalhes()).subscribe();
 
     } catch (erro) {
@@ -444,7 +445,7 @@ export class BlocoDashboardComponent implements OnInit {
   }
 
   private buildDetalhes(): string {
-    return `periodo=${this.periodo()}; estudanteId=${this.estudanteId}; nomeEstudante=${this.nomeEstudante}`;
+    return `periodo=${this.periodo()}; estudanteId=${this.estudanteId()}; nomeEstudante=${this.nomeEstudante()}`;
   }
 
   // --- Lógica dos Gráficos Principais ---

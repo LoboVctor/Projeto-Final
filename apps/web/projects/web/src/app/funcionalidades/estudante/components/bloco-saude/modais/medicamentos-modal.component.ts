@@ -1,5 +1,5 @@
-import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, input, output, signal, ChangeDetectionStrategy } from '@angular/core';
+import { LowerCasePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { EstudantesService } from '../../../../../compartilhado/services/estudantes.service';
 import { ConfirmacaoService } from '../../../../../compartilhado/services/confirmacao.service';
@@ -41,19 +41,19 @@ export interface MedicamentoEstudante {
 
 @Component({
   selector: 'app-modal-medicamentos',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './medicamentos-modal.component.html'
+  imports: [ReactiveFormsModule, LowerCasePipe],
+  templateUrl: './medicamentos-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ModalMedicamentosComponent implements OnInit {
-  @Input() estudanteId!: string;
-  @Input() medicamentos: MedicamentoModal[] = [];
+  readonly estudanteId = input.required<string>();
+  readonly medicamentos = input<MedicamentoModal[]>([]);
 
-  @Output() fechar = new EventEmitter<void>();
-  @Output() salvo = new EventEmitter<void>();
+  readonly fechar = output<void>();
+  readonly salvo = output<void>();
 
   medicamentoForm: FormGroup;
-  editingMedicamentoId: number | null = null;
+  editingMedicamentoId = signal<number | null>(null);
 
   private fb = inject(FormBuilder);
   private estudantesService = inject(EstudantesService);
@@ -77,7 +77,7 @@ export class ModalMedicamentosComponent implements OnInit {
   ngOnInit(): void {}
 
   selecionarParaEdicao(relacaoMedicamento: MedicamentoModal): void {
-    this.editingMedicamentoId = relacaoMedicamento.id_medicamento || relacaoMedicamento.medicamentoId || null;
+    this.editingMedicamentoId.set(relacaoMedicamento.id_medicamento || relacaoMedicamento.medicamentoId || null);
 
     let horarioFormatado = '';
     if (relacaoMedicamento.horarioAdministrado) {
@@ -95,7 +95,7 @@ export class ModalMedicamentosComponent implements OnInit {
   }
 
   cancelarEdicao(): void {
-    this.editingMedicamentoId = null;
+    this.editingMedicamentoId.set(null);
     this.medicamentoForm.reset({
       unidadeMedida: 'MG',
       administradoNaEscola: false
@@ -110,9 +110,10 @@ export class ModalMedicamentosComponent implements OnInit {
 
     if (!dados.nomeMedicamento) return;
 
-    const acao = this.editingMedicamentoId
-      ? this.estudantesService.updateMedicamento(this.estudanteId, this.editingMedicamentoId, dados)
-      : this.estudantesService.saveMedicamento(this.estudanteId, dados);
+    const idEmEdicao = this.editingMedicamentoId();
+    const acao = idEmEdicao
+      ? this.estudantesService.updateMedicamento(this.estudanteId(), idEmEdicao, dados)
+      : this.estudantesService.saveMedicamento(this.estudanteId(), dados);
 
     acao.subscribe({
       next: () => {
@@ -134,7 +135,7 @@ export class ModalMedicamentosComponent implements OnInit {
       variante: 'danger' });
     if (!confirmado) return;
 
-    this.estudantesService.deleteMedicamento(this.estudanteId, medicamentoId).subscribe({
+    this.estudantesService.deleteMedicamento(this.estudanteId(), medicamentoId).subscribe({
       next: () => this.salvo.emit(),
       error: (err: unknown) => console.error('Erro ao excluir medicamento:', err)
     });

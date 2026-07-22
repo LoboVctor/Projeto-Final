@@ -28,7 +28,7 @@
         </svg>
       </button>
       
-      @if (userRole === 'COORDENADOR') {
+      @if (userRole() === 'COORDENADOR') {
       <button (click)="editarInformacoes()"
         class="text-xs font-semibold px-3 py-1.5 bg-white border-2 border-elo-roxo-principal text-elo-roxo-principal rounded-lg hover:bg-elo-roxo-principal hover:text-white transition-colors duration-200 flex items-center gap-1.5 cursor-pointer shadow-sm">
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -95,7 +95,7 @@
     <div>
       <div class="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-gray-100">
         <h3 class="text-base font-bold font-['Sora'] text-blue-700 m-0 leading-none">Informações Acadêmicas</h3>
-        @if (userRole === 'PROFESSOR') {
+        @if (userRole() === 'PROFESSOR') {
         <span class="inline-flex items-center text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
@@ -165,7 +165,7 @@
     <div>
       <div class="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-gray-100">
         <h3 class="text-base font-bold font-['Sora'] text-blue-700 m-0 leading-none">Informações Pessoais</h3>
-        @if (userRole === 'PROFESSOR') {
+        @if (userRole() === 'PROFESSOR') {
         <span class="inline-flex items-center text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
@@ -411,13 +411,13 @@
   }
 </div>
 
-@if (showModalEspecificidade) {
+@if (showModalEspecificidade()) {
 <app-especificidade-modal [estudanteId]="visaoGeralData()?.id || ''" [especificidades]="especificidadesFiltradas"
   (fechar)="fecharModalEspecificidade()" (salvo)="onEspecificidadeSalva()">
 </app-especificidade-modal>
 }
 
-@if (showModalEditarAluno) {
+@if (showModalEditarAluno()) {
 <app-modal-editar-aluno [visaoGeralData]="visaoGeralData()" (fechar)="fecharModalEditarAluno()" (salvo)="onAlunoEditado()">
 </app-modal-editar-aluno>
 }

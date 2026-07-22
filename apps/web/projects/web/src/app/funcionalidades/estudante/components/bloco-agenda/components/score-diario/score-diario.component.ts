@@ -1,13 +1,13 @@
 import {
   Component,
-  Input,
-  Output,
-  EventEmitter,
   ChangeDetectionStrategy,
   OnChanges,
-  SimpleChanges
+  SimpleChanges,
+  input,
+  output,
+  signal
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgClass, NgTemplateOutlet } from '@angular/common';
 import { RegistroDiario } from '../../../../../../compartilhado/models/registros-diarios.models';
 import { ScoreKey } from '../../bloco-agenda.component';
 
@@ -18,21 +18,20 @@ interface IndicadorScore {
 
 @Component({
   selector: 'app-score-diario',
-  standalone: true,
-  imports: [CommonModule],
+  imports: [NgClass, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './score-diario.component.html',
   styleUrls: ['./score-diario.component.css']
 })
 export class ScoreDiarioComponent implements OnChanges {
-  @Input() registro: RegistroDiario | null = null;
-  @Output() salvarScores = new EventEmitter<Partial<RegistroDiario>>();
+  readonly registro = input<RegistroDiario | null>(null);
+  readonly salvarScores = output<Partial<RegistroDiario>>();
 
   readonly posicoes = [1, 2, 3, 4, 5];
-  hoverMap: Record<string, number> = {};
+  hoverMap = signal<Record<string, number>>({});
 
-  modoEdicao: boolean = false;
-  scoresEditados: Partial<RegistroDiario> = {};
+  modoEdicao = signal(false);
+  scoresEditados = signal<Partial<RegistroDiario>>({});
 
   readonly indicadores: IndicadorScore[] = [
     { key: 'statusAlimentacao', label: 'Alimentação' },
@@ -50,30 +49,30 @@ export class ScoreDiarioComponent implements OnChanges {
   }
 
   ativarEdicao(): void {
-    this.scoresEditados = { ...this.registro };
-    this.modoEdicao = true;
+    this.scoresEditados.set({ ...this.registro() });
+    this.modoEdicao.set(true);
   }
 
   cancelarEdicao(): void {
-    this.scoresEditados = {};
-    this.modoEdicao = false;
-    this.hoverMap = {};
+    this.scoresEditados.set({});
+    this.modoEdicao.set(false);
+    this.hoverMap.set({});
   }
 
   salvar(): void {
-    this.salvarScores.emit(this.scoresEditados);
-    this.modoEdicao = false;
+    this.salvarScores.emit(this.scoresEditados());
+    this.modoEdicao.set(false);
   }
 
   getScoreOriginal(key: ScoreKey): number {
-    if (!this.registro) return 0;
-    const val = (this.registro as any)[key];
-    return this.normalizarScore(val);
+    const registro = this.registro();
+    if (!registro) return 0;
+    return this.normalizarScore(registro[key]);
   }
 
   getScoreExibicao(key: ScoreKey): number {
-    if (this.modoEdicao) {
-      const val = (this.scoresEditados as any)[key];
+    if (this.modoEdicao()) {
+      const val = this.scoresEditados()[key];
       const scoreEditado = this.normalizarScore(val);
       if (scoreEditado > 0) return scoreEditado;
     }
@@ -81,25 +80,27 @@ export class ScoreDiarioComponent implements OnChanges {
   }
 
   isAtivo(key: ScoreKey, posicao: number): boolean {
-    const hover = this.hoverMap[key] ?? 0;
+    const hover = this.hoverMap()[key] ?? 0;
     const valorDaMetrica = hover > 0 ? hover : this.getScoreExibicao(key);
     return valorDaMetrica >= posicao;
   }
 
   aplicarHover(key: ScoreKey, posicao: number): void {
-    if (!this.modoEdicao) return;
-    this.hoverMap = { ...this.hoverMap, [key]: posicao };
+    if (!this.modoEdicao()) return;
+    this.hoverMap.update((m) => ({ ...m, [key]: posicao }));
   }
 
   limparHover(key: ScoreKey): void {
-    const m = { ...this.hoverMap };
-    delete m[key];
-    this.hoverMap = m;
+    this.hoverMap.update((m) => {
+      const copia = { ...m };
+      delete copia[key];
+      return copia;
+    });
   }
 
   selecionarScore(key: ScoreKey, value: number): void {
-    if (!this.modoEdicao) return;
-    this.scoresEditados = { ...this.scoresEditados, [key]: value };
+    if (!this.modoEdicao()) return;
+    this.scoresEditados.update((s) => ({ ...s, [key]: value }));
   }
 
   private normalizarScore(value: unknown): number {

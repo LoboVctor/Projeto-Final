@@ -1,4 +1,4 @@
-import { Component, Input , ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 
 import { EstudanteResumo } from '../../../../../nucleo/services/turmas.service';
 import { ShortNamePipe, DiagLabelPipe } from '../../../../../compartilhado/pipes/student.pipes';
@@ -7,6 +7,7 @@ import { ShortNamePipe, DiagLabelPipe } from '../../../../../compartilhado/pipes
   selector: 'app-student-card',
   imports: [ShortNamePipe, DiagLabelPipe],
   template: `
+    @if (estudante(); as estudante) {
     <div class="student-card">
       <div class="card-matricula">{{ estudante.matricula }}</div>
 
@@ -40,6 +41,7 @@ import { ShortNamePipe, DiagLabelPipe } from '../../../../../compartilhado/pipes
         </div>
       </div>
     </div>
+    }
   `,
   styles: [
     `
@@ -138,5 +140,5 @@ import { ShortNamePipe, DiagLabelPipe } from '../../../../../compartilhado/pipes
   ],
   changeDetection: ChangeDetectionStrategy.OnPush })
 export class StudentCardComponent {
-  @Input({ required: true }) estudante!: EstudanteResumo;
+  readonly estudante = input.required<EstudanteResumo>();
 }

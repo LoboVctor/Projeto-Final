@@ -1,5 +1,4 @@
-import { Component, EventEmitter, Output, inject, input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, input, output, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { MetaDesenvolvimento } from '../../../../../compartilhado/models/estudante-pedagogico.model';
 import { EstudantesService } from '../../../../../compartilhado/services/estudantes.service';
@@ -20,22 +19,22 @@ function parecerValidator(): ValidatorFn {
 
 @Component({
   selector: 'app-avaliacao-meta-modal',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './avaliacao-meta-modal.component.html'
+  imports: [ReactiveFormsModule],
+  templateUrl: './avaliacao-meta-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AvaliacaoMetaModalComponent implements OnInit {
   readonly meta = input.required<MetaDesenvolvimento>();
 
-  @Output() fechar = new EventEmitter<void>();
-  @Output() salvou = new EventEmitter<void>();
+  readonly fechar = output<void>();
+  readonly salvou = output<void>();
 
   private readonly fb = inject(FormBuilder);
   private readonly estudantesService = inject(EstudantesService);
   private readonly feedbackService = inject(FeedbackService);
 
   form!: FormGroup;
-  isLoading = false;
+  isLoading = signal(false);
 
   ngOnInit(): void {
     const metaAtual = this.meta();
@@ -71,19 +70,19 @@ export class AvaliacaoMetaModalComponent implements OnInit {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
 
-    this.isLoading = true;
+    this.isLoading.set(true);
     const raw = this.form.value;
     const payload = { scoreFinal: raw.scoreFinal, parecer: (raw.parecer || '').trim() };
 
     this.estudantesService.updateAvaliacaoMeta(this.meta().id, payload).subscribe({
       next: () => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         this.feedbackService.showSuccess('Avaliação salva com sucesso.');
         this.salvou.emit();
         this.fechar.emit();
       },
       error: () => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         this.feedbackService.showError('Erro ao salvar a avaliação. Tente novamente.');
       }
     });
