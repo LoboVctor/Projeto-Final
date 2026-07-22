@@ -11,6 +11,7 @@ export interface PerfilResumido {
   id: string;
   nome?: string;
   nomeCompleto?: string;
+  escolaId?: string;
 }
 
 export interface UsuarioLogado {
@@ -138,7 +139,7 @@ export class AuthService {
 
   getEscolaId(): string | null {
     const user = this.usuarioSubject();
-    return user?.escolaId ?? (user?.educador as any)?.escolaId ?? null;
+    return user?.escolaId ?? user?.educador?.escolaId ?? null;
   }
 
   getLoggedUserName(): string {

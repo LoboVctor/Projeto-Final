@@ -22,7 +22,6 @@ export interface BigNumberCard {
  */
 @Component({
   selector: 'app-big-numbers',
-  standalone: true,
   templateUrl: './big-numbers.component.html',
   styleUrl: './big-numbers.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

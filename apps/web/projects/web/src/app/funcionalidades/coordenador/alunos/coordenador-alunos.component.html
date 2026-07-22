@@ -190,14 +190,14 @@
     <div class="flex gap-2">
       <input #fileInput type="file" accept=".csv" class="hidden" (change)="onFileSelected($event)">
       
-      <button class="btn-exportar" (click)="exportarCSV()" [disabled]="!temResultados() || isImporting()">
+      <button class="btn-exportar" (click)="exportarCSV()" [disabled]="!temResultados() || isImporting() || exportandoCSV()">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
           <polyline points="7 10 12 15 17 10"></polyline>
           <line x1="12" y1="15" x2="12" y2="3"></line>
         </svg>
-        Exportar CSV
+        {{ exportandoCSV() ? 'Exportando...' : 'Exportar CSV' }}
       </button>
 
       <div class="relative">
@@ -297,7 +297,7 @@
                   @if (aluno.diagnosticos.length > 0) {
                     <div class="flex flex-wrap justify-center gap-1">
                       @for (d of aluno.diagnosticos; track $index) {
-                        <span class="px-2 py-0.5 rounded text-[10px] font-nunito font-bold border shadow-sm" [ngClass]="d.diagnostico.tipo | diagColor">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-nunito font-bold border shadow-sm" [ngClass]="d.diagnostico.tipo | diagColor" [class.diagnostico-blur]="!diagVis.visivel()">
                           {{ d.diagnostico.tipo | diagLabel }}
                         </span>
                       }

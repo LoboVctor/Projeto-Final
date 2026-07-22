@@ -1,14 +1,13 @@
 import {
   Component,
-  EventEmitter,
-  Input,
-  Output,
   OnInit,
   OnDestroy,
   inject,
   ChangeDetectionStrategy,
-  input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+  input,
+  output,
+  signal } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { EstudantesService } from '../../../../../../compartilhado/services/estudantes.service';
 import { EspecificidadeVisaoGeral } from '../../../../../../compartilhado/models/estudante-visao-geral.model';
@@ -30,7 +29,7 @@ export function textoInvalidoValidator(): ValidatorFn {
 
 @Component({
   selector: 'app-especificidade-modal',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [NgClass, ReactiveFormsModule],
   templateUrl: './especificidade-modal.component.html',
   styleUrls: ['./especificidade-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush })
@@ -40,21 +39,21 @@ export class EspecificidadeModalComponent implements OnInit, OnDestroy {
   private confirmacaoService = inject(ConfirmacaoService);
 
   readonly estudanteId = input.required<string>();
-  @Input() especificidades: EspecificidadeVisaoGeral[] = [];
-  @Output() fechar = new EventEmitter<void>();
-  @Output() salvo = new EventEmitter<void>();
+  readonly especificidades = input<EspecificidadeVisaoGeral[]>([]);
+  readonly fechar = output<void>();
+  readonly salvo = output<void>();
 
   especificidadeForm!: FormGroup;
-  loading = false;
-  erro = '';
-  editingEspecificidadeId: number | null = null;
+  loading = signal(false);
+  erro = signal('');
+  editingEspecificidadeId = signal<number | null>(null);
 
   ngOnInit() {
     this.initForm();
   }
 
   initForm(esp?: EspecificidadeVisaoGeral) {
-    this.editingEspecificidadeId = esp ? esp.especificidadeId : null;
+    this.editingEspecificidadeId.set(esp ? esp.especificidadeId : null);
     this.especificidadeForm = this.fb.group({
       tipo: [esp?.tipo || '', Validators.required],
       categoria: [esp?.categoria || '', Validators.required],
@@ -95,15 +94,15 @@ export class EspecificidadeModalComponent implements OnInit, OnDestroy {
       variante: 'danger' });
     if (!confirmado) return;
 
-    this.loading = true;
+    this.loading.set(true);
     this.estudantesService.deleteEspecificidade(this.estudanteId(), id).subscribe({
       next: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.salvo.emit();
       },
-      error: (err: any) => {
-        this.loading = false;
-        this.erro = 'Erro ao excluir especificidade.';
+      error: () => {
+        this.loading.set(false);
+        this.erro.set('Erro ao excluir especificidade.');
       } });
   }
 
@@ -116,55 +115,57 @@ export class EspecificidadeModalComponent implements OnInit, OnDestroy {
     const tipo = this.especificidadeForm.get('tipo')?.value;
     const categoria = this.especificidadeForm.get('categoria')?.value;
 
-    return this.especificidades.some(
+    return this.especificidades().some(
       (e) =>
         e.tipo === tipo &&
         e.categoria === categoria &&
-        e.especificidadeId !== this.editingEspecificidadeId,
+        e.especificidadeId !== this.editingEspecificidadeId(),
     );
   }
 
   salvar() {
-    if (this.especificidadeForm.invalid || this.loading) return;
+    if (this.especificidadeForm.invalid || this.loading()) return;
 
     // Validação local antes de ir ao servidor
     if (this.verificarDuplicataLocal()) {
-      this.erro = `Já existe uma especificidade do tipo "${this.especificidadeForm.get('tipo')?.value}" com a categoria "${this.especificidadeForm.get('categoria')?.value}" para este estudante. Edite o registro existente ou escolha outra combinação.`;
+      this.erro.set(`Já existe uma especificidade do tipo "${this.especificidadeForm.get('tipo')?.value}" com a categoria "${this.especificidadeForm.get('categoria')?.value}" para este estudante. Edite o registro existente ou escolha outra combinação.`);
       return;
     }
 
-    this.loading = true;
-    this.erro = '';
+    this.loading.set(true);
+    this.erro.set('');
     const payload = this.especificidadeForm.value;
     payload.descricao = payload.descricao?.trim();
     payload.observacao = payload.observacao?.trim();
-    
+
     if (!payload.descricao || !payload.observacao) {
-      this.loading = false;
+      this.loading.set(false);
       return;
     }
 
-    const request$ = this.editingEspecificidadeId
+    const idEmEdicao = this.editingEspecificidadeId();
+    const request$ = idEmEdicao
       ? this.estudantesService.updateEspecificidade(
           this.estudanteId(),
-          this.editingEspecificidadeId,
+          idEmEdicao,
           payload,
         )
       : this.estudantesService.saveEspecificidade(this.estudanteId(), payload);
 
     request$.subscribe({
       next: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.initForm();
         this.salvo.emit();
       },
-      error: (err: any) => {
-        this.loading = false;
+      error: (err: unknown) => {
+        this.loading.set(false);
         // Trata 409 Conflict (duplicata detectada pelo backend)
-        if (err?.status === 409) {
-          this.erro = err?.error?.message || 'Já existe uma especificidade com a mesma categoria para este estudante.';
+        const httpError = err as { status?: number; error?: { message?: string } };
+        if (httpError?.status === 409) {
+          this.erro.set(httpError?.error?.message || 'Já existe uma especificidade com a mesma categoria para este estudante.');
         } else {
-          this.erro = 'Ocorreu um erro ao salvar a especificidade.';
+          this.erro.set('Ocorreu um erro ao salvar a especificidade.');
         }
       } });
   }

@@ -118,9 +118,9 @@
           </p>
 
           <div class="mt-auto flex items-end justify-between w-full gap-2 pt-3">
-            <div class="flex items-center text-xs font-semibold" [ngClass]="dados.categorias[item.key]?.variacao >= 0 ? 'text-green-600' : 'text-red-500'">
-              <span class="text-xl font-black mr-1 leading-none">{{ dados.categorias[item.key]?.variacao >= 0 ? '↑' : '↓' }}</span>
-              <span class="line-clamp-2 leading-tight">{{ dados.categorias[item.key]?.variacao >= 0 ? '+' : '' }}{{ dados.categorias[item.key]?.variacao | number:'1.1-1' }} em relação ao período anterior</span>
+            <div class="flex items-center text-xs font-semibold" [ngClass]="(dados.categorias[item.key]?.variacao ?? 0) >= 0 ? 'text-green-600' : 'text-red-500'">
+              <span class="text-xl font-black mr-1 leading-none">{{ (dados.categorias[item.key]?.variacao ?? 0) >= 0 ? '↑' : '↓' }}</span>
+              <span class="line-clamp-2 leading-tight">{{ (dados.categorias[item.key]?.variacao ?? 0) >= 0 ? '+' : '' }}{{ dados.categorias[item.key]?.variacao | number:'1.1-1' }} em relação ao período anterior</span>
             </div>
             
             <button (click)="abrirDetalheCategoria(item.title)"

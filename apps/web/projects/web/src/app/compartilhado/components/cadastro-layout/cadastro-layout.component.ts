@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, ChangeDetectionStrategy, input, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
 
 @Component({
   selector: 'app-cadastro-layout',
@@ -22,5 +22,5 @@ export class CadastroLayoutComponent {
     return this.titulo();
   });
 
-  @Output() submitClicked = new EventEmitter<void>();
+  readonly submitClicked = output<void>();
 }

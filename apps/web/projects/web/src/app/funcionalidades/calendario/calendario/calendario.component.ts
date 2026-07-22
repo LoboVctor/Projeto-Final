@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, signal, computed, effect, ElementRef } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { Component, ChangeDetectionStrategy, OnInit, inject, signal, computed, effect, ElementRef } from '@angular/core';
+import { NgClass, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { CalendarioService, EventoCalendario } from '../../../compartilhado/services/calendario.service';
@@ -33,9 +33,9 @@ interface PopupPosition {
 
 @Component({
   selector: 'app-calendario',
-  standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe],
-  templateUrl: './calendario.component.html'
+  imports: [NgClass, FormsModule, DatePipe],
+  templateUrl: './calendario.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalendarioComponent implements OnInit {
   private readonly calendarioService = inject(CalendarioService);

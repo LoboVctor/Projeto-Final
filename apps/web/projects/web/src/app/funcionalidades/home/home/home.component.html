@@ -462,7 +462,7 @@
           <p class="text-xs text-[#6B6177]">
             Mat. {{ estudante.matricula }}
             @if (estudante.diagnosticos.length > 0) {
-            · {{ estudante.diagnosticos[0]?.diagnostico?.tipo }}
+            · <span [class.diagnostico-blur]="!diagVis.visivel()">{{ estudante.diagnosticos[0]?.diagnostico?.tipo }}</span>
             }
           </p>
         </div>

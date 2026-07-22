@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api.config';
 import { KpisTurma } from '../../compartilhado/models/kpis-turma.model';
+import { DashboardEstudanteSummary, AnalyticsHistorico } from '../../compartilhado/models/dashboard-estudante.model';
 
 export interface DiagnosticoResumo {
   id: string;
@@ -95,16 +96,16 @@ export class TurmasService {
     return this.http.get<MetricasTurma>(`${this.API}/${turmaId}/metricas`);
   }
 
-  obterKpisTurma(turmaId: string, periodo: string = 'semana'): Observable<any> {
+  obterKpisTurma(turmaId: string, periodo: string = 'semana'): Observable<DashboardEstudanteSummary> {
     const params = new HttpParams().set('periodo', periodo);
-    
-    return this.http.get<any>(`${this.API}/${turmaId}/kpis`, { params });
+
+    return this.http.get<DashboardEstudanteSummary>(`${this.API}/${turmaId}/kpis`, { params });
   }
 
-  obterKpisEscola(periodo: string = 'semana'): Observable<any> {
+  obterKpisEscola(periodo: string = 'semana'): Observable<DashboardEstudanteSummary> {
     const params = new HttpParams().set('periodo', periodo);
-    
-    return this.http.get<any>(`${this.API}/kpis-escola`, { params });
+
+    return this.http.get<DashboardEstudanteSummary>(`${this.API}/kpis-escola`, { params });
   }
 
   getBigNumbersHome(educadorId: string) {
@@ -119,19 +120,19 @@ export class TurmasService {
     return this.http.get<MetricasEscola>(`${this.API}/metricas-escola`);
   }
 
-  obterHistoricoEscola(categoria: string, dataInicio: string, dataFim: string): Observable<any> {
+  obterHistoricoEscola(categoria: string, dataInicio: string, dataFim: string): Observable<AnalyticsHistorico> {
     const params = new HttpParams()
       .set('categoria', categoria)
       .set('dataInicio', dataInicio)
       .set('dataFim', dataFim);
-    return this.http.get<any>(`${this.API}/historico-escola`, { params });
+    return this.http.get<AnalyticsHistorico>(`${this.API}/historico-escola`, { params });
   }
 
-  obterHistoricoTurma(turmaId: string, categoria: string, dataInicio: string, dataFim: string): Observable<any> {
+  obterHistoricoTurma(turmaId: string, categoria: string, dataInicio: string, dataFim: string): Observable<AnalyticsHistorico> {
     const params = new HttpParams()
       .set('categoria', categoria)
       .set('dataInicio', dataInicio)
       .set('dataFim', dataFim);
-    return this.http.get<any>(`${this.API}/${turmaId}/historico`, { params });
+    return this.http.get<AnalyticsHistorico>(`${this.API}/${turmaId}/historico`, { params });
   }
 }

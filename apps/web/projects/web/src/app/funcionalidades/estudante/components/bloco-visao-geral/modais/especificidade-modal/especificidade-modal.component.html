@@ -3,14 +3,14 @@
     <div class="flex items-center justify-between p-5 border-b border-gray-100 bg-slate-50">
       <div>
         <h3 class="text-lg font-bold font-['Sora'] text-slate-700 m-0">
-          {{ editingEspecificidadeId ? 'Editar' : 'Novo' }}
+          {{ editingEspecificidadeId() ? 'Editar' : 'Novo' }}
         </h3>
         <p class="text-xs text-slate-500 m-0 mt-0.5">
           Gerencie características clínicas ou observacionais do estudante.
         </p>
       </div>
       <button (click)="emitirFechar()" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-        [disabled]="loading">
+        [disabled]="loading()">
         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -18,12 +18,12 @@
     </div>
 
     <form [formGroup]="especificidadeForm" (ngSubmit)="salvar()" class="p-6 space-y-5 m-0">
-      @if (erro) {
+      @if (erro()) {
       <div class="p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200 font-medium flex items-start gap-2">
         <svg class="w-4 h-4 mt-0.5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
         </svg>
-        <span>{{ erro }}</span>
+        <span>{{ erro() }}</span>
       </div>
       }
 
@@ -122,21 +122,21 @@
 
 
       <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
-        @if (editingEspecificidadeId) {
+        @if (editingEspecificidadeId()) {
         <button type="button" (click)="cancelarEdicao()"
           class="px-5 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
           Cancelar
         </button>
         }
-        @if (!editingEspecificidadeId) {
-        <button type="button" (click)="emitirFechar()" [disabled]="loading"
+        @if (!editingEspecificidadeId()) {
+        <button type="button" (click)="emitirFechar()" [disabled]="loading()"
           class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
           Cancelar
         </button>
         }
-        <button type="submit" [disabled]="especificidadeForm.invalid || loading"
+        <button type="submit" [disabled]="especificidadeForm.invalid || loading()"
           class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm flex items-center justify-center min-w-[120px] cursor-pointer">
-          @if (loading) {
+          @if (loading()) {
           <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
             viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -146,9 +146,9 @@
           </svg>
           }
           {{
-          loading
+          loading()
           ? 'Salvando...'
-          : editingEspecificidadeId
+          : editingEspecificidadeId()
           ? 'Atualizar'
           : 'Adicionar'
           }}
@@ -156,13 +156,13 @@
       </div>
     </form>
 
-    @if (especificidades.length > 0) {
+    @if (especificidades().length > 0) {
     <div class="p-6 bg-slate-50 border-t border-gray-100 flex-1 overflow-y-auto max-h-[220px]">
       <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 font-['Sora']">
         Especificidades Atuais do Aluno
       </h4>
       <div class="space-y-2">
-        @for (r of especificidades; track r) {
+        @for (r of especificidades(); track r) {
         <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-2xs">
           <div class="min-w-0 flex-1 pr-3">
             <span class="text-[10px] font-bold px-2 py-0.5 rounded-sm mr-2 inline-block uppercase" [ngClass]="{

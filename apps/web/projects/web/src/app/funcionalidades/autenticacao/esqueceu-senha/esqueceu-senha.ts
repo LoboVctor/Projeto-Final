@@ -6,7 +6,6 @@ import { API_BASE_URL } from '../../../nucleo/config/api.config';
 
 @Component({
   selector: 'app-esqueceu-senha',
-  standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './esqueceu-senha.html',
   changeDetection: ChangeDetectionStrategy.OnPush

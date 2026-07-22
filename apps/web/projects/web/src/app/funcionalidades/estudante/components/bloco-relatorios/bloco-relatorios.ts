@@ -1,17 +1,15 @@
 import {
   Component,
-  Output,
-  EventEmitter,
   OnInit,
   OnChanges,
   SimpleChanges,
   inject,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   input,
+  output,
   signal
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { EstudantesService } from '../../../../compartilhado/services/estudantes.service';
 import {
   EstudantePedagogico,
@@ -47,7 +45,7 @@ const STATUS_LABEL: Record<StatusRelatorio, string> = {
 
 @Component({
   selector: 'app-bloco-relatorios',
-  imports: [CommonModule, EstudoDeCasoDrawerComponent, MetasModalComponent, AvaliacaoMetaModalComponent],
+  imports: [DatePipe, EstudoDeCasoDrawerComponent, MetasModalComponent, AvaliacaoMetaModalComponent],
   templateUrl: './bloco-relatorios.html',
   styleUrls: ['./bloco-relatorios.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -56,10 +54,9 @@ export class BlocoRelatoriosComponent implements OnInit, OnChanges {
   readonly estudanteId = input.required<string>();
   /** Nome do estudante para exibir no drawer de estudo de caso */
   readonly estudanteNome = input<string>('');
-  @Output() recolher = new EventEmitter<void>();
+  readonly recolher = output<void>();
 
   private readonly estudantesService = inject(EstudantesService);
-  private readonly cdr = inject(ChangeDetectorRef);
 
   /** Controla abertura do drawer de Estudo de Caso */
   drawerEstudoCasoAberto = signal(false);
@@ -71,18 +68,18 @@ export class BlocoRelatoriosComponent implements OnInit, OnChanges {
   metaSelecionadaParaAvaliacao = signal<MetaDesenvolvimento | null>(null);
 
 
-  dados: EstudantePedagogico | null = null;
-  isLoading = false;
-  erroCarregamento = false;
+  dados = signal<EstudantePedagogico | null>(null);
+  isLoading = signal(false);
+  erroCarregamento = signal(false);
 
   /** Controla abertura do dropdown principal do bloco */
-  isDropdownOpen = false;
+  isDropdownOpen = signal(false);
 
   /** Índice do relatório semestral expandido no accordion interno (-1 = nenhum, estado inicial) */
-  relatorioAberto: number = -1;
+  relatorioAberto = signal(-1);
 
   /** Conjunto dos IDs de metas com corpo expandido */
-  metasAbertas = new Set<string>();
+  metasAbertas = signal<Set<string>>(new Set<string>());
 
   ngOnInit(): void {
     if (this.estudanteId()) {
@@ -93,28 +90,25 @@ export class BlocoRelatoriosComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['estudanteId']?.currentValue && !changes['estudanteId'].isFirstChange()) {
 
-      this.dados = null;
-      this.erroCarregamento = false;
-      this.relatorioAberto = -1; // Garante que todos os dropdowns iniciem fechados ao trocar de aluno
-      this.metasAbertas.clear();
+      this.dados.set(null);
+      this.erroCarregamento.set(false);
+      this.relatorioAberto.set(-1); // Garante que todos os dropdowns iniciem fechados ao trocar de aluno
+      this.metasAbertas.set(new Set<string>());
       this.carregarDados();
     }
   }
 
   carregarDados(): void {
-    this.isLoading = true;
-    this.erroCarregamento = false;
-    this.cdr.detectChanges();
+    this.isLoading.set(true);
+    this.erroCarregamento.set(false);
     this.estudantesService.getPedagogico(this.estudanteId()).subscribe({
       next: (res) => {
-        this.dados = res;
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        this.dados.set(res);
+        this.isLoading.set(false);
       },
       error: () => {
-        this.erroCarregamento = true;
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        this.erroCarregamento.set(true);
+        this.isLoading.set(false);
       }
     });
   }
@@ -122,9 +116,9 @@ export class BlocoRelatoriosComponent implements OnInit, OnChanges {
 
 
   toggleDropdown(): void {
-    this.isDropdownOpen = !this.isDropdownOpen;
+    this.isDropdownOpen.update((v) => !v);
 
-    if (this.isDropdownOpen && !this.dados && !this.isLoading) {
+    if (this.isDropdownOpen() && !this.dados() && !this.isLoading()) {
       this.carregarDados();
     }
   }
@@ -134,17 +128,23 @@ export class BlocoRelatoriosComponent implements OnInit, OnChanges {
   }
 
   toggleRelatorio(index: number): void {
-    this.relatorioAberto = this.relatorioAberto === index ? -1 : index;
+    this.relatorioAberto.update((atual) => (atual === index ? -1 : index));
   }
 
   toggleMeta(metaId: string): void {
-    this.metasAbertas.has(metaId)
-      ? this.metasAbertas.delete(metaId)
-      : this.metasAbertas.add(metaId);
+    this.metasAbertas.update((atuais) => {
+      const copia = new Set(atuais);
+      if (copia.has(metaId)) {
+        copia.delete(metaId);
+      } else {
+        copia.add(metaId);
+      }
+      return copia;
+    });
   }
 
   isMetaAberta(metaId: string): boolean {
-    return this.metasAbertas.has(metaId);
+    return this.metasAbertas().has(metaId);
   }
 
   abrirAvaliacaoMeta(meta: MetaDesenvolvimento, event: Event): void {

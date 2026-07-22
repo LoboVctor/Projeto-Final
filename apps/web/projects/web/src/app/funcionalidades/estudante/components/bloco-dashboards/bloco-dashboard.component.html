@@ -16,8 +16,8 @@
 
     <div id="cabecalho-relatorio-pdf" class="hidden flex-col items-center justify-center mb-8 border-b-2 border-gray-200 pb-6">
     <h1 class="text-3xl font-extrabold text-[#2D1E40] mb-2 font-sora">Relatório de Desempenho</h1>
-    @if (nomeEstudante) {
-      <p class="text-xl font-bold text-[#6C3CC9] mb-1">{{ nomeEstudante }}</p>
+    @if (nomeEstudante()) {
+      <p class="text-xl font-bold text-[#6C3CC9] mb-1">{{ nomeEstudante() }}</p>
     }
     <p class="text-lg text-gray-600 font-medium">Período Selecionado: {{ periodo() === 'semana' ? 'Últimos 7 dias' : (periodo() === 'mes' ? 'Últimos 30 dias' : 'Último Semestre') }}</p>
     
@@ -230,9 +230,9 @@
 
       <div class="mt-auto flex items-end justify-between w-full gap-2">
         <div class="flex items-center text-xs font-semibold"
-          [ngClass]="data.categorias[item.key]?.variacao >= 0 ? 'text-green-600' : 'text-red-500'">
-          <span class="text-xl font-black mr-1 leading-none">{{ data.categorias[item.key]?.variacao >= 0 ? '↑' : '↓' }}</span>
-          <span>{{ data.categorias[item.key]?.variacao >= 0 ? '+' : '' }}{{ data.categorias[item.key]?.variacao | number:'1.1-1' }} em relação ao período anterior</span>
+          [ngClass]="(data.categorias[item.key]?.variacao ?? 0) >= 0 ? 'text-green-600' : 'text-red-500'">
+          <span class="text-xl font-black mr-1 leading-none">{{ (data.categorias[item.key]?.variacao ?? 0) >= 0 ? '↑' : '↓' }}</span>
+          <span>{{ (data.categorias[item.key]?.variacao ?? 0) >= 0 ? '+' : '' }}{{ data.categorias[item.key]?.variacao | number:'1.1-1' }} em relação ao período anterior</span>
         </div>
         
         <button (click)="abrirDetalheCategoria(item.title)"

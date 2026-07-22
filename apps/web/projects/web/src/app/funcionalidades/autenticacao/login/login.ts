@@ -44,7 +44,7 @@ export class Login {
             this.router.navigate(['/home']);
           }
         },
-        error: (err: any) => {
+        error: () => {
           this.isLoading.set(false);
         } });
   }
