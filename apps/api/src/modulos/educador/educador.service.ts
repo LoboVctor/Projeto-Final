@@ -1,19 +1,23 @@
-import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, ConflictException, BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import * as Papa from 'papaparse';
-import { EducadorRepository, FiltrosEducador, AtualizarEducadorDados, CriarEducadorDados } from './educador.repository.js';
-import { TipoEducador } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service.js';
+import type {
+  IEducadorRepositorio,
+  FiltrosEducador,
+  AtualizarEducadorDados,
+  CriarEducadorDados,
+} from './interfaces/IEducadorRepositorio.js';
+import { TipoEducador } from '@prisma-client';
 
 @Injectable()
 export class EducadorService {
   constructor(
-    private readonly educadorRepository: EducadorRepository,
-    private readonly prisma: PrismaService,
+    @Inject('IEducadorRepositorio')
+    private readonly educadorRepository: IEducadorRepositorio,
   ) {}
 
   async buscarEscolaPadrao() {
-    return this.prisma.client.escola.findFirst();
+    return this.educadorRepository.buscarEscolaPadrao();
   }
 
   listar(filtros: FiltrosEducador) {
@@ -31,8 +35,8 @@ export class EducadorService {
 
     try {
       return await this.educadorRepository.criar(dados, escolaId, hashSenha);
-    } catch (error: any) {
-      if (error.code === 'P2002') {
+    } catch (error) {
+      if (this.isPrismaUniqueConstraintError(error)) {
         throw new ConflictException('Já existe um educador com este CPF, Matrícula ou E-mail.');
       }
       throw error;
@@ -59,32 +63,33 @@ export class EducadorService {
     // Tenta criar cada linha do CSV
     for (const [index, row] of result.data.entries()) {
       try {
-        const rowData = row as any;
-        
-        if (!rowData.nome || !rowData.email || !rowData.cpf || !rowData.telefone || !rowData.tipo) {
+        const rowData = row as Record<string, string>;
+
+        if (!rowData['nome'] || !rowData['email'] || !rowData['cpf'] || !rowData['telefone'] || !rowData['tipo']) {
            throw new Error('Campos obrigatórios ausentes: nome, email, cpf, telefone ou tipo.');
         }
 
-        const tipoValido = Object.values(TipoEducador).includes(rowData.tipo as TipoEducador);
+        const tipoValido = Object.values(TipoEducador).includes(rowData['tipo'] as TipoEducador);
         if (!tipoValido) {
-           throw new Error(`Tipo de educador inválido: ${rowData.tipo}`);
+           throw new Error(`Tipo de educador inválido: ${rowData['tipo']}`);
         }
 
         const criarDados: CriarEducadorDados = {
-          nome: rowData.nome,
-          matricula: rowData.matricula || String(Math.floor(Math.random() * 1000000)), // Pode gerar caso falte, ou obrigar
-          cpf: rowData.cpf,
-          email: rowData.email,
-          telefone: rowData.telefone,
-          tipo: rowData.tipo as TipoEducador,
-          dataContratacao: rowData.data_contratacao || new Date().toISOString(),
+          nome: rowData['nome'],
+          matricula: rowData['matricula'] || String(Math.floor(Math.random() * 1000000)), // Pode gerar caso falte, ou obrigar
+          cpf: rowData['cpf'],
+          email: rowData['email'],
+          telefone: rowData['telefone'],
+          tipo: rowData['tipo'] as TipoEducador,
+          dataContratacao: rowData['data_contratacao'] || new Date().toISOString(),
         };
 
         await this.criar(criarDados, escolaId);
         sucesso++;
-      } catch (err: any) {
+      } catch (err) {
         falhas++;
-        erros.push(`Linha ${index + 2}: ${err.message || 'Erro desconhecido'}`);
+        const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
+        erros.push(`Linha ${index + 2}: ${mensagem}`);
       }
     }
 
@@ -101,5 +106,9 @@ export class EducadorService {
 
   reativar(id: string) {
     return this.educadorRepository.reativar(id);
+  }
+
+  private isPrismaUniqueConstraintError(err: unknown): boolean {
+    return typeof err === 'object' && err !== null && 'code' in err && err.code === 'P2002';
   }
 }

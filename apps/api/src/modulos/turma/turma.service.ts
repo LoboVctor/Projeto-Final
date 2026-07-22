@@ -3,6 +3,7 @@ import * as Papa from 'papaparse';
 import type { ITurmaRepositorio, MetricasTurma, AgregacaoKpisDiarios } from './interfaces/ITurmaRepositorio.js';
 import { KpisTurmaResponseDto } from './dtos/kpis-turma-response.dto.js';
 import { TurmaDashboardResponseDto } from './dtos/turma-dashboard-response.dto.js';
+import { Prisma, Turno, Etapa } from '@prisma-client';
 
 @Injectable()
 export class TurmaService {
@@ -45,24 +46,36 @@ export class TurmaService {
     // Deixarei a inserção baseada na struct do Prisma
     for (const [index, row] of result.data.entries()) {
       try {
-        const rowData = row as any;
-        if (!rowData.nome || !rowData.turno || !rowData.anoLetivo || !rowData.etapa) {
+        const rowData = row as Record<string, string>;
+        if (!rowData['nome'] || !rowData['turno'] || !rowData['anoLetivo'] || !rowData['etapa']) {
           throw new Error('Campos obrigatórios ausentes: nome, turno, anoLetivo, etapa.');
         }
 
-        const criarDados = {
-          nome: rowData.nome,
-          turno: rowData.turno,
-          anoLetivo: Number(rowData.anoLetivo),
-          etapa: rowData.etapa,
-          escolaId: logadoId, // Assumindo escolaId como logadoId para teste ou pegar dinamicamente se necessário
+        const turnoValido = Object.values(Turno).includes(rowData['turno'] as Turno);
+        if (!turnoValido) {
+          throw new Error(`Turno inválido: ${rowData['turno']}`);
+        }
+
+        const etapaValida = Object.values(Etapa).includes(rowData['etapa'] as Etapa);
+        if (!etapaValida) {
+          throw new Error(`Etapa inválida: ${rowData['etapa']}`);
+        }
+
+        const criarDados: Prisma.TurmaCreateInput = {
+          nome: rowData['nome'],
+          turno: rowData['turno'] as Turno,
+          anoLetivo: Number(rowData['anoLetivo']),
+          etapa: rowData['etapa'] as Etapa,
+          tipo: 'REGENCIA',
+          escola: { connect: { id: logadoId } }, // Assumindo escolaId como logadoId para teste ou pegar dinamicamente se necessário
         };
 
         await this.turmaRepositorio.criarTurma(criarDados);
         sucesso++;
-      } catch (err: any) {
+      } catch (err) {
         falhas++;
-        erros.push(`Linha ${index + 2}: ${err.message || 'Erro desconhecido'}`);
+        const mensagem = err instanceof Error ? err.message : 'Erro desconhecido';
+        erros.push(`Linha ${index + 2}: ${mensagem}`);
       }
     }
 

@@ -28,7 +28,8 @@ import {
 import { EducadorService } from './educador.service.js';
 import { AtualizarEducadorDto } from './dtos/atualizar-educador.dto.js';
 import { CriarEducadorDto } from './dtos/criar-educador.dto.js';
-import { TipoEducador } from '@prisma/client';
+import { TipoEducador } from '@prisma-client';
+import type { RequestComUsuario } from '../../common/interfaces/usuario-autenticado.interface.js';
 
 @ApiTags('Educadores')
 @ApiBearerAuth()
@@ -42,7 +43,7 @@ export class EducadorController {
    */
   @Post()
   @ApiOperation({ summary: 'Cria um novo educador' })
-  async criar(@Body() dto: CriarEducadorDto, @Request() req: any) {
+  async criar(@Body() dto: CriarEducadorDto, @Request() req: RequestComUsuario) {
     let escolaId = req.user.escolaId;
     
     if (!escolaId) {
@@ -68,9 +69,9 @@ export class EducadorController {
   @Post('importar-csv')
   @ApiOperation({ summary: 'Importa educadores via arquivo CSV' })
   @UseInterceptors(FileInterceptor('arquivo'))
-  async importarCSV(@UploadedFile() arquivo: Express.Multer.File, @Request() req: any) {
+  async importarCSV(@UploadedFile() arquivo: Express.Multer.File, @Request() req: RequestComUsuario) {
     let escolaId = req.user.escolaId;
-    
+
     if (!escolaId) {
       if (req.user.role === 'COORDENADOR') {
         const escolaPadrao = await this.educadorService.buscarEscolaPadrao();

@@ -1,9 +1,9 @@
 import { Controller, Post, Body, Get, Param, Put, Patch, Delete } from '@nestjs/common';
 import { RelatorioSemestralService } from './relatorio-semestral.service';
-import { CreateRelatorioSemestralDto } from './dto/create-relatorio-semestral.dto';
-import { UpdateAvaliacaoMetaDto } from './dto/update-avaliacao-meta.dto';
-import { UpdateMetaDescricaoDto } from './dto/update-meta-descricao.dto';
-import { UpdateMetasLoteDto } from './dto/update-metas-lote.dto';
+import { CreateRelatorioSemestralDto } from './dtos/create-relatorio-semestral.dto';
+import { UpdateAvaliacaoMetaDto } from './dtos/update-avaliacao-meta.dto';
+import { UpdateMetaDescricaoDto } from './dtos/update-meta-descricao.dto';
+import { UpdateMetasLoteDto } from './dtos/update-metas-lote.dto';
 @Controller('relatorios-semestrais')
 export class RelatorioSemestralController {
   constructor(private readonly relatorioSemestralService: RelatorioSemestralService) { }

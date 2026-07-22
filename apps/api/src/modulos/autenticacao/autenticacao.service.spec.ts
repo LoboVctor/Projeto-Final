@@ -18,6 +18,10 @@ describe('AutenticacaoService', () => {
           provide: JwtService,
           useValue: {},
         },
+        {
+          provide: 'IAutenticacaoRepositorio',
+          useValue: {},
+        },
       ],
     }).compile();
 

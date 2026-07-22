@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuditoriaService } from './auditoria.service.js';
 import { RegistrarExportacaoDto } from './dtos/registrar-exportacao.dto.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
-import { FormatoExportacao } from '../../../../../infra/generated/prisma/index.js';
+import { FormatoExportacao } from '@prisma-client';
 
 /** Forma mínima do usuário autenticado injetada pelo JwtStrategy */
 interface UsuarioAutenticado {

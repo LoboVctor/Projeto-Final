@@ -20,6 +20,7 @@ import { EventoService } from './evento.service.js';
 import { CreateEventoDto } from './dtos/create-evento.dto.js';
 import { UpdateEventoDto } from './dtos/update-evento.dto.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
+import type { RequestComUsuario } from '../../common/interfaces/usuario-autenticado.interface.js';
 
 @ApiTags('Eventos')
 @ApiBearerAuth()
@@ -37,7 +38,7 @@ export class EventoController {
     @Query('mes') mes: string,
     @Query('ano') ano: string,
     @Query('escolaId') escolaId: string,
-    @Request() req: { user: { role: string; educadorId?: string | null } },
+    @Request() req: RequestComUsuario,
   ) {
     return this.eventoService.buscarEventosDoMes(
       Number(mes),
@@ -55,7 +56,7 @@ export class EventoController {
   async buscarProximosEventos(
     @Query('escolaId') escolaId: string,
     @Query('limite') limite = '4',
-    @Request() req: { user: { role: string; educadorId?: string | null } },
+    @Request() req: RequestComUsuario,
   ) {
     return this.eventoService.buscarProximosEventos(
       escolaId,

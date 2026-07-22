@@ -7,7 +7,13 @@ import { PrismaModule } from '../../prisma/prisma.module.js';
 @Module({
   imports: [PrismaModule],
   controllers: [ResponsavelController],
-  providers: [ResponsavelService, ResponsavelRepository],
-  exports: [ResponsavelService, ResponsavelRepository],
+  providers: [
+    ResponsavelService,
+    {
+      provide: 'IResponsavelRepositorio',
+      useClass: ResponsavelRepository,
+    },
+  ],
+  exports: [ResponsavelService],
 })
 export class ResponsavelModule {}

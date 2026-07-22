@@ -9,8 +9,9 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UseInterceptors, UploadedFile, Request, Post, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { TurmaService } from './turma.service.js';
-import { KpisTurmaResponseDto } from './dtos/kpis-turma-response.dto.js'; 
+import { KpisTurmaResponseDto } from './dtos/kpis-turma-response.dto.js';
 import { TurmaDashboardResponseDto } from './dtos/turma-dashboard-response.dto.js';
+import type { RequestComUsuario } from '../../common/interfaces/usuario-autenticado.interface.js';
 
 @ApiTags('Turma')
 @ApiBearerAuth()
@@ -43,7 +44,7 @@ export class TurmaController {
   @Post('importar-csv')
   @ApiOperation({ summary: 'Importa turmas via arquivo CSV' })
   @UseInterceptors(FileInterceptor('arquivo'))
-  async importarCSV(@UploadedFile() arquivo: Express.Multer.File, @Request() req: any) {
+  async importarCSV(@UploadedFile() arquivo: Express.Multer.File, @Request() req: RequestComUsuario) {
     const logadoId = req.user.educadorId;
     if (!logadoId) {
       throw new UnauthorizedException('Educador logado não encontrado no token');

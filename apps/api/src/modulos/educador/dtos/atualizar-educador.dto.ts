@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsArray, IsDateString, IsEnum } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { TipoEducador } from '@prisma/client';
+import { TipoEducador } from '@prisma-client';
 
 export class AtualizarEducadorDto {
   @ApiPropertyOptional()

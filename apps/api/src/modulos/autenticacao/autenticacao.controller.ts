@@ -6,6 +6,7 @@ import { RedefinirSenhaDto } from './dtos/redefinir-senha.dto.js';
 import { PrimeiroAcessoDto } from './dtos/primeiro-acesso.dto.js';
 import { Public } from '../../common/decorators/public.decorator.js';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import type { RequestComUsuario } from '../../common/interfaces/usuario-autenticado.interface.js';
 
 @ApiTags('Autenticação')
 @Controller('autenticacao')
@@ -25,7 +26,7 @@ export class AutenticacaoController {
   @ApiOperation({
     summary: 'Troca a senha obrigatória no primeiro acesso. Requer autenticação.',
   })
-  primeiroAcesso(@Body() dto: PrimeiroAcessoDto, @Request() req: any) {
+  primeiroAcesso(@Body() dto: PrimeiroAcessoDto, @Request() req: RequestComUsuario) {
     return this.autenticacaoService.primeiroAcesso(req.user.id, dto);
   }
 

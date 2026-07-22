@@ -1,7 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { TipoEducador, Role } from '../../../../../infra/generated/prisma/index.js';
-
+import { TipoEducador, Role, Escola } from '@prisma-client';
+import type {
+  IEducadorRepositorio,
+  FiltrosEducador,
+  AtualizarEducadorDados,
+  CriarEducadorDados,
+} from './interfaces/IEducadorRepositorio.js';
 
 const MAPA_TIPO_PARA_ROLE: Record<TipoEducador, Role> = {
   [TipoEducador.REGENTE]: Role.PROFESSOR_REGENTE,
@@ -9,39 +14,15 @@ const MAPA_TIPO_PARA_ROLE: Record<TipoEducador, Role> = {
   [TipoEducador.COORDENADOR]: Role.COORDENADOR,
 };
 
-export interface FiltrosEducador {
-  nome?: string;
-  matricula?: string;
-  tipo?: TipoEducador;
-  /** 'ativos' | 'inativos' | 'todos' */
-  status?: string;
-  page: number;
-  limit: number;
-}
-
-export interface AtualizarEducadorDados {
-  nome?: string;
-  cpf?: string;
-  telefone?: string;
-  tipo?: TipoEducador;
-  dataContratacao?: string;
-  turmaIds?: string[];
-}
-
-export interface CriarEducadorDados {
-  nome: string;
-  matricula: string;
-  cpf: string;
-  email: string;
-  telefone: string;
-  tipo: TipoEducador;
-  dataContratacao: string;
-  turmaIds?: string[];
-}
+export type { FiltrosEducador, AtualizarEducadorDados, CriarEducadorDados };
 
 @Injectable()
-export class EducadorRepository {
+export class EducadorRepository implements IEducadorRepositorio {
   constructor(private readonly prisma: PrismaService) {}
+
+  async buscarEscolaPadrao(): Promise<Escola | null> {
+    return this.prisma.client.escola.findFirst();
+  }
 
   async listar(filtros: FiltrosEducador) {
     const { nome, matricula, tipo, status, page, limit } = filtros;

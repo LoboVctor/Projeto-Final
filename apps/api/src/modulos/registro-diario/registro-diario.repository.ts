@@ -4,7 +4,7 @@ import type {
   IRegistroDiarioRepositorio,
   EstudanteParaGeracaoDiario,
 } from './interfaces/IRegistroDiarioRepositorio.js';
-import { Prisma, RegistroDiario } from '@prisma-client';
+import { Prisma, RegistroDiario, StatusAula } from '@prisma-client';
 
 @Injectable()
 export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
@@ -212,6 +212,21 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
         },
         preenchido: true,
       },
+    });
+  }
+
+  async buscarPresencasPorIntervalo(
+    estudanteId: string,
+    dataInicio: Date,
+    dataFim: Date,
+  ): Promise<{ presenca: boolean }[]> {
+    return this.prisma.client.registroAula.findMany({
+      where: {
+        estudanteId,
+        data: { gte: dataInicio, lte: dataFim },
+        status_aula: StatusAula.REALIZADA,
+      },
+      select: { presenca: true },
     });
   }
 }
