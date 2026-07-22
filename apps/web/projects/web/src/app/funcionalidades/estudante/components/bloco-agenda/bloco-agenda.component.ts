@@ -5,6 +5,7 @@ import {
   EventEmitter,
   inject,
   signal,
+  computed,
   OnInit,
   OnChanges,
   SimpleChanges,
@@ -13,6 +14,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { RegistrosDiariosService } from '../../../../compartilhado/services/registros-diarios.service';
 import { AuthService } from '../../../../nucleo/services/auth';
 import {
@@ -22,10 +24,10 @@ import {
 } from '../../../../compartilhado/models/registros-diarios.models';
 import { ObservacoesDiaComponent } from './components/observacoes-dia/observacoes-dia.component';
 import { ScoreDiarioComponent } from './components/score-diario/score-diario.component';
+import { AgendaSemanalComponent } from './components/agenda-semanal/agenda-semanal.component';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
-/** Mapeamento de campo do score para chave do RegistroDiario */
 export type ScoreKey = keyof Pick<
   RegistroDiario,
   'scoreComportamento' | 'scoreInteracao' | 'scoreFoco' | 'scoreAutonomia' | 'statusAlimentacao' | 'usoBanheiro'
@@ -36,10 +38,18 @@ function isValidUUID(uuid: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
 }
 
+function getDiaUtilValido(date: Date): Date {
+  const adjusted = new Date(date);
+  adjusted.setHours(0, 0, 0, 0); 
+  if (adjusted.getDay() === 0) adjusted.setDate(adjusted.getDate() - 2); 
+  if (adjusted.getDay() === 6) adjusted.setDate(adjusted.getDate() - 1); 
+  return adjusted;
+}
+
 @Component({
   selector: 'app-bloco-agenda',
   standalone: true,
-  imports: [CommonModule, FormsModule, ObservacoesDiaComponent, ScoreDiarioComponent],
+  imports: [CommonModule, FormsModule, ObservacoesDiaComponent, ScoreDiarioComponent, AgendaSemanalComponent],
   templateUrl: './bloco-agenda.component.html',
   styleUrls: ['./bloco-agenda.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -51,8 +61,10 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
   private readonly registrosService = inject(RegistrosDiariosService);
   private readonly authService = inject(AuthService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
-  dataSelecionada = signal<Date>(new Date());
+  dataSelecionada = signal<Date>(getDiaUtilValido(new Date()));
 
   semanaAtual = signal<DiaSemanaRegistro[]>([]);
   registroDoDia = signal<RegistroDiario | null>(null);
@@ -65,6 +77,22 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
 
   private saveTimerObservacoes?: ReturnType<typeof setTimeout>;
   private saveTimerScores?: ReturnType<typeof setTimeout>;
+
+  isProximoDiaFuturo = computed<boolean>(() => {
+    const dataAtual = new Date(this.dataSelecionada());
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    do {
+      dataAtual.setDate(dataAtual.getDate() + 1);
+    } while (dataAtual.getDay() === 0 || dataAtual.getDay() === 6);
+
+    return dataAtual > hoje;
+  });
+
+  get dataMaximaPermitida(): string {
+    return this.formatDateLocal(new Date());
+  }
 
   ngOnInit(): void {
     this.carregarSemana(this.dataSelecionada());
@@ -106,7 +134,20 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
   }
 
   mudarData(dias: number): void {
-    const novaData = this.addDays(this.dataSelecionada(), dias);
+    if (dias === 1 && this.isProximoDiaFuturo()) return;
+
+    let novaData = new Date(this.dataSelecionada());
+    
+    do {
+      novaData.setDate(novaData.getDate() + dias);
+    } while (novaData.getDay() === 0 || novaData.getDay() === 6);
+
+    const hoje = new Date();
+    hoje.setHours(23, 59, 59, 999);
+    if (novaData > hoje) {
+      novaData = getDiaUtilValido(new Date());
+    }
+
     this.dataSelecionada.set(novaData);
     this.erroValidacao.set(null);
 
@@ -122,7 +163,15 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
     const target = event.target as HTMLInputElement;
     if (!target.value) return;
 
-    const novaData = this.parseLocalDate(target.value);
+    let novaData = this.parseLocalDate(target.value);
+    novaData = getDiaUtilValido(novaData);
+
+    const hoje = new Date();
+    hoje.setHours(23, 59, 59, 999);
+    if (novaData > hoje) {
+      novaData = getDiaUtilValido(new Date());
+    }
+
     this.dataSelecionada.set(novaData);
     this.erroValidacao.set(null);
 
@@ -132,12 +181,6 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
     } else {
       this.carregarSemana(novaData);
     }
-  }
-
-  private addDays(date: Date, amount: number): Date {
-    const next = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    next.setDate(next.getDate() + amount);
-    return next;
   }
 
   private parseLocalDate(dateString: string): Date {
@@ -158,10 +201,8 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
     if (!this.validarIdentificadores()) return;
 
     const dataFormatada = this.formatDateLocal(this.dataSelecionada());
-    console.log('Data selecionada na UI:', this.dataSelecionada());
-    console.log('Data enviada ao backend:', dataFormatada);
-
     const atual = this.registroDoDia();
+    
     const payload: RegistroDiarioPayload = {
       estudanteId: this.estudanteId,
       educadorId: this.authService.getLoggedUserId()!,
@@ -182,7 +223,6 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
 
     this.registrosService.salvarRegistro(payload).subscribe({
       next: (salvo) => {
-        // Atualiza o registro local apenas para anotações, preservando scores atuais em tela
         const novoRegistroLocal = atual ? { ...atual, anotacoes: salvo.anotacoes } : salvo;
         this.registroDoDia.set(novoRegistroLocal);
         this.atualizarSemanaLocal(dataFormatada, novoRegistroLocal);
@@ -205,12 +245,7 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
     if (!this.validarIdentificadores()) return;
 
     const dataFormatada = this.formatDateLocal(this.dataSelecionada());
-    console.log('Data selecionada na UI:', this.dataSelecionada());
-    console.log('Data enviada ao backend:', dataFormatada);
-
     const atual = this.registroDoDia();
-    
-    // Removemos a propriedade id explicitamente para o backend não rejeitar o payload
     const { id, ...scoresSemId } = novosScores as any;
 
     const payload: RegistroDiarioPayload = {
@@ -234,7 +269,6 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
 
     this.registrosService.salvarRegistro(payload).subscribe({
       next: (salvo) => {
-        // Atualiza o registro local apenas para scores, preservando anotações atuais em tela
         const novoRegistroLocal = atual ? { ...atual, ...novosScores } : salvo;
         this.registroDoDia.set(novoRegistroLocal);
         this.atualizarSemanaLocal(dataFormatada, novoRegistroLocal);
@@ -256,7 +290,6 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
     if (!isValidUUID(this.estudanteId)) {
       this.erroValidacao.set('O identificador do estudante é inválido. Ação bloqueada.');
       this.cdr.markForCheck();
-      console.warn('BlocoAgenda: estudanteId não é um UUID válido', this.estudanteId);
       return false;
     }
 
@@ -264,7 +297,6 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
     if (!educadorId || !isValidUUID(educadorId)) {
       this.erroValidacao.set('Educador não autenticado ou com identificador inválido. Ação bloqueada.');
       this.cdr.markForCheck();
-      console.warn('BlocoAgenda: educadorId não é um UUID válido', educadorId);
       return false;
     }
 
@@ -307,16 +339,16 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
   }
 
   get dataFormatada(): string {
-    return this.dataSelecionada().toLocaleDateString('pt-BR', {
+    const raw = this.dataSelecionada().toLocaleDateString('pt-BR', {
       weekday: 'long',
       day: '2-digit',
       month: 'long',
       year: 'numeric'
     });
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
   }
 
   get dataInputValue(): string {
     return this.formatDateLocal(this.dataSelecionada());
   }
 }
-

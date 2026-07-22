@@ -1,0 +1,500 @@
+<div class="page-container" (click)="fecharMenus()">
+
+  <!-- ── Cabeçalho da Tela ─────────────────────────────────────── -->
+  <header class="page-header">
+    <div class="page-header-texto">
+      <h1 class="page-titulo">Alunos</h1>
+      <p class="page-subtitulo">Consulte, filtre e gerencie todos os estudantes da escola.</p>
+    </div>
+  </header>
+
+  <!-- ── Barra de filtros em card ──────────────────────────────── -->
+  <section class="filtros-card" aria-label="Filtros de busca">
+
+    <!-- Linha 1: busca + dropdowns principais -->
+    <div class="filtros-linha">
+      <!-- Busca por nome/matrícula -->
+      <div class="busca-wrapper">
+        <svg class="busca-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          id="coordenador-busca-alunos"
+          type="text"
+          class="busca-input"
+          placeholder="Buscar por nome ou matrícula"
+          [value]="termoBusca()"
+          (input)="onTermoBuscaChange($any($event.target).value)"
+          aria-label="Buscar alunos por nome ou matrícula"
+        />
+        @if (termoBusca()) {
+          <button class="busca-limpar" (click)="limparFiltros()" aria-label="Limpar busca">✕</button>
+        }
+      </div>
+
+      <!-- Filtro: Diagnóstico -->
+      <div class="filtro-select-wrapper">
+        <select
+          class="filtro-select"
+          [value]="filtroDiagnostico()"
+          (change)="onFiltroDiagnosticoChange($any($event.target).value)"
+          aria-label="Filtrar por diagnóstico"
+        >
+          <option value="">Diagnóstico</option>
+          @for (tipo of tiposDiagnostico; track tipo) {
+            <option [value]="tipo">{{ tipo | diagLabel }}</option>
+          }
+        </select>
+        <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+
+      <!-- Filtro: Sexo -->
+      <div class="filtro-select-wrapper">
+        <select
+          class="filtro-select"
+          [value]="filtroSexo()"
+          (change)="onFiltroSexoChange($any($event.target).value)"
+          aria-label="Filtrar por sexo"
+        >
+          <option value="">Sexo</option>
+          <option value="MASCULINO">Masculino</option>
+          <option value="FEMININO">Feminino</option>
+          <option value="OUTRO">Outro</option>
+        </select>
+        <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+
+      <!-- Filtro: Turma -->
+      <div class="filtro-select-wrapper">
+        <select
+          class="filtro-select"
+          [value]="filtroTurmaId()"
+          (change)="onFiltroTurmaChange($any($event.target).value)"
+          aria-label="Filtrar por turma"
+        >
+          <option value="">Turma</option>
+          @for (turma of turmasDisponiveis(); track turma.id) {
+            <option [value]="turma.id">{{ turma.nome }}</option>
+          }
+        </select>
+        <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+
+      <!-- Filtro: Forma de Comunicação -->
+      <div class="filtro-select-wrapper">
+        <select
+          class="filtro-select"
+          [value]="filtroFormaComunicacao()"
+          (change)="onFiltroFormaComunicacaoChange($any($event.target).value)"
+          aria-label="Filtrar por forma de comunicação"
+        >
+          <option value="">Comunicação</option>
+          <option value="VERBAL">Verbal</option>
+          <option value="NAO_VERBAL">Não Verbal</option>
+        </select>
+        <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Linha 2: filtros secundários -->
+    <div class="filtros-linha filtros-linha--secundaria">
+      <!-- Filtro: Status -->
+      <div class="filtro-select-wrapper">
+        <select
+          class="filtro-select"
+          [value]="filtroStatus() || ''"
+          (change)="onFiltroStatusChange($any($event.target).value)"
+          aria-label="Filtrar por status"
+        >
+          <option value="">Status</option>
+          <option value="CONCLUIDO">Ativos</option>
+          <option value="PENDENTE">Inativos</option>
+        </select>
+        <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+
+      <!-- Filtro: Categoria de Especificidade -->
+      <div class="filtro-select-wrapper">
+        <select
+          class="filtro-select"
+          [value]="filtroCategoria()"
+          (change)="onFiltroCategoriaChange($any($event.target).value)"
+          aria-label="Filtrar por categoria de especificidade"
+        >
+          <option value="">Especificidade</option>
+          <option value="ALIMENTAR">Alimentar</option>
+          <option value="SENSORIAL">Sensorial</option>
+          <option value="MOTORA">Motora</option>
+          <option value="COMPORTAMENTAL">Comportamental</option>
+        </select>
+        <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+
+      <!-- Filtro: Intervalo de Idade -->
+      <div class="filtro-idade-wrapper">
+        <span class="filtro-idade-label">Idade:</span>
+        <input
+          id="coordenador-filtro-idade-min"
+          type="number"
+          class="filtro-idade-input"
+          placeholder="Min"
+          min="0"
+          max="120"
+          [value]="filtroIdadeMin() ?? ''"
+          (change)="onFiltroIdadeMinChange($any($event.target).value)"
+          aria-label="Idade mínima"
+        />
+        <span class="filtro-idade-sep">–</span>
+        <input
+          id="coordenador-filtro-idade-max"
+          type="number"
+          class="filtro-idade-input"
+          placeholder="Max"
+          min="0"
+          max="120"
+          [value]="filtroIdadeMax() ?? ''"
+          (change)="onFiltroIdadeMaxChange($any($event.target).value)"
+          aria-label="Idade máxima"
+        />
+      </div>
+
+      <!-- Botão limpar todos os filtros -->
+      <button class="btn-limpar-todos" (click)="limparFiltros()" title="Limpar todos os filtros">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Limpar Filtros
+      </button>
+    </div>
+
+  </section>
+
+  <!-- ── Ações e Topo da Listagem ─────────────────────────────────── -->
+  <div class="listagem-header">
+    <div class="flex gap-2">
+      <input #fileInput type="file" accept=".csv" class="hidden" (change)="onFileSelected($event)">
+      
+      <button class="btn-exportar" (click)="exportarCSV()" [disabled]="!temResultados() || isImporting()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Exportar CSV
+      </button>
+
+      <div class="relative">
+        <button class="text-sm font-semibold px-4 py-2 bg-[#6C3CC9] text-white border border-transparent rounded-lg hover:bg-[#5A32A8] transition-colors duration-200 flex items-center justify-center space-x-2 cursor-pointer h-[34px]" (click)="toggleDropdownCadastrar($event)" [disabled]="isImporting()">
+          @if (isImporting()) {
+            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Importando...</span>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Cadastrar</span>
+          }
+        </button>
+        
+        @if (dropdownCadastrarAberto()) {
+          <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-[60] animate-fade-in" (click)="$event.stopPropagation()">
+            <button (click)="abrirModalCadastrarAluno(); fecharMenus()" class="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-[#F7F5FA] hover:text-[#6C3CC9] flex items-center transition-colors cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+              Cadastrar Manual
+            </button>
+            <button (click)="fileInput.click(); fecharMenus()" class="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-[#F7F5FA] hover:text-[#6C3CC9] flex items-center transition-colors cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Importar CSV
+            </button>
+            <button (click)="baixarModeloCSV(); fecharMenus()" class="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-[#F7F5FA] hover:text-[#6C3CC9] flex items-center transition-colors cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Baixar Modelo CSV
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="tabela-card" role="region" aria-label="Tabela de estudantes">
+    @if (loading()) {
+      <app-loading-flor titulo="Carregando alunos..." subtitulo="Buscando informações dos estudantes."></app-loading-flor>
+    } @else if (erro()) {
+      <div class="erro-container" role="alert">
+        <span>⚠️ {{ erro() }}</span>
+        <button class="btn-tentar-novamente" (click)="limparFiltros()">Tentar novamente</button>
+      </div>
+    } @else if (!temResultados()) {
+      <div class="estado-vazio">
+        <span class="estado-vazio-icone">🔍</span>
+        <p class="estado-vazio-titulo">Nenhum aluno encontrado</p>
+        <p class="estado-vazio-subtitulo">Tente ajustar os filtros ou limpar a busca.</p>
+        <button class="btn-limpar-filtros" (click)="limparFiltros()">Limpar Filtros</button>
+      </div>
+    } @else {
+      <!-- Tabela -->
+      <div class="tabela-wrapper">
+        <table class="tabela" aria-label="Lista de alunos">
+          <thead>
+            <tr>
+              <th class="th-aluno">Aluno</th>
+              <th class="th-matricula">Matrícula</th>
+              <th class="th-turma">Turma</th>
+              <th class="th-diagnostico text-center">Diagnóstico</th>
+              <th class="th-status">Status</th>
+              <th class="th-acoes">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (aluno of estudantes(); track aluno.id) {
+              <tr
+                class="tabela-linha tabela-linha--clicavel"
+                (click)="abrirModalAluno(aluno)"
+                [attr.aria-label]="'Ver perfil de ' + aluno.nomeCompleto"
+                role="button"
+                tabindex="0"
+                (keydown.enter)="abrirModalAluno(aluno)"
+                (keydown.space)="abrirModalAluno(aluno)"
+              >
+                <!-- Aluno -->
+                <td class="td-aluno">
+                  <div class="aluno-info">
+                    <img
+                      [src]="getFotoUrl(aluno)"
+                      [alt]="aluno.nomeCompleto"
+                      class="aluno-foto"
+                      loading="lazy"
+                    />
+                    <span class="aluno-nome">{{ aluno.nomeCompleto }}</span>
+                  </div>
+                </td>
+                <!-- Matrícula -->
+                <td class="td-matricula">
+                  <span class="tag-matricula">{{ aluno.matricula }}</span>
+                </td>
+                <!-- Turma -->
+                <td class="td-turma">{{ getTurmaLabel(aluno) }}</td>
+                <!-- Diagnóstico -->
+                <td class="td-diagnostico text-center">
+                  @if (aluno.diagnosticos.length > 0) {
+                    <div class="flex flex-wrap justify-center gap-1">
+                      @for (d of aluno.diagnosticos; track $index) {
+                        <span class="px-2 py-0.5 rounded text-[10px] font-nunito font-bold border shadow-sm" [ngClass]="d.diagnostico.tipo | diagColor">
+                          {{ d.diagnostico.tipo | diagLabel }}
+                        </span>
+                      }
+                    </div>
+                  } @else {
+                    <span class="sem-dado">—</span>
+                  }
+                </td>
+                <!-- Status -->
+                                <td class="td-status">
+                  <span class="tag-status" [class.tag-status--ativo]="aluno.statusMatricula">
+                    {{ getStatusLabel(aluno) }}
+                  </span>
+                </td>
+                <!-- Ações -->
+                <td class="td-acoes" (click)="$event.stopPropagation()">
+                  <div class="acoes-wrapper">
+                    <button
+                      class="btn-acoes"
+                      (click)="toggleMenu(aluno.id, $event)"
+                      [attr.aria-expanded]="menuAbertoId() === aluno.id"
+                      [attr.aria-label]="'Ações para ' + aluno.nomeCompleto"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+                      </svg>
+                    </button>
+
+                    @if (menuAbertoId() === aluno.id) {
+                      <div class="acoes-dropdown" role="menu">
+                        <button class="acoes-item acoes-item--danger" role="menuitem" (click)="confirmarDesativacao(aluno); fecharMenus()">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/>
+                          </svg>
+                          Desativar
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Paginação visual completa ──────────────────────────── -->
+      <div class="paginacao-bar">
+        <!-- Texto de intervalo -->
+        <span class="pag-info-texto">
+          Exibindo {{ (paginaAtual() - 1) * limitePorPagina + 1 }} a
+          {{ paginaAtual() * limitePorPagina > total() ? total() : paginaAtual() * limitePorPagina }}
+          de {{ total() }} aluno(s) encontrado(s)
+        </span>
+
+        <!-- Navegação -->
+        <nav class="paginacao-nav" aria-label="Paginação de resultados">
+          <!-- Primeira página -->
+          <button
+            class="pag-btn pag-btn--icon"
+            (click)="irParaPagina(1)"
+            [disabled]="paginaAtual() === 1"
+            aria-label="Primeira página"
+            title="Primeira página"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+          </button>
+          <!-- Anterior -->
+          <button
+            class="pag-btn pag-btn--icon"
+            (click)="irParaPagina(paginaAtual() - 1)"
+            [disabled]="paginaAtual() === 1"
+            aria-label="Página anterior"
+            title="Anterior"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <!-- Página atual -->
+          <button class="pag-btn pag-btn--atual" aria-current="page" [attr.aria-label]="'Página ' + paginaAtual()">
+            {{ paginaAtual() }}
+          </button>
+          <!-- Próxima -->
+          <button
+            class="pag-btn pag-btn--icon"
+            (click)="irParaPagina(paginaAtual() + 1)"
+            [disabled]="paginaAtual() === totalPaginas()"
+            aria-label="Próxima página"
+            title="Próxima"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <!-- Última página -->
+          <button
+            class="pag-btn pag-btn--icon"
+            (click)="irParaPagina(totalPaginas())"
+            [disabled]="paginaAtual() === totalPaginas()"
+            aria-label="Última página"
+            title="Última página"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+          </button>
+        </nav>
+      </div>
+    }
+
+</div>
+
+<app-aluno-modal
+  [isVisible]="modalAlunoAberto()"
+  [aluno]="modalAlunoData()"
+  [abaInicial]="abaSolicitada()"
+  (fecharModal)="fecharModalAluno($event)">
+</app-aluno-modal>
+
+
+<!-- Modal Resumo Importação -->
+@if (importResult()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-[#2D1E40]/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+      
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+        <h3 class="font-sora font-bold text-[#4A248A] text-lg flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          Importação Concluída
+        </h3>
+        <button (click)="fecharModalImport()" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-md hover:bg-gray-100">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-6">
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex flex-col items-center text-center">
+            <span class="text-3xl font-extrabold text-emerald-600">{{ importResult()!.sucesso }}</span>
+            <span class="text-xs font-bold text-emerald-700/80 uppercase tracking-wider mt-1">Estudantes<br>Importados</span>
+          </div>
+          
+          <div class="bg-red-50 border border-red-100 rounded-xl p-4 flex flex-col items-center text-center">
+            <span class="text-3xl font-extrabold text-red-600">{{ importResult()!.falhas }}</span>
+            <span class="text-xs font-bold text-red-700/80 uppercase tracking-wider mt-1">Linhas<br>com Erro</span>
+          </div>
+        </div>
+
+        @if (importResult()!.erros && importResult()!.erros.length > 0) {
+          <div class="space-y-2">
+            <h4 class="font-bold text-gray-700 text-sm flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              Detalhes dos erros
+            </h4>
+            <div class="bg-red-50/50 border border-red-100 rounded-lg p-3 max-h-32 overflow-y-auto">
+              <ul class="space-y-1.5 text-xs text-red-700 font-medium">
+                @for (erro of importResult()!.erros; track erro) {
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-red-400 mt-0.5">•</span>
+                    {{ erro }}
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+        <button (click)="fecharModalImport()" class="px-5 py-2.5 bg-[#4A248A] text-white rounded-lg font-bold text-sm hover:bg-[#3d1e70] transition-colors shadow-sm w-full sm:w-auto">
+          Ciente e Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-modal-cadastrar-aluno 
+  [isOpen]="modalCadastrarAlunoAberto()"
+  (fechar)="fecharModalCadastrarAluno()"
+  (salvo)="onAlunoCadastrado()">
+</app-modal-cadastrar-aluno>
+
+  <!-- Modal de Confirmação de Exclusão -->
+  @if (modalConfirmacaoAberto()) {
+    <div class="modal-overlay" role="dialog" aria-modal="true" (click)="fecharModalConfirmacao()">
+      <div class="modal-container modal-container--pequeno" (click)="$event.stopPropagation()">
+        <div class="confirmacao-icone">⚠️</div>
+        <h2 class="confirmacao-titulo">Desativar Aluno?</h2>
+        <p class="confirmacao-desc">
+          <strong>{{ alunoParaDesativar()?.nomeCompleto }}</strong> perderá o acesso ao sistema, porém todos os seus registros serão mantidos. Esta ação pode ser revertida.
+        </p>
+        <div class="confirmacao-acoes">
+          <button class="btn-cancelar" (click)="fecharModalConfirmacao()">Cancelar</button>
+          <button class="btn-confirmar-danger" (click)="executarDesativacao()" [disabled]="desativarLoading()">
+            @if (desativarLoading()) { Desativando... } @else { Sim, Desativar }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+
+

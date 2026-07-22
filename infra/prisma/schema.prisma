@@ -17,6 +17,8 @@ model Usuario {
   id            String       @id @default(uuid())
   email         String       @unique
   senha         String       // Aqui ficará o hash do bcrypt
+  bloqueado     Boolean      @default(false)
+  deveMudarSenha Boolean     @default(true)
 
   educadorId    String?      @unique
   responsavelId String?      @unique
@@ -28,6 +30,8 @@ model Usuario {
 
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+
+  auditorias    AuditoriaExportacao[]
 }
 
 model Estudante {
@@ -41,6 +45,7 @@ model Estudante {
   formaComunicacao Fcom
   statusMatricula  Boolean
   createdAt        DateTime @default(now())
+  deletedAt        DateTime?
   escolaId String
 
   escola            Escola   @relation(fields: [escolaId], references: [id])
@@ -151,9 +156,9 @@ model EstudanteMedicamento {
 
   dosagem                Float
   unidadeMedida          UnidadeM
-  intervaloAdministracao Int
-  horarioAdministrado    DateTime @db.Time
-  administradoEscola     Boolean
+  intervaloAdministracao Int?
+  horarioAdministrado    DateTime? @db.Time
+  administradoEscola     Boolean? @default(false)
 
   estudante   Estudante   @relation(fields: [estudanteId], references: [id])
   medicamento Medicamento @relation(fields: [medicamentoId], references: [id])
@@ -201,6 +206,7 @@ model Educador {
   tipo            TipoEducador
   telefone        String
   escolaId        String
+  ativo           Boolean      @default(true)
 
   usuario          Usuario?
   registrosDiarios RegistroDiario[]
@@ -246,6 +252,13 @@ model Aula {
   horarioInicio DateTime?  @db.Time
   horarioFim    DateTime?  @db.Time
 
+  // Distingue entre uma aula recorrente e um evento esporádico da escola
+  isEvento   Boolean   @default(false)
+  // Campos preenchidos apenas quando isEvento = true
+  titulo     String?
+  descricao  String?
+  dataEvento DateTime?
+
   registroAulas RegistroAula[]
   educador      Educador         @relation(fields: [educadorId], references: [id])
   area          AreaAtendimento? @relation(fields: [areaId], references: [id])
@@ -259,8 +272,9 @@ model RegistroAula {
   aulaId            String
   data              DateTime @db.Date
   presenca          Boolean
-  scoreParticipacao Int
-  scoreSuporte      Int
+  status_aula       StatusAula @default(REALIZADA)
+  scoreParticipacao Int?
+  scoreSuporte      Int?
 
   estudante Estudante @relation(fields: [estudanteId], references: [id])
   aula      Aula      @relation(fields: [aulaId], references: [id])
@@ -313,6 +327,16 @@ model Pibi {
   metaDesenvolvimento MetaDesenvolvimento @relation(fields: [metaId], references: [id])
 }
 
+model AuditoriaExportacao {
+  id        String            @id @default(uuid())
+  usuarioId String
+  usuario   Usuario           @relation(fields: [usuarioId], references: [id])
+  entidade  String            // ex: "ALUNOS_COORDENADOR", "PROFESSORES", "ALUNOS_PROFESSOR", "RELATORIO_DASHBOARD"
+  formato   FormatoExportacao @default(CSV)
+  dataHora  DateTime          @default(now())
+  detalhes  String?           // Opcional: filtros utilizados na hora do download
+}
+
 // ==========================================
 // ENUMS (Domínios de Valores)
 // ==========================================
@@ -327,7 +351,7 @@ enum Role {
 enum Sexo {
   MASCULINO
   FEMININO
-  OUTRO
+  PREFIRO_NAO_INFORMAR
 }
 
 enum Fcom {
@@ -366,6 +390,7 @@ enum TipoEspecificidade {
   RESTRICAO
   COMPORTAMENTO_ATIPICO
   GATILHO_CRISE
+  CONTENCAO
 }
 
 enum CategoriaEspecificidade {
@@ -435,4 +460,16 @@ enum Bimestre {
 enum TipoTurma {
   REGENCIA
   ATENDIMENTO
+}
+
+enum StatusAula {
+  REALIZADA
+  FERIADO
+  FALTA_EDUCADOR
+  SUSPENSA
+}
+
+enum FormatoExportacao {
+  CSV
+  PDF
 }

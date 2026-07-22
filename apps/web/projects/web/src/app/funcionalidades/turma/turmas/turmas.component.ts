@@ -1,13 +1,46 @@
-import { Component, OnInit, inject, signal , ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { TurmasService, TurmaResumo, EstudanteResumo, EstudantesPorTurmaResponse } from '../../../nucleo/services/turmas.service';
+import { Component, OnInit, OnDestroy, inject, signal, computed, ChangeDetectionStrategy, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { TurmasService, TurmaResumo, EstudanteResumo, EstudantesPorTurmaResponse, MetricasTurma } from '../../../nucleo/services/turmas.service';
 import { AuthService } from '../../../nucleo/services/auth';
-import { DiagLabelPipe } from '../../../compartilhado/pipes/student.pipes';
-import { GraficoDiagnosticosComponent } from '../components/grafico-diagnosticos/grafico-diagnosticos';
+import { DiagLabelPipe, DiagColorPipe } from '../../../compartilhado/pipes/student.pipes';
 import { CardAlunoComponent } from '../../../compartilhado/components/card-aluno/card-aluno';
 import { AlunoModalData } from '../../../compartilhado/models/aluno-modal.model';
 import { AlunoModalComponent } from '../../../compartilhado/components/aluno-modal/aluno-modal.component';
+import { TurmaGraficosComponent } from '../components/turma-graficos/turma-graficos';
+import { KpisTurmaComponent } from '../components/kpis-turma/kpis-turma.component';
+import { AuditoriaService } from '../../../nucleo/services/auditoria.service';
+import { LoadingFlorComponent } from '../../../compartilhado/components/loading-flor/loading-flor.component';
+import { jsPDF } from 'jspdf';
+import { toPng } from 'html-to-image';
+import { buildAlunoModalData, getDiagnosticosArrayForCard, buildFotoUrl } from '../../../compartilhado/utils/aluno-modal.utils';
+
+import { API_BASE_URL } from '../../../nucleo/config/api.config';
+
 type ViewMode = 'grid' | 'list';
+
+/** Labels amigáveis para o diagnóstico principal */
+const DIAG_LABEL: Record<string, string> = {
+  TEA: 'TEA',
+  TDAH: 'TDAH',
+  SINDROME_DOWN: 'Síndrome de Down',
+  PARALISIA_CEREBRAL: 'Paralisia Cerebral',
+  DEFICIENCIA_INTELECTUAL: 'Def. Intelectual',
+  DEFICIENCIA_MULTIPLA: 'Def. Múltipla',
+  OUTRO: 'Outro',
+};
+
+/** Labels amigáveis para forma de comunicação */
+const FCOM_LABEL: Record<string, string> = {
+  VERBAL: 'Verbal',
+  NAO_VERBAL: 'Não Verbal',
+};
+
+/** Labels amigáveis para sexo */
+const SEXO_LABEL: Record<string, string> = {
+  MASCULINO: 'Masculino',
+  FEMININO: 'Feminino',
+  OUTRO: 'Outro',
+};
 
 @Component({
   selector: 'app-turmas-page',
@@ -15,26 +48,84 @@ type ViewMode = 'grid' | 'list';
     CommonModule,
     CardAlunoComponent,
     DiagLabelPipe,
-    GraficoDiagnosticosComponent,
-    AlunoModalComponent
+    DiagColorPipe,
+    AlunoModalComponent,
+    TurmaGraficosComponent,
+    KpisTurmaComponent,
+    LoadingFlorComponent,
   ],
   templateUrl: './turmas.component.html',
   styleUrls: ['./turmas.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush })
-export class TurmasComponent implements OnInit {
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class TurmasComponent implements OnInit, OnDestroy {
   private readonly turmasService = inject(TurmasService);
   private readonly authService = inject(AuthService);
+  private readonly auditoriaService = inject(AuditoriaService);
+  private readonly baseUrl = inject(API_BASE_URL);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  // ── ViewChild para captura do PDF ─────────────────────
+  @ViewChild('relatorioTurma') relatorioTurma!: ElementRef;
 
   turmas = signal<TurmaResumo[]>([]);
   estudantes = signal<EstudanteResumo[]>([]);
   turmaSelecionada = signal<TurmaResumo | null>(null);
+  metricas = signal<MetricasTurma | null>(null);
   viewMode = signal<ViewMode>('grid');
   loading = signal(false);
+  loadingEstudantes = signal(false);
   error = signal<string | null>(null);
-  isDropdownOpen = signal(false);
+  abaAtiva = signal<'perfil' | 'kpis'>('perfil');
+  loadingAba = signal(false);
+
+  // ── Signals de exportação (mesmo padrão do BlocoDashboardComponent) ──
+  exportDropdownAberto = signal(false);
+  gerandoPdf = signal(false);
+  nomeUsuarioLogado = signal<string>('');
+  dataHoraAtual = signal<Date>(new Date());
+
+  // ── Computed helpers para Big Numbers ─────────────────────────
+  readonly diagnosticoPrincipalLabel = computed(() => {
+    const d = this.metricas()?.diagnosticoPrincipal;
+    return d ? (DIAG_LABEL[d] ?? d) : '—';
+  });
+
+  readonly comunicacaoPrincipalLabel = computed(() => {
+    const c = this.metricas()?.comunicacaoPrincipal;
+    return c ? (FCOM_LABEL[c] ?? c) : '—';
+  });
+
+  totalAlunosAnimado = signal(0);
+  idadePredominanteAnimado = signal(0);
+  diagnosticoAnimado = signal('');
+  comunicacaoAnimado = signal('');
+  private animacoesAtivas: Record<string, number> = {};
+  private intervalosAtivos: Record<string, ReturnType<typeof setInterval>> = {};
 
   ngOnInit(): void {
     this.carregarTurmas();
+    // Busca o nome do usuário assim que o componente carrega
+    this.nomeUsuarioLogado.set(this.authService.getLoggedUserName());
+  }
+
+  trocarAba(aba: 'perfil' | 'kpis'): void {
+    if (this.abaAtiva() === aba) return;
+    this.loadingAba.set(true);
+    // Simula um tempo de carregamento suave
+    setTimeout(() => {
+      this.abaAtiva.set(aba);
+      this.loadingAba.set(false);
+      
+      if (aba === 'kpis') {
+        setTimeout(() => {
+          const sidebar = document.querySelector('.sidebar-wrapper');
+          if (sidebar) {
+            sidebar.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          }
+        }, 50);
+      }
+    }, 400);
   }
 
   carregarTurmas(): void {
@@ -49,76 +140,330 @@ export class TurmasComponent implements OnInit {
       error: () => {
         this.error.set('Erro ao carregar turmas. Verifique a conexão com a API.');
         this.loading.set(false);
-      } });
+      },
+    });
   }
 
-  selecionarTurma(turma: TurmaResumo): void {
-    if (this.turmaSelecionada()?.id === turma.id) return;
+  selecionarTurma(turma: TurmaResumo, forceReload: boolean = false): void {
+    if (!forceReload && this.turmaSelecionada()?.id === turma.id) return;
     this.turmaSelecionada.set(turma);
-    this.loading.set(true);
+    this.loadingEstudantes.set(true);
+
+    // Carrega estudantes e métricas em paralelo (sem bloquear um ao outro)
     this.turmasService.getEstudantesDaTurma(turma.id).subscribe({
       next: (res: EstudantesPorTurmaResponse) => {
         this.estudantes.set(res.estudantes);
-        this.loading.set(false);
+        this.loadingEstudantes.set(false);
+        this.animarNumero(res.estudantes.length, (v) => this.totalAlunosAnimado.set(v), 'totalAlunos', { duracao: 800 });
       },
       error: () => {
         this.error.set('Erro ao carregar estudantes.');
-        this.loading.set(false);
-      } });
+        this.loadingEstudantes.set(false);
+      },
+    });
+
+    this.turmasService.obterMetricasTurma(turma.id).subscribe({
+      next: (m) => {
+        this.metricas.set(m);
+        if (m.idadePredominante !== null && m.idadePredominante !== undefined) {
+          this.animarNumero(m.idadePredominante, (v) => this.idadePredominanteAnimado.set(v), 'idadePred', { duracao: 800 });
+        }
+        const diagLabel = m.diagnosticoPrincipal ? (DIAG_LABEL[m.diagnosticoPrincipal] ?? m.diagnosticoPrincipal) : '—';
+        this.animarTextoEmbaralhado(diagLabel, (v) => this.diagnosticoAnimado.set(v), 'diagTexto');
+        const comLabel = m.comunicacaoPrincipal ? (FCOM_LABEL[m.comunicacaoPrincipal] ?? m.comunicacaoPrincipal) : '—';
+        this.animarTextoEmbaralhado(comLabel, (v) => this.comunicacaoAnimado.set(v), 'comTexto');
+      },
+      error: () => this.metricas.set(null),
+    });
   }
 
   setView(mode: ViewMode): void {
     this.viewMode.set(mode);
   }
 
-  toggleDropdown(): void {
-    this.isDropdownOpen.update(v => !v);
-  }
-
-  fecharDropdown(): void {
-    this.isDropdownOpen.set(false);
-  }
-
-  selecionarTurmaDropdown(turma: TurmaResumo): void {
-    this.selecionarTurma(turma);
-    this.isDropdownOpen.set(false);
-  }
-
   alunoEmDestaque = signal<AlunoModalData | null>(null);
 
   abrirDetalhesAluno(estudante: EstudanteResumo): void {
-    
-    const nomeDaTurma = this.turmaSelecionada()?.nome || 'Turma Indefinida';
-    
-    const diagnosticoPrincipal = estudante.diagnosticos.length > 0 
-      ? estudante.diagnosticos[0]?.diagnostico?.tipo || 'Sem Laudo'
-      : 'Sem Laudo';
-
-    const dadosParaModal: AlunoModalData = {
-      id: estudante.id,
-      nome: estudante.nomeCompleto,
-      turma: nomeDaTurma,
-      diagnostico: diagnosticoPrincipal,
-      nivelSuporte: 'Nível 1 de Suporte',
-      foto: estudante.foto || `https://ui-avatars.com/api/?name=${estudante.nomeCompleto}&background=F0E6FF&color=4A148C`
-    };
-
-    this.alunoEmDestaque.set(dadosParaModal);
+    this.alunoEmDestaque.set(buildAlunoModalData(estudante, this.baseUrl));
   }
 
-  calcularIdade(dataNascimento: string | Date | undefined): number | undefined {    
-    if (!dataNascimento) return undefined;
-    
-    const hoje = new Date();
-    const nascimento = new Date(dataNascimento);
-    
-    let idade = hoje.getFullYear() - nascimento.getFullYear();
-    const mes = hoje.getMonth() - nascimento.getMonth();
-    
-    if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
-      idade--;
+  getDiagnosticosCard(estudante: EstudanteResumo): string[] {
+    return getDiagnosticosArrayForCard(estudante.diagnosticos);
+  }
+
+  getFotoUrlCard(estudante: EstudanteResumo): string {
+    return buildFotoUrl(estudante.nomeCompleto, estudante.foto, this.baseUrl);
+  }
+
+  fecharModalAluno(houveModificacao: boolean = false): void {
+    this.alunoEmDestaque.set(null);
+    if (houveModificacao) {
+      const turma = this.turmaSelecionada();
+      if (turma) {
+        this.selecionarTurma(turma, true);
+      }
     }
-    
-    return idade;
+  }
+
+  nomeTurmaExibicao(turma: import('../../../nucleo/services/turmas.service').TurmaResumo): string {
+    // Remove qualquer sufixo de etapa já existente no nome (evita duplicação), inclusive com reticências
+    const nomeBase = turma.nome
+      .replace(/\s*[-–]\s*(etapa_?\d+|etapa\s*\d+)[.\s]*$/i, '')
+      .trim();
+    if (!turma.etapa) return nomeBase || turma.nome;
+    // Formata o enum ETAPA_1 → Etapa 1, ou mantém se já vier formatado
+    const etapaLabel = turma.etapa
+      .replace(/^ETAPA_?(\d+)$/i, 'Etapa $1')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    return `${nomeBase} - ${etapaLabel}`;
+  }
+
+  nomeCurtoAluno(nomeCompleto: string): string {
+    if (!nomeCompleto) return '';
+    const partes = nomeCompleto.trim().split(/\s+/);
+    if (partes.length <= 2) return nomeCompleto;
+    return `${partes[0]} ${partes[partes.length - 1]}`;
+  }
+
+  private animarNumero(
+    destino: number,
+    setValor: (valor: number) => void,
+    chave: string,
+    opcoes?: { duracao?: number }
+  ): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      setValor(destino);
+      return;
+    }
+
+    if (this.animacoesAtivas[chave]) {
+      cancelAnimationFrame(this.animacoesAtivas[chave]);
+      delete this.animacoesAtivas[chave];
+    }
+
+    const duracao = opcoes?.duracao ?? 800;
+    const inicio = 0;
+    const tempoInicio = performance.now();
+
+    const passo = (tempoAtual: number) => {
+      const tempoDecorrido = tempoAtual - tempoInicio;
+      const progresso = Math.min(tempoDecorrido / duracao, 1);
+      const progressoSuave = progresso * (2 - progresso);
+      const valorAtual = inicio + (destino - inicio) * progressoSuave;
+      setValor(Math.round(valorAtual));
+
+      if (progresso < 1) {
+        this.animacoesAtivas[chave] = requestAnimationFrame(passo);
+      } else {
+        setValor(destino);
+        delete this.animacoesAtivas[chave];
+      }
+    };
+
+    this.animacoesAtivas[chave] = requestAnimationFrame(passo);
+  }
+
+  private animarTextoEmbaralhado(
+    valorFinal: string,
+    setValor: (valor: string) => void,
+    chave: string
+  ): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      setValor(valorFinal);
+      return;
+    }
+
+    if (this.intervalosAtivos[chave]) {
+      clearInterval(this.intervalosAtivos[chave]);
+      delete this.intervalosAtivos[chave];
+    }
+
+    const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    let frame = 0;
+    const totalFrames = 12;
+
+    this.intervalosAtivos[chave] = setInterval(() => {
+      const progresso = frame / totalFrames;
+      const texto = valorFinal
+        .split('')
+        .map((letra, index) => {
+          if (letra === ' ') return ' ';
+          if (index < valorFinal.length * progresso) return letra;
+          return caracteres[Math.floor(Math.random() * caracteres.length)];
+        })
+        .join('');
+
+      setValor(texto);
+      frame++;
+
+      if (frame > totalFrames) {
+        clearInterval(this.intervalosAtivos[chave]);
+        delete this.intervalosAtivos[chave];
+        setValor(valorFinal);
+      }
+    }, 35);
+  }
+
+  ngOnDestroy(): void {
+    Object.values(this.animacoesAtivas).forEach((id) => cancelAnimationFrame(id));
+    Object.values(this.intervalosAtivos).forEach((id) => clearInterval(id));
+  }
+
+  // ── Lógica de exportação (baseada no padrão do BlocoDashboardComponent) ──
+
+  toggleExportDropdown(): void {
+    this.exportDropdownAberto.update(v => !v);
+  }
+
+  exportarCSV(): void {
+    this.exportDropdownAberto.set(false);
+    const turma = this.turmaSelecionada();
+    const m = this.metricas();
+    if (!turma) return;
+
+    this.dataHoraAtual.set(new Date());
+    const dataAtual = this.dataHoraAtual().toLocaleDateString('pt-BR');
+    const horaAtual = this.dataHoraAtual().toLocaleTimeString('pt-BR');
+
+    let csv = '\ufeff';
+    csv += `RELATÓRIO DE PERFIL DA TURMA\n`;
+    csv += `Turma:;${turma.nome}\n`;
+    csv += `Ano Letivo:;${turma.anoLetivo}\n`;
+    csv += `Turno:;${turma.turno}\n`;
+    csv += `Data de Geração:;${dataAtual} às ${horaAtual}\n`;
+    csv += `Gerado por:;${this.nomeUsuarioLogado()}\n\n`;
+
+    if (m) {
+      csv += `RESUMO GERAL\n`;
+      csv += `Métrica;Valor\n`;
+      csv += `Total de Alunos;${m.totalAlunos}\n`;
+      csv += `Idade Predominante;${m.idadePredominante !== null ? m.idadePredominante + ' anos' : '—'}\n`;
+      csv += `Diagnóstico Principal;${m.diagnosticoPrincipal ? (DIAG_LABEL[m.diagnosticoPrincipal] ?? m.diagnosticoPrincipal) : '—'}\n`;
+      csv += `Comunicação Principal;${m.comunicacaoPrincipal ? (FCOM_LABEL[m.comunicacaoPrincipal] ?? m.comunicacaoPrincipal) : '—'}\n\n`;
+
+      csv += `DISTRIBUIÇÃO POR SEXO\n`;
+      csv += `Sexo;Quantidade\n`;
+      m.distribuicaoSexo.forEach(d => {
+        csv += `${SEXO_LABEL[d.sexo] ?? d.sexo};${d.quantidade}\n`;
+      });
+      csv += '\n';
+
+      csv += `DISTRIBUIÇÃO POR IDADE\n`;
+      csv += `Idade;Quantidade de Alunos\n`;
+      m.distribuicaoIdade.forEach(d => {
+        csv += `${d.idade} anos;${d.quantidade}\n`;
+      });
+      csv += '\n';
+
+      csv += `DISTRIBUIÇÃO POR DIAGNÓSTICO\n`;
+      csv += `Diagnóstico;Quantidade de Alunos\n`;
+      m.distribuicaoDiagnostico.forEach(d => {
+        csv += `${DIAG_LABEL[d.tipo] ?? d.tipo};${d.quantidade}\n`;
+      });
+      csv += '\n';
+
+      csv += `DISTRIBUIÇÃO POR FORMA DE COMUNICAÇÃO\n`;
+      csv += `Forma de Comunicação;Quantidade de Alunos\n`;
+      m.distribuicaoComunicacao.forEach(d => {
+        csv += `${FCOM_LABEL[d.forma] ?? d.forma};${d.quantidade}\n`;
+      });
+    }
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `perfil_turma_${turma.nome.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    this.auditoriaService.registrarDownload('TURMA_METRICAS', 'CSV', `turma_id=${turma.id}`).subscribe();
+  }
+
+  async exportarPDF(): Promise<void> {
+    this.exportDropdownAberto.set(false);
+    this.dataHoraAtual.set(new Date());
+    this.gerandoPdf.set(true);
+
+    // Aguarda o overlay de carregamento aparecer e os gráficos estabilizarem
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const elemento = this.relatorioTurma.nativeElement as HTMLElement;
+    const cabecalhoPdf = document.getElementById('cabecalho-relatorio-turma-pdf');
+    const botoesEsconder = elemento.querySelectorAll('.esconder-no-pdf');
+
+    // Mostra o cabeçalho de impressão e esconde botões interativos
+    if (cabecalhoPdf) cabecalhoPdf.classList.remove('hidden');
+    botoesEsconder.forEach(el => (el as HTMLElement).style.display = 'none');
+
+    // ── Fix: Canvas em branco — mesmo padrão do BlocoDashboardComponent ──
+    const canvasList = Array.from(elemento.querySelectorAll('canvas')) as HTMLCanvasElement[];
+    const overlays: { canvas: HTMLCanvasElement; img: HTMLImageElement }[] = [];
+
+    for (const canvas of canvasList) {
+      try {
+        const dataUrl = canvas.toDataURL('image/png');
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        img.style.position = 'absolute';
+        img.style.top = canvas.offsetTop + 'px';
+        img.style.left = canvas.offsetLeft + 'px';
+        img.style.width = canvas.offsetWidth + 'px';
+        img.style.height = canvas.offsetHeight + 'px';
+        img.style.pointerEvents = 'none';
+        canvas.parentElement?.appendChild(img);
+        canvas.style.opacity = '0';
+        overlays.push({ canvas, img });
+      } catch { /* tainted canvas — skip */ }
+    }
+
+    // ── Fix: Altura cortada pelo overflow-y: auto ──
+    const estiloOriginalOverflow = elemento.style.overflow;
+    const estiloOriginalMaxH = elemento.style.maxHeight;
+    elemento.style.overflow = 'visible';
+    elemento.style.maxHeight = 'none';
+
+    try {
+      const imgData = await toPng(elemento, {
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+        width: elemento.scrollWidth,
+        height: elemento.scrollHeight,
+        style: { overflow: 'visible', maxHeight: 'none' },
+      });
+
+      const larguraPDF = new jsPDF('p', 'mm', 'a4').internal.pageSize.getWidth();
+      const alturaPDF = (elemento.scrollHeight * larguraPDF) / elemento.scrollWidth;
+
+      const pdfDinamico = new jsPDF('p', 'mm', [larguraPDF, alturaPDF]);
+      pdfDinamico.addImage(imgData, 'PNG', 0, 0, larguraPDF, alturaPDF);
+
+      const turma = this.turmaSelecionada();
+      const nomePdf = turma ? `Relatorio_Turma_${turma.nome.replace(/\s+/g, '_')}.pdf` : 'Relatorio_Turma.pdf';
+      pdfDinamico.save(nomePdf);
+      this.auditoriaService.registrarDownload('RELATORIO_TURMA', 'PDF', this.buildDetalhes()).subscribe();
+
+    } catch (erro) {
+      console.error('Erro ao gerar PDF da turma:', erro);
+      alert('Não foi possível gerar o PDF no momento.');
+    } finally {
+      // Restaura o DOM independentemente de sucesso ou falha
+      for (const { canvas, img } of overlays) {
+        canvas.style.opacity = '';
+        img.remove();
+      }
+      elemento.style.overflow = estiloOriginalOverflow;
+      elemento.style.maxHeight = estiloOriginalMaxH;
+
+      if (cabecalhoPdf) cabecalhoPdf.classList.add('hidden');
+      botoesEsconder.forEach(el => (el as HTMLElement).style.display = '');
+      this.gerandoPdf.set(false);
+    }
+  }
+
+  /** Constrói a string de detalhes para a trilha de auditoria, incluindo o nome da turma */
+  private buildDetalhes(): string {
+    const turma = this.turmaSelecionada();
+    return `turmaId=${turma?.id ?? ''}; nomeTurma=${turma?.nome ?? ''}; aba=${this.abaAtiva()}`;
   }
 }

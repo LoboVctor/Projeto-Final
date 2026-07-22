@@ -1,4 +1,4 @@
-import { Component , ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 
 import { CadastroLayoutComponent } from '../../../compartilhado/components/cadastro-layout/cadastro-layout.component';
@@ -13,6 +13,9 @@ import { FeedbackService } from '../../../compartilhado/services/feedback.servic
   templateUrl: './cadastro-responsavel.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush })
 export class CadastroResponsavelComponent {
+  readonly isAba = input<boolean>(false);
+  readonly alunoId = input<string | null>(null);
+
   form: FormGroup;
   isLoading = false;
 

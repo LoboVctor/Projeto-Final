@@ -1,4 +1,11 @@
-import { Sexo, Fcom, Turno, Etapa, CategoriaEspecificidade, TipoEspecificidade } from '@prisma-client';
+import {
+  Sexo,
+  Fcom,
+  Turno,
+  Etapa,
+  CategoriaEspecificidade,
+  TipoEspecificidade,
+} from '@prisma-client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class TurmaVisaoGeralDto {
@@ -44,6 +51,8 @@ export class EspecificidadeVisaoGeralDto {
 export class VisaoGeralResponseDto {
   @ApiProperty({ format: 'uuid', description: 'ID do estudante' })
   id!: string;
+  @ApiProperty({ description: 'Matrícula do estudante' })
+  matricula!: string;
   @ApiProperty({ description: 'Nome completo do estudante' })
   nomeCompleto!: string;
   @ApiProperty({ description: 'Data de nascimento do estudante' })

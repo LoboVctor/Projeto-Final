@@ -27,7 +27,10 @@ export class MetaDesenvolvimentoResponseDto {
   scoreFinal!: number;
   @ApiProperty({ description: 'Parecer do educador' })
   parecer!: string;
-  @ApiProperty({ type: [PibiResponseDto], description: 'Lista de relatórios PIBI vinculados à meta' })
+  @ApiProperty({
+    type: [PibiResponseDto],
+    description: 'Lista de relatórios PIBI vinculados à meta',
+  })
   pibis!: PibiResponseDto[];
 }
 
@@ -44,7 +47,10 @@ export class RelatorioSemestralResponseDto {
   status!: StatusRelatorio;
   @ApiProperty({ description: 'Data de fechamento do relatório' })
   dataFechamento!: Date;
-  @ApiProperty({ type: [MetaDesenvolvimentoResponseDto], description: 'Lista de metas avaliadas' })
+  @ApiProperty({
+    type: [MetaDesenvolvimentoResponseDto],
+    description: 'Lista de metas avaliadas',
+  })
   metas!: MetaDesenvolvimentoResponseDto[];
 }
 
@@ -53,6 +59,9 @@ export class PedagogicoResponseDto {
   estudanteId!: string;
   @ApiProperty({ description: 'Nome completo do estudante' })
   nomeCompleto!: string;
-  @ApiProperty({ type: [RelatorioSemestralResponseDto], description: 'Relatórios semestrais do estudante' })
+  @ApiProperty({
+    type: [RelatorioSemestralResponseDto],
+    description: 'Relatórios semestrais do estudante',
+  })
   relatorios!: RelatorioSemestralResponseDto[];
 }

@@ -1,4 +1,11 @@
-import { IsString, IsInt, IsOptional, IsUUID, IsBoolean, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsInt,
+  IsOptional,
+  IsUUID,
+  IsBoolean,
+  IsDateString,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateRegistrosDiarioDto {
@@ -8,14 +15,19 @@ export class CreateRegistrosDiarioDto {
 
   @ApiProperty({ description: 'ID do educador responsável pelo registro' })
   @IsUUID()
-  educadorId!: string; 
+  educadorId!: string;
 
-  @ApiPropertyOptional({ description: 'Indica se o registro foi completamente preenchido' })
+  @ApiPropertyOptional({
+    description: 'Indica se o registro foi completamente preenchido',
+  })
   @IsBoolean()
   @IsOptional()
   preenchido?: boolean;
 
-  @ApiPropertyOptional({ description: 'Data do registro no formato ISO 8601 (ex: 2026-06-23)', example: '2026-06-23' })
+  @ApiPropertyOptional({
+    description: 'Data do registro no formato ISO 8601 (ex: 2026-06-23)',
+    example: '2026-06-23',
+  })
   @IsDateString()
   @IsOptional()
   data?: string;
@@ -36,15 +48,21 @@ export class CreateRegistrosDiarioDto {
   @IsInt()
   scoreAutonomia!: number;
 
-  @ApiProperty({ description: 'Status da alimentação (ex: comeu tudo, não quis comer)' })
+  @ApiProperty({
+    description: 'Status da alimentação (ex: comeu tudo, não quis comer)',
+  })
   @IsInt()
   statusAlimentacao!: number;
 
-  @ApiProperty({ description: 'Uso do banheiro (ex: independente, precisou de ajuda)' })
+  @ApiProperty({
+    description: 'Uso do banheiro (ex: independente, precisou de ajuda)',
+  })
   @IsInt()
   usoBanheiro!: number;
 
-  @ApiPropertyOptional({ description: 'Anotações gerais e observações sobre o estudante' })
+  @ApiPropertyOptional({
+    description: 'Anotações gerais e observações sobre o estudante',
+  })
   @IsString()
   @IsOptional()
   anotacoes?: string;

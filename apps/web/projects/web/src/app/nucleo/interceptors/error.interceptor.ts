@@ -3,9 +3,11 @@ import { inject } from '@angular/core';
 import { catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { FeedbackService } from '../../compartilhado/services/feedback.service';
+import { AuthService } from '../services/auth';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const feedbackService = inject(FeedbackService);
+  const authService = inject(AuthService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -19,10 +21,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             errorMessage = 'Não foi possível conectar ao servidor.';
             break;
           case 401:
-            errorMessage = 'Sessão inválida. Faça login novamente.';
+            errorMessage = error.error?.message || 'Sessão inválida. Faça login novamente.';
+            authService.logout();
             break;
           case 403:
-            errorMessage = 'Você não possui permissão para realizar esta ação.';
+            errorMessage = error.error?.message || 'Você não possui permissão para realizar esta ação.';
             break;
           case 404:
             errorMessage = 'Recurso não encontrado.';

@@ -1,1 +1,91 @@
 /* Estilos específicos adicionais (se necessário). A maioria das regras está no HTML via Tailwind CSS. */
+
+/* ── Scrollbar customizada roxa dentro do modal ── */
+::ng-deep .modal-scroll-area::-webkit-scrollbar {
+  width: 16px !important;
+}
+
+::ng-deep .modal-scroll-area::-webkit-scrollbar-track {
+  background: #fbfcfd !important;
+  border-radius: 16px !important;
+}
+
+::ng-deep .modal-scroll-area::-webkit-scrollbar-track-piece {
+  background: #fbfcfd !important;
+  border-radius: 16px !important;
+}
+
+::ng-deep .modal-scroll-area::-webkit-scrollbar-thumb {
+  background-color: #c4b5fd !important;
+  border-radius: 16px !important;
+  border: 5px solid #fbfcfd !important;
+  background-clip: padding-box !important;
+}
+
+::ng-deep .modal-scroll-area::-webkit-scrollbar-thumb:hover {
+  background-color: #a78bfa !important;
+}
+
+::ng-deep .modal-scroll-area::-webkit-scrollbar-button,
+::ng-deep .modal-scroll-area::-webkit-scrollbar-button:start:decrement,
+::ng-deep .modal-scroll-area::-webkit-scrollbar-button:end:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: #fbfcfd !important;
+  background-color: #fbfcfd !important;
+  border: none !important;
+}
+
+::ng-deep .modal-scroll-area::-webkit-scrollbar-corner {
+  background-color: #fbfcfd !important;
+}
+
+/* Firefox */
+::ng-deep .modal-scroll-area {
+  scrollbar-width: thin !important;
+  scrollbar-color: #c4b5fd #fbfcfd !important;
+}
+
+/* ── Centralização Real do Botão X ── */
+.close-button-centered {
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  outline: none !important;
+}
+
+/* ── Animações do Modal ── */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-modal-enter {
+  animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-overlay-enter {
+  animation: overlayFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

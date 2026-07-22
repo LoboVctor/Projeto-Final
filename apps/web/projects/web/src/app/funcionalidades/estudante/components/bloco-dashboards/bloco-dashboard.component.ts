@@ -1,36 +1,53 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, effect, inject, signal, computed } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, effect, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { AnalyticsService } from '../../../../compartilhado/services/analytics.service';
+import { AuditoriaService } from '../../../../nucleo/services/auditoria.service';
+import { AuthService } from '../../../../nucleo/services/auth';
 import Chart from 'chart.js/auto';
+import { jsPDF } from 'jspdf';
+import { toPng } from 'html-to-image';
+import { LoadingFlorComponent } from '../../../../compartilhado/components/loading-flor/loading-flor.component';
 
 @Component({
   selector: 'app-bloco-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LoadingFlorComponent],
   templateUrl: './bloco-dashboard.component.html',
   styleUrls: ['./bloco-dashboard.component.css']
 })
-export class BlocoDashboardComponent {
+export class BlocoDashboardComponent implements OnInit {
   @Input({ required: true }) estudanteId!: string;
+  /** Nome do estudante — usado nos nomes dos arquivos exportados */
+  @Input() nomeEstudante: string = '';
   @Output() recolher = new EventEmitter<void>();
 
   private analyticsService = inject(AnalyticsService);
+  private readonly auditoriaService = inject(AuditoriaService);
+  private readonly authService = inject(AuthService);
 
   periodo = signal<'semana' | 'mes' | 'semestre'>('mes');
   categoriaSelecionada = signal<string | null>(null);
-
   semanaAtualVisualizada = signal<Date>(this.getMonday(new Date()));
 
-  labelNavegadorSemana = computed(() => {
+  // Novos Signals para a exportação
+  nomeUsuarioLogado = signal<string>('');
+  dataHoraAtual = signal<Date>(new Date());
+
+  labelNavegadorSemana = computed<string>(() => {
     const inicio = this.semanaAtualVisualizada();
     const fim = new Date(inicio);
     fim.setDate(fim.getDate() + 4);
 
-    const fmt = (d: Date) => `${d.getDate().toString().padStart(2, '0')} ${d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}`;
-    return `${fmt(inicio)} - ${fmt(fim)}`;
+    const fmt = (d: Date): string => {
+      const dia = d.getDate().toString().padStart(2, '0');
+      const mes = (d.getMonth() + 1).toString().padStart(2, '0');
+      return `${dia}/${mes}`;
+    };
+
+    return `${fmt(inicio)} a ${fmt(fim)}`;
   });
 
   podeAvancarSemana = computed(() => {
@@ -51,6 +68,7 @@ export class BlocoDashboardComponent {
   dashboardData = toSignal(this.dashboardResumo$);
 
   constructor() {
+    this.nomeUsuarioLogado.set(this.authService.getLoggedUserName());
     effect(() => {
       const data = this.dashboardData();
       
@@ -63,12 +81,12 @@ export class BlocoDashboardComponent {
             5, 
             ['#f59e0b', '#fef3c7']
           );
-          
+
           this.frequenciaGaugeChart = this.renderGaugeChart(
-            'frequenciaGaugeCanvas', 
-            this.frequenciaGaugeChart, 
-            data.frequencia.valor, 
-            100, 
+            'frequenciaGaugeCanvas',
+            this.frequenciaGaugeChart,
+            data.frequencia.valor,
+            100,
             ['#22c55e', '#dcfce7']
           );
 
@@ -78,9 +96,29 @@ export class BlocoDashboardComponent {
     });
   }
 
+  ngOnInit() {
+    // Busca o nome do usuário assim que o componente carrega
+    this.nomeUsuarioLogado.set(this.authService.getLoggedUserName());
+  }
 
   onRecolher() {
     this.recolher.emit();
+  }
+
+  private descricoesCategorias: Record<string, string> = {
+    'Alimentação': 'Avalia a aceitação alimentar do estudante, sua independência ao comer e a presença de eventuais restrições ou seletividades durante as refeições.',
+    'Banheiro': 'Acompanha o nível de independência para usar o banheiro, solicitar ajuda quando necessário e realizar sua própria higiene pessoal.',
+    'Autonomia': 'Mede a capacidade do estudante de realizar tarefas diárias práticas e de seguir a rotina escolar com o mínimo de suporte físico ou verbal.',
+    'Comportamento': 'Observa a regulação emocional perante frustrações, a presença de comportamentos atípicos ou crises e a adequação às regras do ambiente.',
+    'Interação Social': 'Avalia a iniciativa para brincar, a capacidade de compartilhar, o contato visual e a comunicação estabelecida com colegas e educadores.',
+    'Foco nas Atividades': 'Mede o tempo de atenção sustentada, o engajamento na tarefa em execução e a capacidade de concluir as atividades pedagógicas propostas.'
+  };
+
+  obterDescricaoCategoria(categoria: string | null): string {
+    if (!categoria || !this.descricoesCategorias[categoria]) {
+      return 'Acompanhamento de desenvolvimento da rotina escolar.';
+    }
+    return this.descricoesCategorias[categoria];
   }
 
   mudarPeriodo(novoPeriodo: 'semana' | 'mes' | 'semestre') {
@@ -98,7 +136,7 @@ export class BlocoDashboardComponent {
 
   abrirDetalheCategoria(categoria: string) {
     this.categoriaSelecionada.set(categoria);
-    this.semanaAtualVisualizada.set(this.getMonday(new Date())); // Reseta para a semana atual ao abrir
+    this.semanaAtualVisualizada.set(this.getMonday(new Date())); 
     this.carregarHistorico(categoria);
   }
 
@@ -142,8 +180,8 @@ export class BlocoDashboardComponent {
     const fim = new Date(inicio);
     fim.setDate(fim.getDate() + 4); 
 
-    const strInicio = formatarParaDataPura(inicio);
-    const strFim = formatarParaDataPura(fim);
+    const strInicio = `${formatarParaDataPura(inicio)}T00:00:00`;
+    const strFim = `${formatarParaDataPura(fim)}T23:59:59`;
 
     const mapaCategorias: Record<string, string> = {
       'Alimentação': 'Alimentação',
@@ -235,7 +273,18 @@ export class BlocoDashboardComponent {
         },
         scales: {
           y: { beginAtZero: true, max: 5, grid: { color: '#f3f4f6' } },
-          x: { grid: { display: false } }
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: {
+                family: "'Inter', sans-serif",
+                size: 12,
+                weight: 'bold'
+              },
+              color: '#6b7280'
+            },
+            border: { display: false }
+          }
         },
         plugins: { 
           legend: { display: false },
@@ -247,6 +296,155 @@ export class BlocoDashboardComponent {
         }
       }
     });
+  }
+
+  // --- Lógica de exportação ---
+  @ViewChild('relatorioDashboard') relatorioDashboard!: ElementRef;
+
+  exportDropdownAberto = signal(false);
+  gerandoPdf = signal(false);
+  dataGeracao = signal('');
+
+  toggleExportDropdown() {
+    this.exportDropdownAberto.update(v => !v);
+  }
+
+  exportarCSV() {
+    this.exportDropdownAberto.set(false);
+    const data = this.dashboardData();
+    if (!data) return;
+
+    // Atualiza a hora da geração
+    this.dataHoraAtual.set(new Date());
+
+    const dataAtual = this.dataHoraAtual().toLocaleDateString('pt-BR');
+    const horaAtual = this.dataHoraAtual().toLocaleTimeString('pt-BR');
+    const periodoLabel = this.periodo() === 'semana' ? 'Últimos 7 dias' : this.periodo() === 'mes' ? 'Últimos 30 dias' : 'Último Semestre';
+
+    let csv = '\ufeff'; 
+    
+    csv += `RELATÓRIO DE DESEMPENHO ANALÍTICO\n`;
+    csv += `Aluno:;${this.nomeEstudante || '—'}\n`;
+    csv += `Data de Geração:;${dataAtual} às ${horaAtual}\n`;
+    csv += `Gerado por:;${this.nomeUsuarioLogado()}\n`;
+    csv += `Período Analisado:;${periodoLabel}\n\n`;
+
+    csv += `VISÃO GERAL\n`;
+    csv += `Métrica;Valor;Variação Anterior\n`;
+    csv += `Média Geral;${data.mediaGeral.valor.toFixed(2)};${data.mediaGeral.variacao >= 0 ? '+' : ''}${data.mediaGeral.variacao.toFixed(2)}\n`;
+    csv += `Frequência;${data.frequencia.valor}%;${data.frequencia.variacao >= 0 ? '+' : ''}${data.frequencia.variacao.toFixed(2)}%\n\n`;
+
+    csv += `DETALHAMENTO POR CATEGORIA\n`;
+    csv += `Categoria;Score (0 a 5);Variação;Descrição do Eixo Avaliado\n`;
+
+    const nomes: Record<string, string> = {
+      'Alimentacao': 'Alimentação', 'Banheiro': 'Banheiro', 'Autonomia': 'Autonomia',
+      'Comportamento': 'Comportamento', 'Interacao': 'Interação Social', 'Foco': 'Foco nas Atividades'
+    };
+
+    Object.keys(data.categorias).forEach(key => {
+      const cat = data.categorias[key];
+      const nomeCorreto = nomes[key] || key;
+      const descricao = this.descricoesCategorias[nomeCorreto] || ''; 
+      
+      csv += `${nomeCorreto};${cat.valor?.toFixed(2) || 0};${cat.variacao >= 0 ? '+' : ''}${cat.variacao?.toFixed(2) || 0};"${descricao}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Relatorio_Dashboard_${this.nomeEstudante ? this.nomeEstudante.replace(/\s+/g, '_') + '_' : ''}${this.periodo()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    this.auditoriaService.registrarDownload('RELATORIO_DASHBOARD', 'CSV', this.buildDetalhes()).subscribe();
+  }
+
+  async exportarPDF() {
+    this.exportDropdownAberto.set(false);
+    this.dataHoraAtual.set(new Date());
+    this.gerandoPdf.set(true);
+
+    // Aguarda o dropdown fechar, o overlay de carregamento aparecer e os gráficos estabilizarem
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const elemento = this.relatorioDashboard.nativeElement as HTMLElement;
+    const cabecalhoPdf = document.getElementById('cabecalho-relatorio-pdf');
+    const botoesEsconder = document.querySelectorAll('.esconder-no-pdf');
+
+    // Mostra o cabeçalho de impressão e esconde botões interativos
+    if (cabecalhoPdf) cabecalhoPdf.classList.remove('hidden');
+    botoesEsconder.forEach(el => (el as HTMLElement).style.display = 'none');
+
+    // ── Fix 1: Canvas em branco ──────────────────────────────────────────────
+    const canvasList = Array.from(elemento.querySelectorAll('canvas')) as HTMLCanvasElement[];
+    const overlays: { canvas: HTMLCanvasElement; img: HTMLImageElement }[] = [];
+
+    for (const canvas of canvasList) {
+      try {
+        const dataUrl = canvas.toDataURL('image/png');
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        img.style.position = 'absolute';
+        img.style.top = canvas.offsetTop + 'px';
+        img.style.left = canvas.offsetLeft + 'px';
+        img.style.width = canvas.offsetWidth + 'px';
+        img.style.height = canvas.offsetHeight + 'px';
+        img.style.pointerEvents = 'none';
+        canvas.parentElement?.appendChild(img);
+        canvas.style.opacity = '0';
+        overlays.push({ canvas, img });
+      } catch { /* tainted canvas — skip */ }
+    }
+
+    // ── Fix 2: Altura cortada pelo overflow-y: auto ──────────────────────────
+    const estiloOriginalOverflow = elemento.style.overflow;
+    const estiloOriginalMaxH = elemento.style.maxHeight;
+    elemento.style.overflow = 'visible';
+    elemento.style.maxHeight = 'none';
+
+    // Removemos a filtragem de esconder-no-pdf daqui, porque já os escondemos via display: none acima
+    try {
+      const imgData = await toPng(elemento, {
+        pixelRatio: 2,
+        backgroundColor: '#f8fafc',
+        width: elemento.scrollWidth,
+        height: elemento.scrollHeight,
+        style: { overflow: 'visible', maxHeight: 'none' },
+      });
+
+      const larguraPDF = new jsPDF('p', 'mm', 'a4').internal.pageSize.getWidth();
+      const alturaPDF = (elemento.scrollHeight * larguraPDF) / elemento.scrollWidth;
+
+      const pdfDinamico = new jsPDF('p', 'mm', [larguraPDF, alturaPDF]);
+      pdfDinamico.addImage(imgData, 'PNG', 0, 0, larguraPDF, alturaPDF);
+
+      pdfDinamico.save(`Relatorio_Dashboard_${this.nomeEstudante ? this.nomeEstudante.replace(/\s+/g, '_') + '_' : ''}${this.periodo()}.pdf`);
+      this.auditoriaService.registrarDownload('RELATORIO_DASHBOARD', 'PDF', this.buildDetalhes()).subscribe();
+
+    } catch (erro) {
+      console.error('Erro ao gerar PDF:', erro);
+      alert('Não foi possível gerar o PDF no momento.');
+    } finally {
+      // Restaura o DOM independentemente de sucesso ou falha
+      for (const { canvas, img } of overlays) {
+        canvas.style.opacity = '';
+        img.remove();
+      }
+      elemento.style.overflow = estiloOriginalOverflow;
+      elemento.style.maxHeight = estiloOriginalMaxH;
+
+      // Esconde o cabeçalho novamente e mostra os botões
+      if (cabecalhoPdf) cabecalhoPdf.classList.add('hidden');
+      botoesEsconder.forEach(el => (el as HTMLElement).style.display = '');
+      this.gerandoPdf.set(false);
+    }
+  }
+
+  private buildDetalhes(): string {
+    return `periodo=${this.periodo()}; estudanteId=${this.estudanteId}; nomeEstudante=${this.nomeEstudante}`;
   }
 
   // --- Lógica dos Gráficos Principais ---

@@ -1,12 +1,12 @@
 import { Component, inject, signal , ChangeDetectionStrategy } from '@angular/core';
 
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../nucleo/services/auth';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
   changeDetection: ChangeDetectionStrategy.OnPush })
 export class Login {
@@ -15,7 +15,7 @@ export class Login {
   private router = inject(Router);
 
   isLoading = signal<boolean>(false);
-  errorMessage = signal<string | null>(null);
+  mostrarSenha = signal<boolean>(false);
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -28,7 +28,6 @@ export class Login {
     }
 
     this.isLoading.set(true);
-    this.errorMessage.set(null);
 
     this.authService
       .login({
@@ -37,11 +36,16 @@ export class Login {
       .subscribe({
         next: () => {
           this.isLoading.set(false);
-          this.router.navigate(['/home']);
+          if (this.authService.deveMudarSenha()) {
+            this.router.navigate(['/primeiro-acesso']);
+          } else if (this.authService.isCoordenador()) {
+            this.router.navigate(['/coordenador/home']);
+          } else {
+            this.router.navigate(['/home']);
+          }
         },
-        error: () => {
+        error: (err: any) => {
           this.isLoading.set(false);
-          this.errorMessage.set('Credenciais inválidas. Tente novamente.');
         } });
   }
 }

@@ -5,6 +5,9 @@ export interface EstudanteListagemItem {
   matricula: string;           // String no schema Prisma
   foto: string | null;
   statusMatricula: boolean;    // Boolean no schema Prisma
+  dataNascimento: string;      // ISO date string
+  sexo: 'MASCULINO' | 'FEMININO' | 'OUTRO';
+  formaComunicacao: 'VERBAL' | 'NAO_VERBAL';
   turmas: { id: string; nome: string }[];
   diagnosticos: { diagnostico: { nome: string; tipo: string } }[];
 }
@@ -14,8 +17,15 @@ export interface BuscaEstudantesParams {
   nome?: string;
   matricula?: string;
   diagnosticoTipo?: string;
+  sexo?: string;
+  turmaId?: string;
+  formaComunicacao?: string;
+  categoriaEspecificidade?: string;
+  idadeMin?: number;
+  idadeMax?: number;
   page?: number;
   limit?: number;
+  status?: 'PENDENTE' | 'CONCLUIDO';
 }
 
 /** Wrapper de resposta paginada retornado pela API */

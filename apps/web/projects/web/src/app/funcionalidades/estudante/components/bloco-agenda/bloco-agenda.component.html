@@ -1,11 +1,11 @@
 <!-- PAINEL AGENDA — mesmo padrão estrutural de bloco-saude e bloco-visao-geral -->
 <div
-  class="flex-1 bg-gray-50/50 p-6 md:p-8 rounded-r-3xl overflow-y-auto overflow-x-hidden max-w-full max-h-[90vh] md:max-h-[85vh] relative w-full min-h-full">
+  class="flex-1 bg-gray-50/50 p-6 md:p-8 rounded-r-3xl overflow-y-auto overflow-x-hidden max-w-full relative w-full modal-scroll-area">
 
-  <!-- Cabeçalho — idêntico ao padrão Visão Geral / Saúde -->
+  <!-- Cabeçalho -->
   <div class="flex items-center justify-between mb-8">
-    <div class="flex items-center space-x-3 text-green-700">
-      <div class="bg-green-100 p-2 rounded-full">
+    <div class="flex items-center space-x-3 text-amber-700">
+      <div class="bg-amber-50 p-2 rounded-full flex items-center justify-center w-10 h-10 border border-amber-100">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -25,18 +25,17 @@
 
     <div class="flex items-center space-x-3">
       <button (click)="recolher.emit()"
-        class="flex items-center space-x-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
-        aria-label="Recolher painel da Agenda">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        class="close-button-centered absolute top-[24px] right-[24px] w-10 h-10 text-gray-400 hover:text-gray-700 hover:bg-gray-200/50 rounded-full transition-colors cursor-pointer"
+        aria-label="Fechar modal">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"></polyline>
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
-        <span>Recolher</span>
       </button>
     </div>
   </div>
 
-  <!-- Erro de carregamento da API -->
   @if (erroCarregamento()) {
   <div class="bg-red-50 border border-red-100 rounded-xl p-6 text-center mb-6">
     <p class="text-red-700 font-medium mb-3">{{ erroCarregamento() }}</p>
@@ -47,7 +46,6 @@
   </div>
   }
 
-  <!-- Erro de Validação Local (UUID inválido) -->
   @if (erroValidacao()) {
   <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start space-x-3 mb-6 shadow-sm">
     <div class="bg-red-100 p-1.5 rounded-full flex-shrink-0 mt-0.5">
@@ -73,7 +71,6 @@
   </div>
   }
 
-  <!-- Estado: Loading inicial (quando não há dados da semana) -->
   @if (loading() && semanaAtual().length === 0) {
   <div class="animate-pulse space-y-4">
     <div class="h-12 bg-gray-200 rounded-xl w-72"></div>
@@ -83,14 +80,10 @@
   }
 
   @if (semanaAtual().length > 0) {
-  <!-- Seletor de data integrado movido para baixo -->
-
-  <!-- Bloco de notas amarelo -->
   <div
     class="agenda-notebook rounded-2xl border border-amber-200 shadow-md overflow-hidden relative w-full max-w-full box-border transition-opacity duration-300"
     [class.opacity-60]="loading()" [class.pointer-events-none]="loading()">
 
-    <!-- Linha de espiral decorativa do topo -->
     <div
       class="h-3 bg-amber-300/40 flex items-center px-4 space-x-4 pl-[65px] absolute top-0 w-full z-10 pointer-events-none">
       @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
@@ -98,7 +91,6 @@
       }
     </div>
 
-    <!-- Seletor de data integrado — barra compacta dentro do caderno -->
     <div class="pl-[65px] pr-4 pt-7 pb-2 border-b border-amber-200/70 flex items-center justify-between mt-1">
       <div class="grid grid-cols-[28px_minmax(260px,320px)_28px] items-center justify-center gap-1">
         <button (click)="mudarData(-1)"
@@ -111,7 +103,8 @@
         </button>
 
         <div class="flex items-center justify-center space-x-1.5 px-1 group w-full overflow-hidden">
-          <div class="relative w-6 h-6 flex items-center justify-center rounded hover:bg-amber-100 transition-colors cursor-pointer flex-shrink-0">
+          <div
+            class="relative w-6 h-6 flex items-center justify-center rounded hover:bg-amber-100 transition-colors cursor-pointer flex-shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
               class="text-amber-600 flex-shrink-0">
@@ -120,15 +113,17 @@
               <line x1="8" x2="8" y1="2" y2="6" />
               <line x1="3" x2="21" y1="10" y2="10" />
             </svg>
-            <input type="date" [value]="dataInputValue" (change)="onInputData($event)"
+            <input type="date" [value]="dataInputValue" [max]="dataMaximaPermitida" (change)="onInputData($event)"
               class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" aria-label="Selecionar data" />
           </div>
-          <span class="text-[13px] sm:text-sm font-semibold text-amber-900 select-none capitalize agenda-font-sans whitespace-nowrap overflow-hidden text-ellipsis">{{ dataFormatada
+          <span
+            class="text-[13px] sm:text-sm font-semibold text-amber-900 select-none agenda-font-sans whitespace-nowrap overflow-hidden text-ellipsis">{{
+            dataFormatada
             }}</span>
         </div>
 
-        <button (click)="mudarData(1)"
-          class="w-6 h-6 flex items-center justify-center rounded hover:bg-amber-100 text-amber-700 transition-colors cursor-pointer justify-self-center"
+        <button (click)="mudarData(1)" [disabled]="isProximoDiaFuturo()"
+          class="w-6 h-6 flex items-center justify-center rounded text-amber-700 transition-colors cursor-pointer justify-self-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-amber-100 disabled:hover:bg-transparent"
           aria-label="Próximo dia">
           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -138,10 +133,7 @@
       </div>
     </div>
 
-    <!-- Container Grid para limitar larguras de colunas sem overflow -->
     <div class="grid grid-cols-1 lg:grid-cols-[minmax(220px,38%)_minmax(0,1fr)] min-h-[380px] w-full max-w-full">
-
-      <!-- Coluna Esquerda: Observações do Dia -->
       <div class="lg:border-r-3 border-amber-200/60 pt-[14px] pb-6 pr-6 pl-[65px] flex flex-col relative min-w-0 max-w-full">
         <div class="flex items-center space-x-3 mb-5">
           <div class="flex items-center space-x-2">
@@ -152,7 +144,7 @@
                 <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
               </svg>
             </div>
-            <h3 class="text-base font-bold text-amber-900 font-sora leading-none">Observações do Dia</h3>
+            <h3 class="text-base font-bold text-amber-900 font-sora leading-none">Observações</h3>
           </div>
 
           @if (saveStatusObservacoes() === 'saving') {
@@ -183,7 +175,6 @@
         </div>
       </div>
 
-      <!-- Coluna Direita: Score Diário -->
       <div class="pt-[14px] pb-6 px-6 flex flex-col relative z-10 min-w-0 max-w-full">
         <div class="flex items-center space-x-3 mb-5">
           <div class="flex items-center space-x-2">
@@ -194,7 +185,7 @@
                 <path d="M12 6v6l4 2" />
               </svg>
             </div>
-            <h3 class="text-base font-bold text-amber-900 font-sora leading-none">Score Diário</h3>
+            <h3 class="text-base font-bold text-amber-900 font-sora leading-none">Score</h3>
           </div>
 
           @if (saveStatusScores() === 'saving') {
@@ -227,4 +218,6 @@
     </div>
   </div>
   }
+
+  <app-agenda-semanal [estudanteId]="estudanteId"></app-agenda-semanal>
 </div>

@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../nucleo/config/api.config';
-import { EstudantePedagogico } from '../models/estudante-pedagogico.model';
+import { EstudantePedagogico, Semestre, Eixo } from '../models/estudante-pedagogico.model';
 import { EstudanteVisaoGeral } from '../models/estudante-visao-geral.model';
 import { DiaAgenda } from '../models/estudante-agenda.model';
 import {
@@ -12,6 +12,26 @@ import {
   EstudoCasoResponse,
   PaginacaoResponse,
 } from '../models/gerenciamento-alunos.model';
+import { ImportacaoRelatorio } from '../models/importacao-relatorio.model';
+
+export interface MetaDesenvolvimentoPayload {
+  eixoDesenvolvimento: Eixo;
+  descricao: string;
+  scoreFinal: number;
+  parecer?: string;
+}
+
+export interface AvaliacaoMetaPayload {
+  scoreFinal: number;
+  parecer: string;
+}
+
+export interface UpsertRelatorioSemestralPayload {
+  estudanteId: string;
+  semestre: Semestre;
+  ano: number;
+  metas: MetaDesenvolvimentoPayload[];
+}
 
 export interface EspecificidadePayload {
   tipo: string;
@@ -36,6 +56,7 @@ export interface EstudanteSaude {
     tipo: string;
     urlArquivo: string;
     dataEmissao: string;
+    createdAt: string;
   }>;
 
   medicamentos: Array<{
@@ -56,7 +77,7 @@ export class EstudantesService {
   totalEventosSemana = signal<number>(0);
   private readonly baseUrl = inject(API_BASE_URL);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // --- SAÚDE ---
   getSaude(estudanteId: string): Observable<EstudanteSaude> {
@@ -130,10 +151,18 @@ export class EstudantesService {
     if (params.nome) httpParams = httpParams.set('nome', params.nome);
     if (params.matricula) httpParams = httpParams.set('matricula', params.matricula);
     if (params.diagnosticoTipo) httpParams = httpParams.set('diagnosticoTipo', params.diagnosticoTipo);
+    if (params.status) httpParams = httpParams.set('status', params.status);
+    if (params.sexo) httpParams = httpParams.set('sexo', params.sexo);
+    if (params.turmaId) httpParams = httpParams.set('turmaId', params.turmaId);
+    if (params.formaComunicacao) httpParams = httpParams.set('formaComunicacao', params.formaComunicacao);
+    if (params.categoriaEspecificidade) httpParams = httpParams.set('categoriaEspecificidade', params.categoriaEspecificidade);
+    if (params.idadeMin !== undefined) httpParams = httpParams.set('idadeMin', String(params.idadeMin));
+    if (params.idadeMax !== undefined) httpParams = httpParams.set('idadeMax', String(params.idadeMax));
     if (params.page !== undefined) httpParams = httpParams.set('page', String(params.page));
     if (params.limit !== undefined) httpParams = httpParams.set('limit', String(params.limit));
     return this.http.get<PaginacaoResponse<EstudanteListagemItem>>(`${this.baseUrl}/estudantes`, { params: httpParams });
   }
+
 
   // --- ESTUDO DE CASO ---
 
@@ -143,5 +172,43 @@ export class EstudantesService {
    */
   criarEstudoCaso(payload: EstudoCasoPayload): Observable<EstudoCasoResponse> {
     return this.http.post<EstudoCasoResponse>(`${this.baseUrl}/estudo-de-caso`, payload);
+  }
+
+  // --- METAS / RELATÓRIOS SEMESTRAIS ---
+
+  upsertRelatorioSemestral(payload: UpsertRelatorioSemestralPayload): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/relatorios-semestrais`, payload);
+  }
+
+  updateAvaliacaoMeta(metaId: string, payload: AvaliacaoMetaPayload): Observable<unknown> {
+    return this.http.put(`${this.baseUrl}/relatorios-semestrais/metas/${metaId}/avaliacao`, payload);
+  }
+
+  atualizarMetasSemestre(relatorioId: string, payload: { metas: { id: string; descricao: string }[] }): Observable<unknown> {
+    return this.http.patch(`${this.baseUrl}/relatorios-semestrais/${relatorioId}/metas`, payload);
+  }
+
+  excluirMetasDoRelatorio(relatorioId: string): Observable<unknown> {
+    return this.http.delete(`${this.baseUrl}/relatorios-semestrais/${relatorioId}/metas`);
+  }
+
+  // --- IMPORTAÇÃO ---
+  importarCSV(formData: FormData): Observable<ImportacaoRelatorio> {
+    return this.http.post<ImportacaoRelatorio>(`${this.baseUrl}/estudantes/importar-csv`, formData);
+  }
+
+  // --- CADASTRO MANUAL ---
+  criar(formData: FormData): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/estudantes`, formData);
+  }
+
+  // --- ATUALIZAÇÃO ---
+  atualizarEstudante(id: string, formData: FormData): Observable<unknown> {
+    return this.http.patch(`${this.baseUrl}/estudantes/${id}`, formData);
+  }
+
+  // --- DESATIVAÇÃO ---
+  desativarEstudante(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/estudantes/${id}`);
   }
 }

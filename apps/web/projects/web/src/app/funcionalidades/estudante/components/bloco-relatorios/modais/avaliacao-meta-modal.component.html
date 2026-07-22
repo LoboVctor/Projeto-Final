@@ -1,0 +1,101 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-gray-100">
+
+    <!-- Cabeçalho -->
+    <div class="flex items-center justify-between p-5 border-b border-gray-100 bg-slate-50 shrink-0">
+      <div>
+        <h3 class="text-lg font-bold font-['Sora'] text-slate-700 m-0">Avaliação da Meta</h3>
+        <p class="text-xs text-slate-500 m-0 mt-0.5">Defina o resultado final para o semestre.</p>
+      </div>
+      <button type="button" (click)="fechar.emit()" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer outline-none">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Meta atual -->
+    <div class="px-5 py-3.5 bg-gray-50 border-b border-gray-100 shrink-0">
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-wider m-0 mb-1">Meta atual</p>
+      <p class="text-sm text-slate-600 italic m-0">{{ meta().descricao }}</p>
+    </div>
+
+    <!-- Formulário -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-5 space-y-5 overflow-y-auto">
+
+      <!-- Avaliação Final -->
+      <div class="flex flex-col gap-1.5">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">Avaliação Final</label>
+          <span [class]="'text-xs font-bold px-2.5 py-1 rounded-full border ' + scoreFinalBadgeClass(scoreFinalValue)">
+            {{ scoreFinalLabel(scoreFinalValue) }}
+          </span>
+        </div>
+        <div class="px-1">
+          <input type="range" min="0" max="5" step="1" formControlName="scoreFinal"
+            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600" />
+          <div class="flex justify-between text-xs text-gray-400 font-medium mt-1.5">
+            <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parecer do Professor -->
+      <div class="flex flex-col gap-1.5">
+        <div class="flex justify-between items-center">
+          <label class="text-xs font-bold text-slate-600 font-['Sora']">
+            Parecer do Professor <span class="text-red-500">*</span>
+          </label>
+          <span class="text-[10px] font-semibold text-slate-400">{{ parecerLength }}/3000</span>
+        </div>
+        <textarea formControlName="parecer" rows="5" maxlength="3000"
+          placeholder="Escreva a avaliação final detalhada sobre o atingimento desta meta"
+          class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-elo-roxo-principal/20 focus:border-elo-roxo-principal outline-none transition-all text-sm text-slate-700 resize-none"
+          [class.border-red-300]="form.get('parecer')?.invalid && form.get('parecer')?.touched">
+        </textarea>
+        @if (form.get('parecer')?.invalid && form.get('parecer')?.touched) {
+        <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+          @if (form.get('parecer')?.hasError('required')) {
+            O parecer é obrigatório.
+          }
+          @if (form.get('parecer')?.hasError('soEspacos')) {
+            O parecer não pode conter apenas espaços em branco.
+          }
+          @if (form.get('parecer')?.hasError('soNumeros')) {
+            O parecer não pode conter apenas números.
+          }
+          @if (form.get('parecer')?.hasError('soHifens')) {
+            O parecer não pode conter apenas hífens.
+          }
+          @if (form.get('parecer')?.hasError('minlength')) {
+            O parecer deve ter pelo menos 10 caracteres.
+          }
+          @if (form.get('parecer')?.hasError('maxlength')) {
+            O parecer deve ter no máximo 3000 caracteres.
+          }
+        </div>
+        }
+      </div>
+
+    </form>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-end gap-3 px-5 py-4 border-t border-gray-100 bg-slate-50 shrink-0">
+      <button type="button" (click)="fechar.emit()"
+        class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+        Cancelar
+      </button>
+      <button type="button" (click)="onSubmit()" [disabled]="form.invalid || isLoading"
+        class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer flex items-center gap-2">
+        @if (isLoading) {
+        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        }
+        Salvar Avaliação
+      </button>
+    </div>
+
+  </div>
+</div>

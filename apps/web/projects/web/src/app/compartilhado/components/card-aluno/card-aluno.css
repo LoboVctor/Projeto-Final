@@ -1,0 +1,26 @@
+:host {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.card-aluno {
+  position: relative;
+  cursor: pointer;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.card-aluno:hover {
+  transform: translateY(-6px) scale(1.018);
+  border-color: rgba(80, 38, 144, 0.32);
+
+  box-shadow:
+    inset 0 0 0 1px rgba(80, 38, 144, 0.12),
+    0 18px 34px rgba(80, 38, 144, 0.18),
+    0 8px 18px rgba(46, 16, 101, 0.08);
+}

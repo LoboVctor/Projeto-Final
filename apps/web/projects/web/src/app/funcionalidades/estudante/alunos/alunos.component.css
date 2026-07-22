@@ -1,11 +1,22 @@
+/* ═══════════════════════════════════════════════════════════════
+   TELA ALUNOS — Estilos refinados · Projeto ELO
+   Paleta: elo-roxo-profundo #4A248A · elo-roxo-principal #6C3CC9
+           elo-lavanda #B79CED · elo-girassol #F4C542
+   Referência: 1366×768
+═══════════════════════════════════════════════════════════════ */
+
 /* ── Layout da página ────────────────────────────────────────── */
 .page-container {
-  padding: 24px 28px;
-  max-width: 1280px;
+  padding: 40px 20px 16px;
+  max-width: 1600px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 /* ── Cabeçalho ───────────────────────────────────────────────── */
@@ -14,77 +25,74 @@
   align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
 }
 
 .page-titulo {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
-  color: #111827;
+  color: #6C3CC9;
   margin: 0;
+  font-family: 'Sora', sans-serif;
+}
+
+@media (min-width: 640px) {
+  .page-titulo {
+    font-size: 30px;
+  }
 }
 
 .page-subtitulo {
   font-size: 14px;
-  color: #6b7280;
+  color: #686177;
   margin: 4px 0 0;
 }
 
-.btn-exportar {
+/* ═══════════════════════════════════════════════════════════════
+   CARD DE FILTROS
+═══════════════════════════════════════════════════════════════ */
+.filtros-card {
+  background: transparent;
+  padding: 0;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 16px;
-  background: #f0fdf4;
-  color: #166534;
-  border: 1.5px solid #86efac;
-  border-radius: 8px;
-  font-size: 13.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-  white-space: nowrap;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.btn-exportar:hover:not(:disabled) {
-  background: #dcfce7;
-  border-color: #4ade80;
-}
-
-.btn-exportar:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* ── Filtros ─────────────────────────────────────────────────── */
-.filtros-bar {
+.filtros-linha {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
 }
 
+.filtros-linha--secundaria {
+  padding-top: 2px;
+}
+
+/* ── Busca ───────────────────────────────────────────────────── */
 .busca-wrapper {
   display: flex;
   align-items: center;
   gap: 8px;
   background: #ffffff;
-  border: 1.5px solid #d1d5db;
+  border: 1px solid #E8E3EF;
   border-radius: 8px;
   padding: 8px 12px;
   flex: 1;
-  min-width: 220px;
-  max-width: 400px;
+  min-width: 200px;
+  max-width: 320px;
+  box-shadow: 0 2px 4px rgba(74, 36, 138, 0.04);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .busca-wrapper:focus-within {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  border-color: #6C3CC9;
+  box-shadow: 0 0 0 3px rgba(108, 60, 201, 0.10);
 }
 
 .busca-icon {
-  color: #9ca3af;
+  color: #B79CED;
   flex-shrink: 0;
 }
 
@@ -92,31 +100,32 @@
   border: none;
   outline: none;
   background: transparent;
-  font-size: 14px;
+  font-size: 13.5px;
   color: #111827;
   flex: 1;
   min-width: 0;
 }
 
 .busca-input::placeholder {
-  color: #9ca3af;
+  color: #B79CED;
 }
 
 .busca-limpar {
   background: none;
   border: none;
   cursor: pointer;
-  color: #9ca3af;
-  font-size: 14px;
+  color: #B79CED;
+  font-size: 13px;
   padding: 0;
   line-height: 1;
   transition: color 0.1s;
 }
 
 .busca-limpar:hover {
-  color: #374151;
+  color: #6C3CC9;
 }
 
+/* ── Selects ─────────────────────────────────────────────────── */
 .filtro-select-wrapper {
   position: relative;
   display: inline-flex;
@@ -126,71 +135,412 @@
 .filtro-select {
   appearance: none;
   background: #ffffff;
-  border: 1.5px solid #d1d5db;
+  border: 1px solid #E8E3EF;
   border-radius: 8px;
-  padding: 8px 36px 8px 12px;
-  font-size: 14px;
+  padding: 8px 32px 8px 12px;
+  font-size: 13px;
   color: #374151;
   font-weight: 500;
   cursor: pointer;
   outline: none;
-  min-width: 180px;
+  min-width: 160px;
+  box-shadow: 0 2px 4px rgba(74, 36, 138, 0.04);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .filtro-select:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  border-color: #6C3CC9;
+  box-shadow: 0 0 0 3px rgba(108, 60, 201, 0.10);
 }
 
 .filtro-select:hover {
-  border-color: #9ca3af;
+  border-color: #B79CED;
 }
 
 .select-chevron {
   position: absolute;
-  right: 12px;
+  right: 10px;
   pointer-events: none;
-  color: #6b7280;
+  color: #B79CED;
 }
 
-/* ── Contador de resultados ──────────────────────────────────── */
-.resultado-contador {
+/* ── Filtro Intervalo de Idade ───────────────────────────────── */
+.filtro-idade-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #E8E3EF;
+  border-radius: 8px;
+  padding: 7px 12px;
+  box-shadow: 0 2px 4px rgba(74, 36, 138, 0.04);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.filtro-idade-wrapper:focus-within {
+  border-color: #6C3CC9;
+  box-shadow: 0 0 0 3px rgba(108, 60, 201, 0.10);
+}
+
+.filtro-idade-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.filtro-idade-input {
+  width: 46px;
+  border: none;
+  outline: none;
   font-size: 13px;
+  color: #374151;
+  background: transparent;
+  text-align: center;
+}
+
+.filtro-idade-sep {
+  font-size: 13px;
+  color: #B79CED;
+}
+
+/* ── Botão Limpar Filtros ────────────────────────────────────── */
+.btn-limpar-todos {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  background: #ffffff;
+  border: 1px solid #E8E3EF;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
   color: #6b7280;
-  margin: 0;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(74, 36, 138, 0.04);
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
 }
 
-.resultado-contador strong {
-  color: #111827;
+.btn-limpar-todos:hover {
+  background: #f8f5ff;
+  border-color: #B79CED;
+  color: #6C3CC9;
+  box-shadow: 0 2px 5px rgba(108, 60, 201, 0.1);
 }
 
-/* ── Skeletons de carregamento ───────────────────────────────── */
-.loading-container {
+/* ═══════════════════════════════════════════════════════════════
+   CARD DA TABELA
+═══════════════════════════════════════════════════════════════ */
+/* ── Listagem Header (Exportar) ──────────────────────────────── */
+.listagem-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 4px;
+}
+
+.tabela-card {
+  background: #ffffff;
+  border: 1px solid #E8E3EF;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(74, 36, 138, 0.05);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  flex: 1;
 }
 
-.skeleton-row {
-  height: 56px;
+/* ── Botão Exportar CSV — estilo roxo outline (padrão modal) ─── */
+.btn-exportar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  background: transparent;
+  color: #6C3CC9;
+  border: 1.5px solid #6C3CC9;
   border-radius: 8px;
-  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s ease infinite;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+  font-family: 'Sora', sans-serif;
 }
 
-/* ── Erro ────────────────────────────────────────────────────── */
+.btn-exportar svg {
+  transition: stroke 0.2s ease-in-out;
+}
+
+.btn-exportar:hover:not(:disabled) {
+  background: #6C3CC9;
+  border-color: #6C3CC9;
+  color: #ffffff;
+}
+
+.btn-exportar:hover:not(:disabled) svg {
+  stroke: #ffffff;
+}
+
+.btn-exportar:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Wrapper de overflow da tabela ───────────────────────────── */
+.tabela-wrapper {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+/* ── Tabela ────────────────────────────────────────── */
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.tabela thead {
+  background: transparent;
+}
+
+.tabela th {
+  padding: 14px 20px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  border-bottom: 2px solid #f3f0f8;
+  white-space: nowrap;
+}
+
+.tabela-linha {
+  border-bottom: 1px solid #f3f0f8;
+  transition: background 0.12s;
+}
+
+.tabela-linha--clicavel {
+  cursor: pointer;
+}
+
+.tabela-linha--clicavel:hover {
+  background: #f8f5ff;
+}
+
+.tabela-linha--clicavel:hover .aluno-nome {
+  color: #4A248A;
+}
+
+.tabela-linha:last-child {
+  border-bottom: none;
+}
+
+.tabela td {
+  padding: 14px 20px;
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* ── Células específicas ───────────────────────────── */
+/* Coluna: Aluno */
+.tabela td.td-aluno {
+  min-width: 240px;
+  text-align: left;
+}
+.tabela th.th-aluno {
+  min-width: 240px;
+  text-align: center;
+}
+
+/* Coluna: Matrícula */
+.tabela td.td-matricula,
+.tabela th.th-matricula {
+  min-width: 120px;
+}
+
+/* Coluna: Idade */
+.tabela td.td-idade,
+.tabela th.th-idade {
+  min-width: 90px;
+}
+
+/* Coluna: Turma */
+.tabela td.td-turma,
+.tabela th.th-turma {
+  min-width: 180px;
+}
+
+/* Coluna: Ações */
+.tabela td.td-acoes,
+.tabela th.th-acoes {
+  min-width: 90px;
+  width: 90px;
+}
+
+.aluno-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.aluno-foto {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #ede9fe;
+  border: 1.5px solid #E8E3EF;
+}
+
+.aluno-nome {
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.3;
+  transition: color 0.12s;
+  white-space: normal;
+  display: block;
+}
+
+.tag-matricula {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #6C3CC9;
+  background: #f3f0f8;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #E8E3EF;
+}
+
+.td-turma {
+  color: #374151;
+  white-space: normal;
+  font-size: 13px;
+}
+
+.tabela td.td-diagnostico {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.sem-dado {
+  color: #d1d5db;
+}
+
+.tag-status {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #6b7280;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.tag-status--ativo {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGINAÇÃO VISUAL COMPLETA
+═══════════════════════════════════════════════════════════════ */
+.paginacao-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid #f3f0f8;
+  background: #ffffff;
+}
+
+.pag-info-texto {
+  font-size: 12.5px;
+  color: #6b7280;
+  white-space: nowrap;
+  grid-column: 1;
+  justify-self: start;
+}
+
+.paginacao-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  grid-column: 2;
+  justify-self: center;
+}
+
+/* Botão base da paginação */
+.pag-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  border: 1.5px solid #E8E3EF;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  padding: 0 6px;
+}
+
+.pag-btn--icon {
+  padding: 0;
+  width: 32px;
+}
+
+.pag-btn:hover:not(:disabled) {
+  background: #f3f0f8;
+  border-color: #B79CED;
+  color: #4A248A;
+}
+
+.pag-btn:disabled {
+  opacity: 0.30;
+  cursor: not-allowed;
+}
+
+/* Página atual — destaque roxo */
+.pag-btn--atual {
+  background: #6C3CC9;
+  border-color: #6C3CC9;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: default;
+  min-width: 32px;
+}
+
+.pag-btn--atual:hover {
+  background: #6C3CC9;
+  border-color: #6C3CC9;
+  color: #ffffff;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ESTADOS
+═══════════════════════════════════════════════════════════════ */
+
+/* Erro */
 .erro-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 13px 16px;
   background: #fef2f2;
   border: 1px solid #fca5a5;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 10px;
+  font-size: 13.5px;
   color: #991b1b;
 }
 
@@ -211,311 +561,29 @@
   background: #fee2e2;
 }
 
-/* ── Tabela ──────────────────────────────────────────────────── */
-.tabela-wrapper {
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  overflow: hidden;
-  background: #ffffff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-}
-
-.tabela {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.tabela thead {
-  background: #f9fafb;
-}
-
-.tabela th {
-  padding: 12px 16px;
-  text-align: left;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #6b7280;
-  border-bottom: 1px solid #e5e7eb;
-  white-space: nowrap;
-}
-
-.tabela-linha {
-  border-bottom: 1px solid #f3f4f6;
-  transition: background 0.1s;
-}
-
-.tabela-linha:last-child {
-  border-bottom: none;
-}
-
-.tabela-linha:hover {
-  background: #f9fafb;
-}
-
-.tabela td {
-  padding: 12px 16px;
-  vertical-align: middle;
-}
-
-/* ── Células específicas ─────────────────────────────────────── */
-.td-aluno {
-  min-width: 200px;
-}
-
-.aluno-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.aluno-foto {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-  background: #ede9fe;
-}
-
-.aluno-nome {
-  font-weight: 500;
-  color: #111827;
-  line-height: 1.3;
-}
-
-.tag-matricula {
-  font-family: 'Courier New', monospace;
-  font-size: 12.5px;
-  color: #374151;
-  background: #f3f4f6;
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-.td-turma {
-  color: #374151;
-  white-space: nowrap;
-}
-
-.td-diagnostico {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  align-items: center;
-}
-
-.tag-diagnostico {
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #ede9fe;
-  color: #4f46e5;
-  white-space: nowrap;
-}
-
-.sem-dado {
-  color: #d1d5db;
-}
-
-.tag-status {
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: #f3f4f6;
-  color: #6b7280;
-  white-space: nowrap;
-}
-
-.tag-status--ativo {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.td-acoes {
-  white-space: nowrap;
-  text-align: center;
-  width: 56px;
-}
-
-/* ── Menu Sanduíche ──────────────────────────────────────────── */
-.menu-wrapper {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-menu-sandwich {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  border: 1.5px solid transparent;
-  background: transparent;
-  color: #6b7280;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.btn-menu-sandwich:hover {
-  background: #f3f4f6;
-  border-color: #e5e7eb;
-  color: #374151;
-}
-
-.btn-menu-sandwich[aria-expanded="true"] {
-  background: #ede9fe;
-  border-color: #c4b5fd;
-  color: #4f46e5;
-}
-
-/* Overlay invisível para fechar o menu ao clicar fora */
-.menu-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-}
-
-.menu-dropdown {
-  position: fixed;
-  z-index: 9999;
-  min-width: 190px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.06);
-  padding: 4px;
-  animation: menu-aparecer 0.12s ease-out;
-}
-
-@keyframes menu-aparecer {
-  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)   scale(1);    }
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  width: 100%;
-  padding: 9px 12px;
-  border: none;
-  background: none;
-  border-radius: 7px;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: #374151;
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.1s, color 0.1s;
-  white-space: nowrap;
-}
-
-.menu-item svg {
-  flex-shrink: 0;
-  color: #9ca3af;
-  transition: color 0.1s;
-}
-
-.menu-item:hover {
-  background: #f3f4f6;
-  color: #111827;
-}
-
-.menu-item:hover svg {
-  color: #4f46e5;
-}
-
-.menu-divider {
-  height: 1px;
-  background: #f3f4f6;
-  margin: 4px 0;
-}
-
-/* Ocorrência – destaque visual diferenciado */
-.menu-item--ocorrencia {
-  color: #4f46e5;
-}
-
-.menu-item--ocorrencia svg {
-  color: #a78bfa;
-}
-
-.menu-item--ocorrencia:hover {
-  background: #f5f3ff;
-  color: #3730a3;
-}
-
-.menu-item--ocorrencia:hover svg {
-  color: #7c3aed;
-}
-
-/* ── Paginação ───────────────────────────────────────────────── */
-.paginacao {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 4px 0;
-}
-
-.pag-btn {
-  padding: 8px 16px;
-  border: 1.5px solid #d1d5db;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #374151;
-  font-size: 13.5px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.pag-btn:hover:not(:disabled) {
-  background: #f3f4f6;
-  border-color: #9ca3af;
-}
-
-.pag-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.pag-info {
-  font-size: 13.5px;
-  color: #6b7280;
-}
-
-/* ── Estado vazio ────────────────────────────────────────────── */
+/* Estado vazio */
 .estado-vazio {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 64px 24px;
+  padding: 56px 24px;
   text-align: center;
 }
 
 .estado-vazio-icone {
-  font-size: 40px;
+  font-size: 38px;
 }
 
 .estado-vazio-titulo {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: #374151;
   margin: 0;
 }
 
 .estado-vazio-subtitulo {
-  font-size: 14px;
+  font-size: 13.5px;
   color: #9ca3af;
   margin: 0;
 }
@@ -523,30 +591,38 @@
 .btn-limpar-filtros {
   margin-top: 8px;
   padding: 9px 20px;
-  background: #4f46e5;
+  background: #6C3CC9;
   color: #ffffff;
   border: none;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .btn-limpar-filtros:hover {
-  background: #4338ca;
+  background: #4A248A;
 }
 
-/* ── Animações ───────────────────────────────────────────────── */
-@keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position:  200% 0; }
+
+
+/* ── Responsivo 1366×768 e abaixo ────────────────────────────── */
+@media (max-width: 1366px) {
+  .filtro-select {
+    min-width: 140px;
+  }
 }
 
-/* ── Responsivo ──────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .page-container { padding: 20px; }
+  .filtro-select { min-width: 130px; font-size: 12.5px; }
+}
+
 @media (max-width: 768px) {
-  .page-container { padding: 16px; }
+  .page-container { padding: 14px; gap: 12px; }
   .tabela-wrapper { overflow-x: auto; }
   .th-status, .td-status { display: none; }
-  .page-header { flex-direction: column; }
+  .filtros-linha { gap: 8px; }
+  .paginacao-bar { flex-direction: column; align-items: flex-start; }
 }

@@ -1,26 +1,34 @@
 import {
   Component,
   EventEmitter,
-  Input,
   Output,
   ChangeDetectionStrategy,
-  input } from '@angular/core';
+  OnInit,
+  inject,
+  WritableSignal,
+  input,
+  signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   EstudanteVisaoGeral,
   EspecificidadeVisaoGeral } from '../../../../compartilhado/models/estudante-visao-geral.model';
 import { EspecificidadeModalComponent } from './modais/especificidade-modal/especificidade-modal.component';
+import { ModalEditarAlunoComponent } from './modais/modal-editar-aluno/modal-editar-aluno.component';
+
+import { AuthService } from '../../../../nucleo/services/auth';
 
 @Component({
   selector: 'app-bloco-visao-geral',
-  imports: [CommonModule, EspecificidadeModalComponent],
+  imports: [CommonModule, EspecificidadeModalComponent, ModalEditarAlunoComponent],
   templateUrl: './bloco-visao-geral.component.html',
   styleUrls: ['./bloco-visao-geral.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush })
-export class BlocoVisaoGeralComponent {
+export class BlocoVisaoGeralComponent implements OnInit {
+  private authService = inject(AuthService);
+
   readonly visaoGeralData = input<EstudanteVisaoGeral | null>(null);
   readonly loading = input<boolean>(false);
-  @Input() error: string | null = null;
+  readonly error = input<string | null>(null);
 
   @Output() recolher = new EventEmitter<void>();
   @Output() fechar = new EventEmitter<void>();
@@ -28,9 +36,31 @@ export class BlocoVisaoGeralComponent {
 
   showModalEspecificidade = false;
   especificidadeParaEditar: EspecificidadeVisaoGeral | null = null;
+  
+  showModalEditarAluno = false;
 
-  // TODO: Substituir pela injeção de AuthService
+  paginaGatilhos = signal(0);
+  paginaComportamentos = signal(0);
+  paginaProtocolos = signal(0);
+
   userRole: 'PROFESSOR' | 'COORDENADOR' = 'PROFESSOR';
+
+  ngOnInit() {
+    this.userRole = (this.authService.getRole() as 'PROFESSOR' | 'COORDENADOR') || 'PROFESSOR';
+  }
+
+  editarInformacoes(): void {
+    this.showModalEditarAluno = true;
+  }
+
+  fecharModalEditarAluno(): void {
+    this.showModalEditarAluno = false;
+  }
+
+  onAlunoEditado(): void {
+    this.fecharModalEditarAluno();
+    this.tentarNovamente.emit();
+  }
 
   get especificidadesFiltradas(): EspecificidadeVisaoGeral[] {
     const visaoGeralData = this.visaoGeralData();
@@ -39,8 +69,7 @@ export class BlocoVisaoGeralComponent {
       (e) =>
         e.tipo === 'GATILHO_CRISE' ||
         e.tipo === 'COMPORTAMENTO_ATIPICO' ||
-        (e.tipo === 'RESTRICAO' && e.categoria === 'COMPORTAMENTAL'),
-    );
+        e.tipo === 'CONTENCAO');
   }
 
   get gatilhos(): EspecificidadeVisaoGeral[] {
@@ -52,9 +81,7 @@ export class BlocoVisaoGeralComponent {
   }
 
   get protocolosContencao(): EspecificidadeVisaoGeral[] {
-    return this.especificidadesFiltradas.filter(
-      (e) => e.tipo === 'RESTRICAO' && e.categoria === 'COMPORTAMENTAL',
-    );
+    return this.especificidadesFiltradas.filter((e) => e.tipo === 'CONTENCAO');
   }
 
   getDisplayTipo(tipo: string): string {
@@ -63,11 +90,35 @@ export class BlocoVisaoGeralComponent {
         return 'Gatilho';
       case 'COMPORTAMENTO_ATIPICO':
         return 'Comportamento Atípico';
-      case 'RESTRICAO':
+      case 'CONTENCAO':
         return 'Protocolo de Contenção';
       default:
         return tipo;
     }
+  }
+
+  classesCategoriaPorTipo(tipo: string): string {
+    const tipoNormalizado = String(tipo).toLowerCase();
+
+    if (tipoNormalizado.includes('gatilho')) {
+      return 'bg-red-50 text-red-700 border border-red-200';
+    }
+
+    if (tipoNormalizado.includes('comportamento')) {
+      return 'bg-blue-50 text-blue-700 border border-blue-200';
+    }
+
+    if (tipoNormalizado.includes('contencao')) {
+      return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+    }
+
+    return 'bg-slate-50 text-slate-700 border border-slate-200';
+  }
+
+  formatarEtapa(etapa: string | undefined | null): string {
+    if (!etapa) return 'Sem Etapa';
+    const etapaLimpa = etapa.replace('_', ' ');
+    return etapaLimpa.charAt(0).toUpperCase() + etapaLimpa.slice(1).toLowerCase();
   }
 
   onRecolher(): void {
@@ -92,6 +143,20 @@ export class BlocoVisaoGeralComponent {
 
   onEspecificidadeSalva(): void {
     this.fecharModalEspecificidade();
+    this.paginaGatilhos.set(0);
+    this.paginaComportamentos.set(0);
+    this.paginaProtocolos.set(0);
     this.tentarNovamente.emit();
+  }
+
+  navegarPagina(paginaSignal: WritableSignal<number>, delta: number, total: number): void {
+    const next = paginaSignal() + delta;
+    if (next >= 0 && next < total) {
+      paginaSignal.set(next);
+    }
+  }
+
+  getItem(lista: EspecificidadeVisaoGeral[], pagina: number): EspecificidadeVisaoGeral | null {
+    return lista[pagina] ?? null;
   }
 }

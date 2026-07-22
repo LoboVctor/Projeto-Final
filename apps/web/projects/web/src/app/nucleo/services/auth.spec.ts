@@ -29,6 +29,6 @@ describe('AuthService', () => {
   });
 
   it('deve retornar false para isAuthenticated sem token', () => {
-    expect(service.isAuthenticated()).toBeFalse();
+    expect(service.isAuthenticated()).toBeFalsy();
   });
 });

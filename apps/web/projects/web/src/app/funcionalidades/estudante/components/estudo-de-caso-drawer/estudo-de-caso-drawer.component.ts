@@ -5,6 +5,7 @@ import {
   EventEmitter,
   inject,
   signal,
+  computed,
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -18,11 +19,11 @@ import type { EducadorResumo, EstudoCasoPayload } from '../../../../compartilhad
  * Substituir pelo resultado de uma chamada à API quando disponível.
  */
 const EDUCADORES_MOCK: EducadorResumo[] = [
-  { id: '11111111-1111-1111-1111-111111111111', nome: 'Ana Paula Ribeiro' },
-  { id: '22222222-2222-2222-2222-222222222222', nome: 'Carlos Mendes' },
-  { id: '33333333-3333-3333-3333-333333333333', nome: 'Fernanda Souza' },
-  { id: '44444444-4444-4444-4444-444444444444', nome: 'João Pedro Lima' },
-  { id: '55555555-5555-5555-5555-555555555555', nome: 'Mariana Costa' },
+  { id: 'b1e06c4b-b2b5-4b07-a8a5-1d8977c0a6b7', nome: 'Ana Paula Ribeiro' },
+  { id: '73b5a195-236b-4f95-97e3-057bfb1d8d9b', nome: 'Carlos Mendes' },
+  { id: 'a9c3b889-8b06-4b8c-b033-d8a4f944de34', nome: 'Fernanda Souza' },
+  { id: 'f204c379-3c82-45e3-85b9-1e37bc2c9e78', nome: 'João Pedro Lima' },
+  { id: 'd392942b-586b-4e89-8588-bb73634c0e66', nome: 'Mariana Costa' },
 ];
 
 @Component({
@@ -52,6 +53,7 @@ export class EstudoDeCasoDrawerComponent {
   dataReuniao = signal('');
   parecerDecisao = signal('');
   educadoresSelecionados = signal<string[]>([]);
+  parecerTouched = signal(false);
 
   // ─── Estado de UI ─────────────────────────────────────────────
   loading = signal(false);
@@ -60,6 +62,31 @@ export class EstudoDeCasoDrawerComponent {
 
   /** Lista de educadores disponíveis — alimentada por mock até endpoint estar pronto */
   readonly educadoresDisponiveis: EducadorResumo[] = EDUCADORES_MOCK;
+
+  // ─── Paginação de Educadores ──────────────────────────────────
+  paginaEducadores = signal(0);
+  itensPorPagina = 6;
+
+  totalPaginas = computed(() => 
+    Math.ceil(this.educadoresDisponiveis.length / this.itensPorPagina)
+  );
+
+  educadoresPaginaAtual = computed(() => {
+    const inicio = this.paginaEducadores() * this.itensPorPagina;
+    return this.educadoresDisponiveis.slice(inicio, inicio + this.itensPorPagina);
+  });
+
+  paginaAnterior(): void {
+    if (this.paginaEducadores() > 0) {
+      this.paginaEducadores.update(p => p - 1);
+    }
+  }
+
+  proximaPagina(): void {
+    if (this.paginaEducadores() < this.totalPaginas() - 1) {
+      this.paginaEducadores.update(p => p + 1);
+    }
+  }
 
   onFechar(): void {
     this.fechar.emit();
@@ -78,10 +105,41 @@ export class EstudoDeCasoDrawerComponent {
     return this.educadoresSelecionados().includes(educadorId);
   }
 
+  /** Retorna a mensagem de erro ativa do campo Parecer e Decisão, ou null se válido */
+  readonly errosParecer = computed<string | null>(() => {
+    if (!this.parecerTouched()) return null;
+    const valor = this.parecerDecisao();
+    const trimado = valor.trim();
+
+    if (valor.length === 0) {
+      return 'O parecer é obrigatório.';
+    }
+    if (valor.length > 0 && trimado.length === 0) {
+      return 'O parecer não pode conter apenas espaços em branco.';
+    }
+    if (/^\d+$/.test(trimado)) {
+      return 'O parecer não pode conter apenas números.';
+    }
+    if (/^-+$/.test(trimado)) {
+      return 'O parecer não pode conter apenas hífens.';
+    }
+    if (trimado.length < 10) {
+      return 'O parecer deve ter pelo menos 10 caracteres.';
+    }
+    if (trimado.length > 3000) {
+      return 'O parecer deve ter no máximo 3000 caracteres.';
+    }
+    return null;
+  });
+
   get formularioValido(): boolean {
+    const trimado = this.parecerDecisao().trim();
     return (
       this.dataReuniao().trim() !== '' &&
-      this.parecerDecisao().trim().length >= 10 &&
+      trimado.length >= 10 &&
+      trimado.length <= 3000 &&
+      !/^\d+$/.test(trimado) &&
+      !/^-+$/.test(trimado) &&
       this.educadoresSelecionados().length > 0
     );
   }
@@ -94,8 +152,8 @@ export class EstudoDeCasoDrawerComponent {
 
     const payload: EstudoCasoPayload = {
       estudanteId: this.estudanteId,
-      dataReuniao: this.dataReuniao(),
-      parecerDecisao: this.parecerDecisao(),
+      dataReuniao: this.dataReuniao().trim(),
+      parecerDecisao: this.parecerDecisao().trim(),
       educadoresIds: this.educadoresSelecionados(),
     };
 
@@ -118,8 +176,10 @@ export class EstudoDeCasoDrawerComponent {
     this.dataReuniao.set('');
     this.parecerDecisao.set('');
     this.educadoresSelecionados.set([]);
+    this.parecerTouched.set(false);
     this.erro.set(null);
     this.sucesso.set(false);
     this.loading.set(false);
+    this.paginaEducadores.set(0);
   }
 }

@@ -1,0 +1,149 @@
+:host {
+  display: block;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.turma-graficos-wrapper,
+.graficos-container {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+
+/* ── Contêiner único ────────────────────────────── */
+.graficos-container {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+
+/* ── Grid 2x2 de gráficos ──────────────── */
+.graficos-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Cria exatamente 2 colunas */
+  gap: 20px;
+  align-items: start;
+}
+
+/* ── Card interno (sem borda própria) ───────────── */
+.grafico-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 4px 8px;
+}
+
+/* Rosca: ocupa espaço igual entre si */
+.grafico-card--rosca {
+  flex: 1;
+}
+
+/* Barras: ocupa espaço igual entre si */
+.grafico-card--barras {
+  flex: 1;
+}
+
+/* ── Título ─────────────────────────────────────── */
+.grafico-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  margin: 0 0 10px 0;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Canvas wrapper ─────────────────────────────── */
+.grafico-canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 240px; 
+}
+
+/* ── Loading skeletons ─────────────────────────── */
+.graficos-loading {
+  display: flex;
+  gap: 14px;
+}
+
+.skeleton-chart {
+  flex: 1;
+  height: 220px;
+  background: linear-gradient(90deg, #f3f4f6, #e9d5ff, #f3f4f6);
+  background-size: 200% 100%;
+  border-radius: 12px;
+  animation: shimmer 1.6s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* ── Erro ──────────────────────────────────────── */
+.graficos-erro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.btn-retry {
+  padding: 6px 14px;
+  background: #fff;
+  border: 1.5px solid #fca5a5;
+  border-radius: 6px;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-retry:hover {
+  background: #fee2e2;
+}
+
+/* ── Responsividade ─────────────────────────────── */
+@media (max-width: 1400px) {
+  .graficos-row {
+    grid-template-columns: 1fr;
+  }
+
+  .grafico-card--rosca {
+    flex: 1 1 calc(50% - 7px);
+  }
+
+  .grafico-card--barras {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .grafico-card {
+    flex: 1 1 100% !important;
+  }
+}

@@ -1,4 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
+import { API_BASE_URL } from '../../../../nucleo/config/api.config';
 
 import { BlocoSaudeComponent } from './bloco-saude.component';
 
@@ -8,9 +12,16 @@ describe('BlocoSaude', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BlocoSaudeComponent] }).compileComponents();
+      imports: [BlocoSaudeComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: API_BASE_URL, useValue: 'http://localhost:3000/api/v1' },
+      ] }).compileComponents();
 
     fixture = TestBed.createComponent(BlocoSaudeComponent);
+    fixture.componentRef.setInput('estudanteId', 'estudante-teste-id');
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

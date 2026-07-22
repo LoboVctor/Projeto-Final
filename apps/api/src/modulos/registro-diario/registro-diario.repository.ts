@@ -1,13 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import type { IRegistroDiarioRepositorio, EstudanteParaGeracaoDiario } from './interfaces/IRegistroDiarioRepositorio.js';
-import { Prisma, RegistroDiario } from '@prisma-client';
+import type {
+  IRegistroDiarioRepositorio,
+  EstudanteParaGeracaoDiario,
+} from './interfaces/IRegistroDiarioRepositorio.js';
+import { Prisma, RegistroDiario, StatusAula } from '@prisma-client';
 
 @Injectable()
 export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
   constructor(private readonly prisma: PrismaService) {}
 
-  async criar(dados: Prisma.RegistroDiarioUncheckedCreateInput): Promise<RegistroDiario> {
+  async criar(
+    dados: Prisma.RegistroDiarioUncheckedCreateInput,
+  ): Promise<RegistroDiario> {
     return this.prisma.client.registroDiario.create({ data: dados });
   }
 
@@ -18,9 +23,11 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
     });
   }
 
-  async buscarAlertasDiasAnteriores(educadorId: string): Promise<RegistroDiario[]> {
+  async buscarAlertasDiasAnteriores(
+    educadorId: string,
+  ): Promise<RegistroDiario[]> {
     const inicioDoDiaAtual = new Date();
-    inicioDoDiaAtual.setHours(0, 0, 0, 0);
+    inicioDoDiaAtual.setUTCHours(0, 0, 0, 0);
 
     return this.prisma.client.registroDiario.findMany({
       where: {
@@ -33,7 +40,43 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
     });
   }
 
-  async contarRegistrosPreenchidos(educadorId: string, dataInicio: Date, dataFim: Date): Promise<number> {
+  async buscarAlertasEscolaAgrupadosPorProfessor(
+    escolaId?: string,
+  ): Promise<{ educador: string; pendentes: number }[]> {
+    const inicioDoDiaAtual = new Date();
+    inicioDoDiaAtual.setUTCHours(0, 0, 0, 0);
+
+    const pendentes = await this.prisma.client.registroDiario.findMany({
+      where: {
+        data: { lt: inicioDoDiaAtual },
+        preenchido: false,
+        // Caso queiramos filtrar por escolaId futuramente
+        ...(escolaId && { educador: { escolaId } }),
+      },
+      include: {
+        educador: {
+          select: { nome: true },
+        },
+      },
+    });
+
+    const contagemPorProfessor = new Map<string, number>();
+    for (const r of pendentes) {
+      const nome = r.educador?.nome || 'Desconhecido';
+      contagemPorProfessor.set(nome, (contagemPorProfessor.get(nome) || 0) + 1);
+    }
+
+    return Array.from(contagemPorProfessor.entries()).map(([educador, quantidade]) => ({
+      educador,
+      pendentes: quantidade,
+    }));
+  }
+
+  async contarRegistrosPreenchidos(
+    educadorId: string,
+    dataInicio: Date,
+    dataFim: Date,
+  ): Promise<number> {
     return this.prisma.client.registroDiario.count({
       where: {
         educadorId: educadorId,
@@ -43,7 +86,11 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
     });
   }
 
-  async contarRegistrosEsperados(educadorId: string, dataInicio: Date, dataFim: Date): Promise<number> {
+  async contarRegistrosEsperados(
+    educadorId: string,
+    dataInicio: Date,
+    dataFim: Date,
+  ): Promise<number> {
     return this.prisma.client.registroDiario.count({
       where: {
         educadorId: educadorId,
@@ -59,7 +106,10 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
     });
   }
 
-  async atualizar(id: string, dados: Prisma.RegistroDiarioUncheckedUpdateInput): Promise<RegistroDiario> {
+  async atualizar(
+    id: string,
+    dados: Prisma.RegistroDiarioUncheckedUpdateInput,
+  ): Promise<RegistroDiario> {
     return this.prisma.client.registroDiario.update({
       where: { id },
       data: dados,
@@ -72,7 +122,9 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
     });
   }
 
-  async buscarEstudantesParaGeracaoAutomatica(): Promise<EstudanteParaGeracaoDiario[]> {
+  async buscarEstudantesParaGeracaoAutomatica(): Promise<
+    EstudanteParaGeracaoDiario[]
+  > {
     return this.prisma.client.estudante.findMany({
       where: { statusMatricula: true },
       include: {
@@ -84,7 +136,9 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
     });
   }
 
-  async criarVarios(registros: Prisma.RegistroDiarioCreateManyInput[]): Promise<{ count: number }> {
+  async criarVarios(
+    registros: Prisma.RegistroDiarioCreateManyInput[],
+  ): Promise<{ count: number }> {
     return this.prisma.client.registroDiario.createMany({
       data: registros,
       skipDuplicates: true,
@@ -92,16 +146,25 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
   }
 
   async buscarPorPeriodo(estudanteId: string, dataInicio: Date, dataFim: Date): Promise<RegistroDiario[]> {
+    const inicio = new Date(dataInicio);
+    inicio.setUTCHours(0, 0, 0, 0);
+    
+    const fim = new Date(dataFim);
+    fim.setUTCHours(23, 59, 59, 999);
+
     return this.prisma.client.registroDiario.findMany({
       where: {
         estudanteId,
-        data: { gte: dataInicio, lte: dataFim },
+        data: { gte: inicio, lte: fim },
       },
       orderBy: { data: 'asc' },
     });
   }
 
-  async buscarPorEstudanteEData(estudanteId: string, data: Date): Promise<RegistroDiario | null> {
+  async buscarPorEstudanteEData(
+    estudanteId: string,
+    data: Date,
+  ): Promise<RegistroDiario | null> {
     const inicio = new Date(data);
     inicio.setUTCHours(0, 0, 0, 0);
     const fim = new Date(data);
@@ -111,18 +174,21 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
       where: {
         estudanteId,
         data: { gte: inicio, lte: fim },
-      }
+      },
     });
   }
 
-  async buscarRegistrosPorPeriodo(estudanteId: string, dataLimite: Date): Promise<RegistroDiario[]> {
+  async buscarRegistrosPorPeriodo(
+    estudanteId: string,
+    dataLimite: Date,
+  ): Promise<RegistroDiario[]> {
     return this.prisma.client.registroDiario.findMany({
       where: {
         estudanteId: estudanteId,
         data: {
           gte: dataLimite,
         },
-        preenchido: true, 
+        preenchido: true,
       },
       orderBy: {
         data: 'asc',
@@ -131,16 +197,36 @@ export class RegistroDiarioRepository implements IRegistroDiarioRepositorio {
   }
 
   async buscarRegistrosPorIntervalo(estudanteId: string, dataInicio: Date, dataFim: Date): Promise<RegistroDiario[]> {
+    const inicio = new Date(dataInicio);
+    inicio.setUTCHours(0, 0, 0, 0);
+    
+    const fim = new Date(dataFim);
+    fim.setUTCHours(23, 59, 59, 999);
+
     return this.prisma.client.registroDiario.findMany({
       where: {
         estudanteId: estudanteId,
         data: {
-          gte: dataInicio,
-          lte: dataFim,
+          gte: inicio,
+          lte: fim,
         },
         preenchido: true,
       },
     });
   }
-}
 
+  async buscarPresencasPorIntervalo(
+    estudanteId: string,
+    dataInicio: Date,
+    dataFim: Date,
+  ): Promise<{ presenca: boolean }[]> {
+    return this.prisma.client.registroAula.findMany({
+      where: {
+        estudanteId,
+        data: { gte: dataInicio, lte: dataFim },
+        status_aula: StatusAula.REALIZADA,
+      },
+      select: { presenca: true },
+    });
+  }
+}

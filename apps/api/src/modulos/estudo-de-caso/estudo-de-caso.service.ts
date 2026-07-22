@@ -1,5 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
-import type { IEstudoCasoRepositorio, EstudoDeCasoComEducadores } from './interfaces/IEstudoCasoRepositorio.js';
+import type {
+  IEstudoCasoRepositorio,
+  EstudoDeCasoComEducadores,
+} from './interfaces/IEstudoCasoRepositorio.js';
 import type { CreateEstudoDeCasoDto } from './dtos/create-estudo-de-caso.dto.js';
 
 @Injectable()
@@ -7,7 +10,7 @@ export class EstudoCasoService {
   constructor(
     @Inject('IEstudoCasoRepositorio')
     private readonly estudoCasoRepositorio: IEstudoCasoRepositorio,
-  ) { }
+  ) {}
 
   /**
    * Registra um novo Estudo de Caso / Ocorrência Pedagógica.
@@ -16,7 +19,8 @@ export class EstudoCasoService {
    * pelo HttpExceptionFilter global.
    */
   async criar(dto: CreateEstudoDeCasoDto) {
-    const estudoCaso: EstudoDeCasoComEducadores = await this.estudoCasoRepositorio.criar(dto);
+    const estudoCaso: EstudoDeCasoComEducadores =
+      await this.estudoCasoRepositorio.criar(dto);
 
     return {
       id: estudoCaso.id,

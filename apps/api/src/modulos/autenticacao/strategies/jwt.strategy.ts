@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../../../prisma/prisma.service.js';
-import { JwtPayload } from '../interfaces/jwt-payload.interface.js';
+import { IJwtPayload } from '../interfaces/jwt-payload.interface.js';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -18,7 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload) {
+  async validate(payload: IJwtPayload) {
     const user = await this.prisma.client.usuario.findUnique({
       where: { id: payload.sub },
       select: {
@@ -26,6 +26,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         email: true,
         role: true,
         educadorId: true,
+        responsavelId: true,
+        educador: { select: { escolaId: true } },
       },
     });
 
@@ -33,6 +35,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Usuário não encontrado ou inativo');
     }
 
-    return user;
+    return {
+      ...user,
+      escolaId: user.educador?.escolaId,
+    };
   }
 }

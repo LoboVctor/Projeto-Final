@@ -1,5 +1,20 @@
-import { Prisma, EstudanteEspecificidade, Especificidade, TipoEspecificidade, CategoriaEspecificidade, Medicamento, EstudanteMedicamento, UnidadeM } from '@prisma-client';
+import {
+  Prisma,
+  Escola,
+  EstudanteEspecificidade,
+  Especificidade,
+  TipoEspecificidade,
+  CategoriaEspecificidade,
+  Medicamento,
+  EstudanteMedicamento,
+  UnidadeM,
+  RegistroAula,
+  TipoDiagnostico,
+  TipoDocumento,
+} from '@prisma-client';
 import { BuscarEstudantesQueryDto } from '../dtos/buscar-estudantes-query.dto.js';
+import { CreateRegistroAulaBatchDto } from '../dtos/create-registro-aula.dto.js';
+import { CreateAulaEstudanteDto } from '../dtos/create-aula.dto.js';
 
 /** Projeção leve de Estudante usada na listagem geral (Tela 4). */
 export type EstudanteListagem = Prisma.EstudanteGetPayload<{
@@ -9,6 +24,9 @@ export type EstudanteListagem = Prisma.EstudanteGetPayload<{
     matricula: true;
     foto: true;
     statusMatricula: true;
+    dataNascimento: true;
+    sexo: true;
+    formaComunicacao: true;
     turmas: {
       select: {
         id: true;
@@ -33,6 +51,7 @@ export interface EstudanteListagemPaginado {
   limit: number;
   totalPaginas: number;
 }
+
 
 export type EstudanteVisaoGeral = Prisma.EstudanteGetPayload<{
   include: {
@@ -82,10 +101,10 @@ export type EstudanteSaude = Prisma.EstudanteGetPayload<{
     };
     medicamentos: {
       select: {
-        medicamentoId: true,
+        medicamentoId: true;
         dosagem: true;
         unidadeMedida: true;
-        intervaloAdministracao: true,
+        intervaloAdministracao: true;
         horarioAdministrado: true;
         administradoEscola: true;
         medicamento: { select: { nome: true } };
@@ -134,25 +153,69 @@ export type AulaAgenda = Prisma.AulaGetPayload<{
   include: {
     area: true;
     educador: true;
-  }
+  };
 }>;
 
 export interface IEstudanteRepositorio {
+  buscarEscolaPadrao(): Promise<Escola | null>;
   buscarVisaoGeral(estudanteId: string): Promise<EstudanteVisaoGeral | null>;
   buscarSaude(estudanteId: string): Promise<EstudanteSaude | null>;
   buscarPedagogico(estudanteId: string): Promise<EstudantePedagogico | null>;
-  buscarComFiltros(query: BuscarEstudantesQueryDto): Promise<EstudanteListagemPaginado>;
-  buscarEspecificidadeExata(tipo: TipoEspecificidade, categoria: CategoriaEspecificidade, descricao: string): Promise<Especificidade | null>;
-  criarEspecificidade(dados: { tipo: TipoEspecificidade; categoria: CategoriaEspecificidade; descricao: string }): Promise<Especificidade>;
-  buscarVinculoEspecificidade(estudanteId: string, especificidadeId: number): Promise<EstudanteEspecificidade | null>;
-  criarVinculoEspecificidade(estudanteId: string, especificidadeId: number, obsReacao: string): Promise<EstudanteEspecificidade>;
-  atualizarVinculoEspecificidade(estudanteId: string, especificidadeId: number, obsReacao: string): Promise<EstudanteEspecificidade>;
-  atualizarReferenciaVinculoEspecificidade(estudanteId: string, especificidadeIdAntiga: number, especificidadeIdNova: number, obsReacao: string): Promise<EstudanteEspecificidade>;
-  removerVinculoEspecificidade(estudanteId: string, especificidadeId: number): Promise<EstudanteEspecificidade>;
+  criarEstudante(dados: Prisma.EstudanteCreateInput): Promise<Prisma.EstudanteGetPayload<object>>;
+  atualizarEstudante(
+    id: string,
+    payload: {
+      estudante: Prisma.EstudanteUpdateInput;
+      responsavel: Partial<Prisma.ResponsavelCreateInput> | null;
+    },
+  ): Promise<Prisma.EstudanteGetPayload<object>>;
+  buscarComFiltros(
+    query: BuscarEstudantesQueryDto,
+  ): Promise<EstudanteListagemPaginado>;
+  buscarEspecificidadeExata(
+    tipo: TipoEspecificidade,
+    categoria: CategoriaEspecificidade,
+    descricao: string,
+  ): Promise<Especificidade | null>;
+  criarEspecificidade(dados: {
+    tipo: TipoEspecificidade;
+    categoria: CategoriaEspecificidade;
+    descricao: string;
+  }): Promise<Especificidade>;
+  buscarVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeId: number,
+  ): Promise<EstudanteEspecificidade | null>;
+  buscarVinculoPorTipoCategoria(
+    estudanteId: string,
+    tipo: TipoEspecificidade,
+    categoria: CategoriaEspecificidade,
+    excluirEspecificidadeId?: number,
+  ): Promise<EstudanteEspecificidade | null>;
+  criarVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeId: number,
+    obsReacao: string,
+  ): Promise<EstudanteEspecificidade>;
+  atualizarVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeId: number,
+    obsReacao: string,
+  ): Promise<EstudanteEspecificidade>;
+  atualizarReferenciaVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeIdAntiga: number,
+    especificidadeIdNova: number,
+    obsReacao: string,
+  ): Promise<EstudanteEspecificidade>;
+  removerVinculoEspecificidade(
+    estudanteId: string,
+    especificidadeId: number,
+  ): Promise<EstudanteEspecificidade>;
   contarVinculosEspecificidade(especificidadeId: number): Promise<number>;
   removerEspecificidade(especificidadeId: number): Promise<void>;
   buscarAulasDoEstudante(estudanteId: string): Promise<AulaAgenda[]>;
-   
+
   buscarMedicamentoPorNome(nome: string): Promise<Medicamento | null>;
   buscarMedicamentoPorId(id: number): Promise<Medicamento | null>;
   criarMedicamento(nome: string): Promise<Medicamento>;
@@ -161,33 +224,54 @@ export interface IEstudanteRepositorio {
     medicamentoId: number;
     dosagem: number;
     unidadeMedida: UnidadeM;
-    administradoEscola: boolean;
-    intervaloAdministracao: number;
-    horarioAdministrado: Date;
   }): Promise<EstudanteMedicamento>;
+
   atualizarVinculoMedicamento(
     estudanteId: string,
     medicamentoId: number,
     dados: {
       dosagem: number;
       unidadeMedida: UnidadeM;
-      administradoEscola: boolean;
-      intervaloAdministracao: number;
-      horarioAdministrado: Date;
-    }
+    },
   ): Promise<EstudanteMedicamento>;
-  removerVinculoMedicamento(estudanteId: string, medicamentoId: number): Promise<EstudanteMedicamento>;
-  criarLaudoEDocumento(estudanteId: string, dados: {
-    tipoDiagnostico: string;
-    tipoDocumento: string;
-    dataEmissao: string;
-    linkArquivo: string;
-  }): Promise<any>;
-  deletarDocumento(documentoId: string): Promise<any>;
-  atualizarDocumento(documentoId: string, dados: {
-    tipoDocumento: string;
-    dataEmissao: string;
-    linkArquivo?: string;
-  }): Promise<any>;
+  removerVinculoMedicamento(
+    estudanteId: string,
+    medicamentoId: number,
+  ): Promise<EstudanteMedicamento>;
+  criarLaudoEDocumento(
+    estudanteId: string,
+    dados: {
+      tipoDiagnostico: TipoDiagnostico;
+      tipoDocumento: TipoDocumento;
+      dataEmissao: string;
+      linkArquivo: string;
+    },
+  ): Promise<unknown>;
+  deletarDocumento(documentoId: string): Promise<unknown>;
+  atualizarLaudo(
+    documentoId: string,
+    dados: { tipoDocumento?: TipoDocumento; dataEmissao: string },
+    urlArquivo?: string,
+  ): Promise<unknown>;
+  criarAula(estudanteId: string, dto: CreateAulaEstudanteDto): Promise<unknown>;
+  atualizarDocumento(
+    documentoId: string,
+    dados: {
+      tipoDocumento: TipoDocumento;
+      dataEmissao: string;
+      linkArquivo?: string;
+    },
+  ): Promise<unknown>;
+  atualizarLaudoCompleto(
+    estudanteId: string,
+    documentoId: string,
+    dados: {
+      tipoDiagnostico: TipoDiagnostico;
+      tipoDocumento: TipoDocumento;
+      dataEmissao: string;
+      linkArquivo?: string;
+    },
+  ): Promise<unknown>;
+  registrarChamadaEmLote(dto: CreateRegistroAulaBatchDto): Promise<RegistroAula[]>;
+  desativarEstudante(id: string): Promise<Prisma.EstudanteGetPayload<object>>;
 }
-

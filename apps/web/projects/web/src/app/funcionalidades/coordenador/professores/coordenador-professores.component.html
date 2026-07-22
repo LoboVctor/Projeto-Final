@@ -1,0 +1,441 @@
+<div class="page-container" (click)="fecharMenus()">
+
+  <!-- ── Cabeçalho da Tela ─────────────────────────────────────── -->
+  <header class="page-header">
+    <div class="page-header-texto">
+      <h1 class="page-titulo">Professores</h1>
+      <p class="page-subtitulo">Consulte e gerencie todos os educadores da escola.</p>
+    </div>
+  </header>
+
+  <!-- ── Barra de filtros em card ──────────────────────────────── -->
+  <section class="filtros-card" aria-label="Filtros de busca">
+    <div class="filtros-linha">
+      <div class="busca-wrapper">
+        <svg class="busca-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          id="coordenador-busca-professores"
+          type="text"
+          class="busca-input"
+          placeholder="Buscar por nome ou matrícula"
+          [value]="termoBusca()"
+          (input)="onTermoBuscaChange($any($event.target).value)"
+          aria-label="Buscar professor por nome"
+        />
+        @if (termoBusca()) {
+          <button class="busca-limpar" (click)="limparFiltros()" aria-label="Limpar busca">✕</button>
+        }
+      </div>
+
+      <div class="filtro-select-wrapper">
+        <select class="filtro-select" [value]="filtroTipo()" (change)="onFiltroTipoChange($any($event.target).value)" aria-label="Filtrar por tipo de educador">
+          <option value="">Tipo</option>
+          @for (tipo of tiposEducador; track tipo) {
+            <option [value]="tipo">{{ getTipoLabel(tipo) }}</option>
+          }
+        </select>
+        <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+      </div>
+
+      <div class="filtro-select-wrapper">
+        <select class="filtro-select" [value]="filtroStatus()" (change)="onFiltroStatusChange($any($event.target).value)" aria-label="Filtrar por status">
+          @for (op of statusOpcoes; track op.value) {
+            <option [value]="op.value">{{ op.label }}</option>
+          }
+        </select>
+        <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+      </div>
+
+      <!-- Botão limpar todos os filtros -->
+      <button class="btn-limpar-todos" (click)="limparFiltros()" title="Limpar todos os filtros">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Limpar Filtros
+      </button>
+    </div>
+  </section>
+
+  <!-- ── Ações e Topo da Listagem ─────────────────────────────────── -->
+  <div class="listagem-header">
+    <div class="flex gap-2">
+      <input #fileInput type="file" accept=".csv" class="hidden" (change)="onFileSelected($event)">
+      
+      <button class="btn-exportar" (click)="exportarCSV()" [disabled]="!temResultados() || isImporting()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Exportar CSV
+      </button>
+
+      <div class="relative">
+        <button class="text-sm font-semibold px-4 py-2 bg-[#6C3CC9] text-white border border-transparent rounded-lg hover:bg-[#5A32A8] transition-colors duration-200 flex items-center justify-center space-x-2 cursor-pointer h-[34px]" (click)="toggleDropdownCadastrar($event)" [disabled]="isImporting()">
+          @if (isImporting()) {
+            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Importando...</span>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Cadastrar</span>
+          }
+        </button>
+        
+        @if (dropdownCadastrarAberto()) {
+          <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-[60] animate-fade-in" (click)="$event.stopPropagation()">
+            <button (click)="abrirModalCadastrarProfessor(); fecharMenus()" class="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-[#F7F5FA] hover:text-[#6C3CC9] flex items-center transition-colors cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+              Cadastrar Manual
+            </button>
+            <button (click)="fileInput.click(); fecharMenus()" class="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-[#F7F5FA] hover:text-[#6C3CC9] flex items-center transition-colors cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Importar CSV
+            </button>
+            <button (click)="baixarModeloCSV(); fecharMenus()" class="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-[#F7F5FA] hover:text-[#6C3CC9] flex items-center transition-colors cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Baixar Modelo CSV
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="tabela-card" role="region" aria-label="Tabela de professores">
+    @if (loading()) {
+      <app-loading-flor titulo="Carregando professores..." subtitulo="Buscando informações dos educadores."></app-loading-flor>
+    } @else if (erro()) {
+      <div class="erro-container" role="alert">
+        <span>⚠️ {{ erro() }}</span>
+        <button class="btn-tentar-novamente" (click)="limparFiltros()">Tentar novamente</button>
+      </div>
+    } @else if (!temResultados()) {
+      <div class="estado-vazio">
+        <span class="estado-vazio-icone">👩‍🏫</span>
+        <p class="estado-vazio-titulo">Nenhum professor encontrado</p>
+        <p class="estado-vazio-subtitulo">Tente ajustar os filtros ou limpar a busca.</p>
+        <button class="btn-limpar-filtros" (click)="limparFiltros()">Limpar Filtros</button>
+      </div>
+    } @else {
+      <!-- Tabela -->
+      <div class="tabela-wrapper">
+        <table class="tabela" aria-label="Lista de professores">
+          <thead>
+            <tr>
+              <th class="th-aluno">Professor</th>
+              <th class="th-matricula">Matrícula</th>
+              <th class="th-turma">Turma</th>
+              <th class="th-diagnostico text-center">Tipo</th>
+              <th class="th-status">Status</th>
+              <th class="th-acoes">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (prof of professores(); track prof.id) {
+              <tr class="tabela-linha" [class.linha-inativa]="!prof.ativo">
+                <td class="td-aluno">
+                  <div class="aluno-info">
+                    <img [src]="getFotoUrl(prof.nome)" [alt]="prof.nome" class="aluno-foto" loading="lazy" />
+                    <span class="aluno-nome">{{ prof.nome }}</span>
+                  </div>
+                </td>
+                <td class="td-matricula"><span class="tag-matricula">{{ prof.matricula }}</span></td>
+                <td class="td-turma">{{ getTurmaLabel(prof) }}</td>
+                <td class="td-diagnostico text-center">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-nunito font-bold border shadow-sm" [ngClass]="getTipoColor(prof.tipo)">
+                    {{ getTipoLabel(prof.tipo) }}
+                  </span>
+                </td>
+                <td class="td-status">
+                  <span class="tag-status" [ngClass]="getStatusClass(prof)">
+                    {{ getStatusLabel(prof) }}
+                  </span>
+                </td>
+
+                <!-- ── Coluna Ações ── -->
+                <td class="td-acoes" (click)="$event.stopPropagation()">
+                  <div class="acoes-wrapper">
+                    <button
+                      class="btn-acoes"
+                      (click)="toggleMenu(prof.id, $event)"
+                      [attr.aria-expanded]="menuAbertoId() === prof.id"
+                      [attr.aria-label]="'Ações para ' + prof.nome"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+                      </svg>
+                    </button>
+
+                    @if (menuAbertoId() === prof.id) {
+                      <div class="acoes-dropdown" role="menu">
+                        <button class="acoes-item" role="menuitem" (click)="abrirModalEditar(prof)">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                          Editar
+                        </button>
+                        @if (prof.ativo) {
+                          <button class="acoes-item acoes-item--danger" role="menuitem" (click)="confirmarDesativacao(prof)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/>
+                            </svg>
+                            Desativar
+                          </button>
+                        } @else {
+                          <button class="acoes-item acoes-item--success" role="menuitem" (click)="reativarProfessor(prof)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+                            </svg>
+                            Reativar Professor
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Paginação visual completa ──────────────────────────── -->
+      <div class="paginacao-bar">
+        <!-- Texto de intervalo -->
+        <span class="pag-info-texto">
+          Exibindo {{ (paginaAtual() - 1) * limitePorPagina + 1 }} a
+          {{ paginaAtual() * limitePorPagina > total() ? total() : paginaAtual() * limitePorPagina }}
+          de {{ total() }} professor(es) encontrado(s)
+        </span>
+
+        <!-- Navegação -->
+        <nav class="paginacao-nav" aria-label="Paginação de resultados">
+          <button
+            class="pag-btn pag-btn--icon"
+            (click)="irParaPagina(1)"
+            [disabled]="paginaAtual() === 1"
+            aria-label="Primeira página"
+            title="Primeira página"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+          </button>
+          <button
+            class="pag-btn pag-btn--icon"
+            (click)="irParaPagina(paginaAtual() - 1)"
+            [disabled]="paginaAtual() === 1"
+            aria-label="Página anterior"
+            title="Anterior"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="pag-btn pag-btn--atual" aria-current="page" [attr.aria-label]="'Página ' + paginaAtual()">
+            {{ paginaAtual() }}
+          </button>
+          <button
+            class="pag-btn pag-btn--icon"
+            (click)="irParaPagina(paginaAtual() + 1)"
+            [disabled]="paginaAtual() === totalPaginas()"
+            aria-label="Próxima página"
+            title="Próxima"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button
+            class="pag-btn pag-btn--icon"
+            (click)="irParaPagina(totalPaginas())"
+            [disabled]="paginaAtual() === totalPaginas()"
+            aria-label="Última página"
+            title="Última página"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+          </button>
+        </nav>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- Modal de Edição                                                           -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+@if (modalEditarAberto()) {
+  <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-editar-titulo" (click)="fecharModalEditar()">
+    <div class="modal-container modal-container--grande" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 id="modal-editar-titulo" class="modal-titulo">Editar</h2>
+        <button class="modal-fechar" (click)="fecharModalEditar()" aria-label="Fechar modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body" [formGroup]="editarForm">
+        <!-- Dados Pessoais -->
+        <section class="modal-secao">
+          <h3 class="modal-secao-titulo">Dados Pessoais</h3>
+          <div class="modal-grid">
+            <div class="campo-grupo campo-grupo--full">
+              <label class="campo-label" for="edit-nome">
+                Nome Completo
+                @if (editarCampoTemRequired('nome')) {
+                  <span class="text-red-500">*</span>
+                }
+              </label>
+              <input id="edit-nome" class="campo-input" type="text" formControlName="nome" placeholder="Nome do professor"
+                [class.border-red-300]="editarForm.get('nome')?.invalid && editarForm.get('nome')?.touched" />
+              @if (editarForm.get('nome')?.invalid && editarForm.get('nome')?.touched) {
+                <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                  @if (editarForm.get('nome')?.hasError('required')) {
+                    Nome é obrigatório.
+                  }
+                  @if (editarForm.get('nome')?.hasError('minlength')) {
+                    O nome deve ter no mínimo 3 caracteres.
+                  }
+                  @if (editarForm.get('nome')?.hasError('soEspacos')) {
+                    O nome não pode conter apenas espaços em branco.
+                  }
+                  @if (editarForm.get('nome')?.hasError('soNumeros')) {
+                    O nome não pode conter apenas números.
+                  }
+                  @if (editarForm.get('nome')?.hasError('soHifens')) {
+                    O nome não pode conter apenas hífens.
+                  }
+                </div>
+              }
+            </div>
+            <div class="campo-grupo">
+              <label class="campo-label" for="edit-cpf">
+                CPF
+                @if (editarCampoTemRequired('cpf')) {
+                  <span class="text-red-500">*</span>
+                }
+              </label>
+              <input id="edit-cpf" class="campo-input" type="text" formControlName="cpf" placeholder="Digite os 11 dígitos do CPF" maxlength="11"
+                (input)="apenasNumeros($event, 'cpf')"
+                [class.border-red-300]="editarForm.get('cpf')?.invalid && editarForm.get('cpf')?.touched" />
+              @if (editarForm.get('cpf')?.invalid && editarForm.get('cpf')?.touched) {
+                <div class="text-[10px] font-semibold text-red-500 mt-0.5">
+                  @if (editarForm.get('cpf')?.hasError('required')) {
+                    O CPF é obrigatório.
+                  }
+                  @if (editarForm.get('cpf')?.hasError('pattern')) {
+                    CPF inválido. Use 11 dígitos numéricos.
+                  }
+                </div>
+              }
+            </div>
+            <div class="campo-grupo">
+              <label class="campo-label" for="edit-telefone">Telefone</label>
+              <input id="edit-telefone" class="campo-input" type="text" formControlName="telefone" placeholder="(85) 99999-9999" />
+            </div>
+            <div class="campo-grupo">
+              <label class="campo-label" for="edit-tipo">Tipo de Professor</label>
+              <select id="edit-tipo" class="campo-input" formControlName="tipo">
+                @for (tipo of tiposEducador; track tipo) {
+                  <option [value]="tipo">{{ getTipoLabel(tipo) }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Turmas -->
+        <section class="modal-secao">
+          <h3 class="modal-secao-titulo">Turmas Atribuídas</h3>
+          <p class="modal-secao-desc">Selecione as turmas em que este professor leciona:</p>
+
+          <div class="mb-4 relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input
+              type="text"
+              class="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#6C3CC9] focus:border-transparent transition-all text-sm"
+              placeholder="Buscar turma por nome..."
+              [value]="termoBuscaTurma()"
+              (input)="onTermoBuscaTurmaChange($any($event.target).value)"
+            />
+          </div>
+
+          @if (turmasLoading()) {
+            <div class="turmas-loading text-center py-4 text-gray-500 text-sm">Carregando turmas...</div>
+          } @else if (turmasFiltradas().length === 0) {
+            <p class="turmas-vazio text-center py-4 text-gray-500 text-sm">Nenhuma turma encontrada.</p>
+          } @else {
+            <div class="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2">
+              @for (turma of turmasPaginadas(); track turma.id) {
+                <label class="flex items-center gap-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors" [class.bg-purple-50]="isTurmaSelecionada(turma.id)" [class.border-purple-200]="isTurmaSelecionada(turma.id)">
+                  <input
+                    type="checkbox"
+                    class="w-4 h-4 text-[#6C3CC9] rounded border-gray-300 focus:ring-[#6C3CC9]"
+                    [checked]="isTurmaSelecionada(turma.id)"
+                    (change)="toggleTurma(turma.id)"
+                  />
+                  <span class="text-sm font-medium text-gray-700">{{ turma.nome }}</span>
+                </label>
+              }
+            </div>
+
+            @if (turmasTotalPaginas() > 1) {
+              <nav class="flex items-center justify-between mt-4 border-t border-gray-100 pt-3" aria-label="Paginação de turmas">
+                <button class="p-1 rounded hover:bg-gray-100 text-gray-500 disabled:opacity-50" (click)="irParaPaginaTurmas(turmasPagina() - 1)" [disabled]="turmasPagina() === 1">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <span class="text-xs font-semibold text-gray-500">Página {{ turmasPagina() }} de {{ turmasTotalPaginas() }}</span>
+                <button class="p-1 rounded hover:bg-gray-100 text-gray-500 disabled:opacity-50" (click)="irParaPaginaTurmas(turmasPagina() + 1)" [disabled]="turmasPagina() === turmasTotalPaginas()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+              </nav>
+            }
+          }
+        </section>
+
+        @if (editarErro()) {
+          <div class="modal-erro" role="alert">⚠️ {{ editarErro() }}</div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancelar" (click)="fecharModalEditar()">Cancelar</button>
+        <button class="btn-salvar" (click)="salvarEdicao()" [disabled]="editarForm.invalid || editarLoading()">
+          @if (editarLoading()) { Salvando... } @else { Salvar Alterações }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- Modal de Confirmação de Desativação                                       -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+@if (modalConfirmacaoAberto()) {
+  <div class="modal-overlay" role="dialog" aria-modal="true" (click)="fecharModalConfirmacao()">
+    <div class="modal-container modal-container--pequeno" (click)="$event.stopPropagation()">
+      <div class="confirmacao-icone">⚠️</div>
+      <h2 class="confirmacao-titulo">Desativar Professor?</h2>
+      <p class="confirmacao-desc">
+        <strong>{{ profParaDesativar()?.nome }}</strong> perderá o acesso ao sistema, porém todos os seus registros e diários serão mantidos. Esta ação pode ser revertida.
+      </p>
+      <div class="confirmacao-acoes">
+        <button class="btn-cancelar" (click)="fecharModalConfirmacao()">Cancelar</button>
+        <button class="btn-confirmar-danger" (click)="executarDesativacao()" [disabled]="desativarLoading()">
+          @if (desativarLoading()) { Desativando... } @else { Sim, Desativar }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-modal-cadastrar-professor 
+  [isOpen]="modalCadastrarAberto()"
+  (fechar)="fecharModalCadastrarProfessor()"
+  (salvo)="onProfessorCadastrado()">
+</app-modal-cadastrar-professor>

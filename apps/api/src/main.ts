@@ -1,12 +1,16 @@
 import { NestFactory, Reflector } from '@nestjs/core';
-import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
+import { ValidationPipe, ClassSerializerInterceptor, ConsoleLogger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const isProducao = process.env.NODE_ENV === 'production';
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: new ConsoleLogger({ json: isProducao }),
+  });
 
   app.setGlobalPrefix('api/v1');
 
@@ -55,7 +59,7 @@ async function bootstrap() {
     .addTag('Auth', 'Autenticação e registro de usuários')
     .build();
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (!isProducao) {
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('api/docs', app, document, {
       swaggerOptions: {

@@ -1,0 +1,60 @@
+<div class="turma-graficos-wrapper">
+  @if (loading()) {
+    <div class="graficos-loading">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="skeleton-chart"></div>
+      }
+    </div>
+  }
+
+  @if (erro() && !loading()) {
+    <div class="graficos-erro">
+      <span>⚠️ {{ erro() }}</span>
+      <button class="btn-retry" (click)="carregarMetricas()">Tentar novamente</button>
+    </div>
+  }
+
+  @if (!loading() && !erro() && metricas()) {
+    <div class="graficos-container flex flex-col h-full">
+      
+      <div class="mb-4 shrink-0">
+        <h3 class="text-lg font-sora font-bold text-gray-800">
+          {{ isVisaoEscola() ? 'Perfil Geral' : 'Perfil Geral da Turma' }}
+        </h3>
+        <p class="text-sm text-gray-500">Distribuição demográfica e perfis clínicos dos alunos.</p>
+      </div>
+      
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 w-full pb-6">
+
+        <div class="flex flex-col w-full">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-0 shrink-0">Proporção por Sexo</h3>
+          <div class="relative w-full h-[100px] flex items-center justify-center">
+            <canvas #canvasSexo></canvas>
+          </div>
+        </div>
+
+        <div class="flex flex-col w-full">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-0 shrink-0">Formas de Comunicação</h3>
+          <div class="relative w-full h-[100px] flex items-center justify-center">
+            <canvas #canvasCom></canvas>
+          </div>
+        </div>
+
+        <div class="flex flex-col w-full mt-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1 shrink-0">Alunos por Idade</h3>
+          <div class="relative w-full h-[400px]">
+            <canvas #canvasIdade></canvas>
+          </div>
+        </div>
+
+        <div class="flex flex-col w-full mt-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1 shrink-0">Alunos por Diagnóstico</h3>
+          <div class="relative w-full h-[400px]">
+            <canvas #canvasDiag></canvas>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  }
+</div>
