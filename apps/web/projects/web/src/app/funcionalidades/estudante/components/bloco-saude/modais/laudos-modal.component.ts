@@ -1,8 +1,10 @@
-import { Component, EventEmitter, OnInit, inject, input, Output, ChangeDetectionStrategy, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, input, output, ChangeDetectionStrategy, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { EstudantesService } from '../../../../../compartilhado/services/estudantes.service';
 import { ConfirmacaoService } from '../../../../../compartilhado/services/confirmacao.service';
+import { DiagFullNamePipe } from '../../../../../compartilhado/pipes/student.pipes';
+import { DiagnosticoVisibilidadeService } from '../../../../../compartilhado/services/diagnostico-visibilidade.service';
 
 /** Interface forte para o contrato de Laudos e remoção do uso de any */
 export interface LaudoEstudante {
@@ -16,21 +18,22 @@ export interface LaudoEstudante {
 
 @Component({
   selector: 'app-modal-laudos',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [DatePipe, DiagFullNamePipe, ReactiveFormsModule],
   templateUrl: './laudos-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModalLaudosComponent implements OnInit {
+  protected readonly diagVis = inject(DiagnosticoVisibilidadeService);
+
   // Utilizando o padrão de Signals modernos do Angular 21 para Inputs
   readonly estudanteId = input.required<string>();
-  readonly laudos = input<LaudoEstudante[]>([]); 
-  
-  @Output() fechar = new EventEmitter<void>();
-  @Output() salvo = new EventEmitter<void>();
+  readonly laudos = input<LaudoEstudante[]>([]);
+
+  readonly fechar = output<void>();
+  readonly salvo = output<void>();
 
   laudoForm: FormGroup;
-  arquivoSelecionado: File | null = null;
+  readonly arquivoSelecionado = signal<File | null>(null);
   
   // Controle de estados locais em Signals reativos
   readonly enviando = signal<boolean>(false);
@@ -63,7 +66,7 @@ export class ModalLaudosComponent implements OnInit {
     if (inputElement.files && inputElement.files.length > 0) {
       const file = inputElement.files[0];
       if (!file) {
-        this.arquivoSelecionado = null;
+        this.arquivoSelecionado.set(null);
         inputElement.value = '';
         return;
       }
@@ -73,7 +76,7 @@ export class ModalLaudosComponent implements OnInit {
       // Validação 1: Extensão / Tipo MIME
       if (!extensoesPermitidas.test(file.name)) {
         this.erroCliente.set('Formato inválido. Selecione apenas arquivos PDF, JPG, JPEG ou PNG.');
-        this.arquivoSelecionado = null;
+        this.arquivoSelecionado.set(null);
         inputElement.value = '';
         return;
       }
@@ -81,26 +84,27 @@ export class ModalLaudosComponent implements OnInit {
       // Validação 2: Tamanho máximo do arquivo
       if (file.size > tamanhoMaximoBytes) {
         this.erroCliente.set('O arquivo excede o limite máximo permitido de 5MB.');
-        this.arquivoSelecionado = null;
+        this.arquivoSelecionado.set(null);
         inputElement.value = '';
         return;
       }
 
-      this.arquivoSelecionado = file;
+      this.arquivoSelecionado.set(file);
     }
   }
 
   salvar(): void {
-    if (this.laudoForm.invalid || (!this.editandoId() && !this.arquivoSelecionado)) return;
+    if (this.laudoForm.invalid || (!this.editandoId() && !this.arquivoSelecionado())) return;
     this.enviando.set(true);
 
     const formData = new FormData();
     formData.append('tipoDiagnostico', this.laudoForm.get('tipoDiagnostico')?.value);
     formData.append('tipoDocumento', this.laudoForm.get('tipoDocumento')?.value);
     formData.append('dataEmissao', this.laudoForm.get('dataEmissao')?.value);
-    
-    if (this.arquivoSelecionado) {
-      formData.append('arquivo', this.arquivoSelecionado);
+
+    const arquivo = this.arquivoSelecionado();
+    if (arquivo) {
+      formData.append('arquivo', arquivo);
     }
 
     if (this.editandoId()) {
@@ -118,7 +122,7 @@ export class ModalLaudosComponent implements OnInit {
 
   editar(laudo: LaudoEstudante): void {
     this.editandoId.set(laudo.id); 
-    this.arquivoSelecionado = null; 
+    this.arquivoSelecionado.set(null);
     this.erroCliente.set(null);
 
     if (laudo.urlArquivo) {
@@ -168,7 +172,7 @@ export class ModalLaudosComponent implements OnInit {
 
   cancelarEdicao(): void {
     this.editandoId.set(null);
-    this.arquivoSelecionado = null;
+    this.arquivoSelecionado.set(null);
     this.arquivoAtualNome.set(null);
     this.laudoForm.reset({
       tipoDiagnostico: 'TEA',
@@ -195,7 +199,7 @@ export class ModalLaudosComponent implements OnInit {
 
   emitirFechar(): void {
     this.laudoForm.reset();
-    this.arquivoSelecionado = null;
+    this.arquivoSelecionado.set(null);
     this.editandoId.set(null);
     this.arquivoAtualNome.set(null);
     this.erroCliente.set(null);

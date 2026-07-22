@@ -13,12 +13,19 @@ import {
   effect,
   untracked,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Chart, ChartDataset, registerables } from 'chart.js';
 import { TurmasService, MetricasTurma } from '../../../../nucleo/services/turmas.service';
+import { DiagnosticoVisibilidadeService } from '../../../../compartilhado/services/diagnostico-visibilidade.service';
 
 Chart.register(...registerables);
+
+/** Coordenadas internas de um `BarElement` do Chart.js, não expostas pelo tipo público `Element`. */
+interface BarElementCoords {
+  x: number;
+  y: number;
+  base: number;
+}
 
 /** Labels amigáveis para diagnósticos */
 const DIAG_LABEL: Record<string, string> = {
@@ -68,13 +75,13 @@ const FCOM_LABEL: Record<string, string> = {
 
 @Component({
   selector: 'app-turma-graficos',
-  standalone: true,
-  imports: [CommonModule],
   templateUrl: './turma-graficos.html',
   styleUrls: ['./turma-graficos.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TurmaGraficosComponent implements OnDestroy {
+  protected readonly diagVis = inject(DiagnosticoVisibilidadeService);
+
   /** ID da turma para buscar métricas da API. Opcional se `dadosExternos` for fornecido. */
   readonly turmaId = input<string | null>(null);
 
@@ -218,7 +225,7 @@ export class TurmaGraficosComponent implements OnDestroy {
 
             data.datasets.forEach((dataset, i) => {
               const meta = chartInstance.getDatasetMeta(i);
-              const bar = meta.data[0] as any;
+              const bar = meta.data[0] as unknown as BarElementCoords | undefined;
               const valor = (dataset.data[0] as number) || 0;
 
               if (bar && valor > 0 && total > 0) {
@@ -387,7 +394,7 @@ export class TurmaGraficosComponent implements OnDestroy {
 
             data.datasets.forEach((dataset, i) => {
               const meta = chartInstance.getDatasetMeta(i);
-              const bar = meta.data[0] as any;
+              const bar = meta.data[0] as unknown as BarElementCoords | undefined;
               const valor = (dataset.data[0] as number) || 0;
 
               if (bar && valor > 0 && total > 0) {

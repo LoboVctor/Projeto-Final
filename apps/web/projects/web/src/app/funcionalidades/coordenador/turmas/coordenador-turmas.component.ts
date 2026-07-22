@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgClass, SlicePipe, DatePipe } from '@angular/common';
 import {
   TurmasService,
   TurmaResumo,
@@ -16,12 +16,14 @@ import { TurmaGraficosComponent } from '../../turma/components/turma-graficos/tu
 import { KpisTurmaComponent } from '../../turma/components/kpis-turma/kpis-turma.component';
 import { LoadingFlorComponent } from '../../../compartilhado/components/loading-flor/loading-flor.component';
 import { AuditoriaService } from '../../../nucleo/services/auditoria.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { API_BASE_URL } from '../../../nucleo/config/api.config';
+import { ImportacaoRelatorio } from '../../../compartilhado/models/importacao-relatorio.model';
 import { finalize } from 'rxjs';
 import { jsPDF } from 'jspdf';
 import { toPng } from 'html-to-image';
 import { buildAlunoModalData, getDiagnosticosArrayForCard, buildFotoUrl } from '../../../compartilhado/utils/aluno-modal.utils';
+import { DiagnosticoVisibilidadeService } from '../../../compartilhado/services/diagnostico-visibilidade.service';
 
 type ViewMode = 'grid' | 'list';
 
@@ -42,7 +44,7 @@ const FCOM_LABEL: Record<string, string> = { VERBAL: 'Verbal', NAO_VERBAL: 'Não
 
 @Component({
   selector: 'app-coordenador-turmas',
-  imports: [CommonModule, CardAlunoComponent, DiagLabelPipe, DiagColorPipe, AlunoModalComponent, TurmaGraficosComponent, KpisTurmaComponent, LoadingFlorComponent],
+  imports: [NgClass, SlicePipe, DatePipe, CardAlunoComponent, DiagLabelPipe, DiagColorPipe, AlunoModalComponent, TurmaGraficosComponent, KpisTurmaComponent, LoadingFlorComponent],
   templateUrl: './coordenador-turmas.component.html',
   styleUrls: ['./coordenador-turmas.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,6 +53,7 @@ export class CoordenadorTurmasComponent implements OnInit {
   private readonly turmasService = inject(TurmasService);
   private readonly authService = inject(AuthService);
   private readonly auditoriaService = inject(AuditoriaService);
+  protected readonly diagVis = inject(DiagnosticoVisibilidadeService);
 
   @ViewChild('relatorioTurma') relatorioTurma!: ElementRef;
 
@@ -221,7 +224,7 @@ export class CoordenadorTurmasComponent implements OnInit {
     this.isImporting.set(true);
     this.importResult.set(null);
 
-    this.http.post<any>(`${this.baseUrl}/turmas/importar-csv`, formData)
+    this.http.post<ImportacaoRelatorio>(`${this.baseUrl}/turmas/importar-csv`, formData)
       .pipe(finalize(() => this.isImporting.set(false)))
       .subscribe({
         next: (res) => {
@@ -232,7 +235,7 @@ export class CoordenadorTurmasComponent implements OnInit {
           });
           this.carregarTurmas();
         },
-        error: (err) => {
+        error: (err: HttpErrorResponse) => {
           alert('Erro ao importar CSV: ' + (err.error?.message || err.message));
         }
       });

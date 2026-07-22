@@ -1,18 +1,16 @@
 import {
   Component,
-  EventEmitter,
-  Input,
-  Output,
   inject,
   signal,
   ChangeDetectionStrategy,
   input,
+  output,
   effect,
   OnChanges,
   SimpleChanges,
   ChangeDetectorRef
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { AlunoModalData } from '../../models/aluno-modal.model';
 import { EstudantesService } from '../../services/estudantes.service';
 import { EstudanteVisaoGeral } from '../../models/estudante-visao-geral.model';
@@ -23,11 +21,12 @@ import { BlocoAgendaComponent } from '../../../funcionalidades/estudante/compone
 import { BlocoDashboardComponent } from '../../../funcionalidades/estudante/components/bloco-dashboards/bloco-dashboard.component';
 import { API_BASE_URL } from '../../../nucleo/config/api.config';
 import { DiagFullNamePipe } from '../../pipes/student.pipes';
+import { DiagnosticoVisibilidadeService } from '../../services/diagnostico-visibilidade.service';
 
 @Component({
   selector: 'app-aluno-modal',
   imports: [
-    CommonModule,
+    NgClass,
     BlocoVisaoGeralComponent,
     BlocoSaudeComponent,
     BlocoRelatoriosComponent,
@@ -43,15 +42,16 @@ export class AlunoModalComponent implements OnChanges {
   private estudantesService = inject(EstudantesService);
   private readonly baseUrl = inject(API_BASE_URL);
   private cdr = inject(ChangeDetectorRef);
+  protected readonly diagVis = inject(DiagnosticoVisibilidadeService);
 
   readonly isVisible = input<boolean>(false);
-  
-  // Novo input para receber a instrução de qual aba abrir (ex: 'registros')
-  readonly abaInicial = input<string | null>(null); 
-  
-  @Input() aluno: AlunoModalData | null = null;
 
-  @Output() fecharModal = new EventEmitter<boolean>();
+  // Novo input para receber a instrução de qual aba abrir (ex: 'registros')
+  readonly abaInicial = input<string | null>(null);
+
+  readonly aluno = input<AlunoModalData | null>(null);
+
+  readonly fecharModal = output<boolean>();
 
   // Estados
   isInfoGeraisOpen = signal(false);
@@ -71,7 +71,7 @@ export class AlunoModalComponent implements OnChanges {
   constructor() {
     // Efeito reativo: Observa quando o modal abre para focar na aba correta
     effect(() => {
-      if (this.isVisible() && this.aluno) {
+      if (this.isVisible() && this.aluno()) {
         const aba = this.abaInicial();
         
         if (aba === 'registros' || aba === 'agenda') {
@@ -90,7 +90,7 @@ export class AlunoModalComponent implements OnChanges {
     // allowSignalWrites é necessário pois estamos alterando outros signals dentro do effect
   }
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['aluno'] && this.aluno) {
+    if (changes['aluno'] && this.aluno()) {
       this.isInfoGeraisOpen.set(true);
       this.abrirVisaoGeral();
     }
@@ -114,7 +114,8 @@ export class AlunoModalComponent implements OnChanges {
   }
 
   abrirVisaoGeral(): void {
-    if (!this.aluno) return;
+    const aluno = this.aluno();
+    if (!aluno) return;
     this.isSaudeExpanded.set(false);
     this.isRelatoriosExpanded.set(false);
     this.isAgendaExpanded.set(false);
@@ -122,7 +123,7 @@ export class AlunoModalComponent implements OnChanges {
     this.isResponsavelExpanded.set(false);
     this.isVisaoGeralExpanded.set(true);
 
-    if (this.visaoGeralData()?.id === this.aluno.id) {
+    if (this.visaoGeralData()?.id === aluno.id) {
       return;
     }
 
@@ -130,7 +131,7 @@ export class AlunoModalComponent implements OnChanges {
   }
 
   abrirSaude(): void {
-    if (!this.aluno) return;
+    if (!this.aluno()) return;
     this.isVisaoGeralExpanded.set(false);
     this.isRelatoriosExpanded.set(false);
     this.isAgendaExpanded.set(false);
@@ -140,7 +141,7 @@ export class AlunoModalComponent implements OnChanges {
   }
 
   abrirRelatorios(): void {
-    if (!this.aluno) return;
+    if (!this.aluno()) return;
     this.isVisaoGeralExpanded.set(false);
     this.isSaudeExpanded.set(false);
     this.isAgendaExpanded.set(false);
@@ -150,13 +151,13 @@ export class AlunoModalComponent implements OnChanges {
   }
 
   onDashboard(): void {
-    if (!this.aluno) return;
+    if (!this.aluno()) return;
     this.recolherPaineis();
     this.isDashboardExpanded.set(true);
   }
 
   abrirResponsavel(): void {
-    if (!this.aluno) return;
+    if (!this.aluno()) return;
     this.recolherPaineis();
     this.isResponsavelExpanded.set(true);
   }
@@ -182,18 +183,17 @@ export class AlunoModalComponent implements OnChanges {
   }
 
   carregarVisaoGeral(): void {
-    if (!this.aluno) return;
+    const aluno = this.aluno();
+    if (!aluno) return;
 
     this.loadingVisaoGeral.set(true);
     this.errorVisaoGeral.set(null);
 
-    this.estudantesService.getVisaoGeral(this.aluno.id).subscribe({
+    this.estudantesService.getVisaoGeral(aluno.id).subscribe({
       next: (dados) => {
         this.visaoGeralData.set(dados);
-        if (this.aluno) {
-          this.aluno.nome = dados.nomeCompleto;
-          this.aluno.turma = dados.turma ? dados.turma.nome : 'Sem turma';
-        }
+        aluno.nome = dados.nomeCompleto;
+        aluno.turma = dados.turma ? dados.turma.nome : 'Sem turma';
         this.loadingVisaoGeral.set(false);
       },
       error: () => {
@@ -211,7 +211,7 @@ export class AlunoModalComponent implements OnChanges {
   }
 
   getNomeTurmaLimpo(): string {
-    const nomeBruto = this.visaoGeralData()?.turma?.nome || this.aluno?.turma || '';
+    const nomeBruto = this.visaoGeralData()?.turma?.nome || this.aluno()?.turma || '';
     const etapaBruta = this.visaoGeralData()?.turma?.etapa;
     
     const nomeBase = nomeBruto
@@ -231,17 +231,18 @@ export class AlunoModalComponent implements OnChanges {
 
   forceReloadVisaoGeral(): void {
     this.visaoGeralData.set(null);
-    this.houveModificacao.set(true); 
+    this.houveModificacao.set(true);
     this.carregarVisaoGeral();
-    if (this.aluno) {
-      this.estudantesService.getSaude(this.aluno.id).subscribe({
+    const aluno = this.aluno();
+    if (aluno) {
+      this.estudantesService.getSaude(aluno.id).subscribe({
         next: (saude) => {
-          if (this.aluno && saude.laudos && saude.laudos.length > 0) {
+          if (saude.laudos && saude.laudos.length > 0) {
             const laudosOrdenados = [...saude.laudos].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
             const latestDiagnostico = laudosOrdenados[0]?.diagnostico;
-            this.aluno.diagnostico = latestDiagnostico || 'Sem diagnóstico';
-          } else if (this.aluno) {
-            this.aluno.diagnostico = 'Sem diagnóstico';
+            aluno.diagnostico = latestDiagnostico || 'Sem diagnóstico';
+          } else {
+            aluno.diagnostico = 'Sem diagnóstico';
           }
           this.cdr.markForCheck();
         }
@@ -254,7 +255,7 @@ export class AlunoModalComponent implements OnChanges {
   }
 
   onAgenda(): void {
-    if (!this.aluno) return;
+    if (!this.aluno()) return;
     this.recolherPaineis();
     this.isAgendaExpanded.set(true);
   }

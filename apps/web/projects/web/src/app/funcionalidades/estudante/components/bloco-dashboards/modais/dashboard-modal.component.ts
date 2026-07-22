@@ -1,5 +1,4 @@
-import { Component, signal, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy, signal, input } from '@angular/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
@@ -10,14 +9,13 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
  */
 @Component({
   selector: 'app-dashboard-modal',
-  standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonToggleModule],
+  imports: [MatDialogModule, MatButtonToggleModule],
   templateUrl: './dashboard-modal.component.html',
-  styleUrls: ['./dashboard-modal.component.css']
+  styleUrls: ['./dashboard-modal.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardModalComponent {
-  // @ts-ignore
-  dialogData: any = { name: 'Categoria' }; // Mock para tipagem
+  dialogData: { name: string } = { name: 'Categoria' }; // Mock para tipagem
   periodo = signal<'semana' | 'mes' | 'semestre'>('semana');
 
   mudarPeriodo(valor: 'semana' | 'mes' | 'semestre') {

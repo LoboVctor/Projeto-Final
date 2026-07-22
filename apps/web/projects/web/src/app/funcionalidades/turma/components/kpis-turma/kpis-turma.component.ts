@@ -1,16 +1,16 @@
-import { Component, input, effect, ElementRef, ViewChild, OnDestroy, inject, signal } from '@angular/core';
+import { Component, input, effect, ElementRef, ViewChild, OnDestroy, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { DecimalPipe, NgClass, DatePipe } from '@angular/common';
 import { Chart, registerables } from 'chart.js';
 import { TurmasService } from '../../../../nucleo/services/turmas.service';
-import { BlocoDashboardComponent } from '../../../estudante/components/bloco-dashboards/bloco-dashboard.component';
+import { DashboardEstudanteSummary } from '../../../../compartilhado/models/dashboard-estudante.model';
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-kpis-turma',
-  standalone: true,
-  imports: [DecimalPipe, NgClass, DatePipe, BlocoDashboardComponent],
+  imports: [DecimalPipe, NgClass, DatePipe],
   templateUrl: './kpis-turma.component.html',
-  styleUrls: ['./kpis-turma.component.css']
+  styleUrls: ['./kpis-turma.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KpisTurmaComponent implements OnDestroy {
   readonly turmaId = input<string | undefined>();
@@ -18,7 +18,7 @@ export class KpisTurmaComponent implements OnDestroy {
   
   private readonly turmasService = inject(TurmasService);
   
-  dashboardData = signal<any>(null);
+  dashboardData = signal<DashboardEstudanteSummary | null>(null);
   periodo = signal<string>('semana');
 
   @ViewChild('mediaGaugeCanvas') mediaGaugeCanvas!: ElementRef<HTMLCanvasElement>;

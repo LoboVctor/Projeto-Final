@@ -1,5 +1,5 @@
-import { Component, EventEmitter, inject, input, Output, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy, inject, input, output, signal, computed } from '@angular/core';
+import { NgClass } from '@angular/common';
 import {
   AbstractControl,
   FormBuilder,
@@ -44,16 +44,16 @@ const naoApenasHifens: ValidatorFn = (control: AbstractControl): ValidationError
 
 @Component({
   selector: 'app-metas-modal',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [NgClass, ReactiveFormsModule],
   templateUrl: './metas-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MetasModalComponent {
   readonly estudanteId = input.required<string>();
   readonly relatorios = input<RelatorioSemestral[]>([]);
 
-  @Output() fechar = new EventEmitter<void>();
-  @Output() salvou = new EventEmitter<void>();
+  readonly fechar = output<void>();
+  readonly salvou = output<void>();
 
   private readonly fb = inject(FormBuilder);
   private readonly estudantesService = inject(EstudantesService);

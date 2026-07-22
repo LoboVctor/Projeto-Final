@@ -1,3 +1,6 @@
+/* Reutiliza os estilos do botão/dropdown de exportação e cabeçalho de PDF do componente de turmas */
+@import url('../../turma/turmas/turmas.component.css');
+
 /* Animação de transição entre páginas */
 .aluno-page {
   animation: fadeInPage 0.25s cubic-bezier(0.4, 0, 0.2, 1);

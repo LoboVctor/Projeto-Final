@@ -36,7 +36,10 @@
 
     <!-- Saudação e Data -->
     <div class="px-6 pb-7 mt-2">
-      <p class="text-white/90 text-base font-semibold mb-1">Olá,</p>
+      <div class="flex items-center justify-between gap-2">
+        <p class="text-white/90 text-base font-semibold mb-1">Olá,</p>
+        <!-- Feature "olhinho" desativada — ver DiagnosticoVisibilidadeService -->
+      </div>
       <h2 class="text-[22px] font-extrabold tracking-tight leading-snug"
         style="font-family: 'Sora', sans-serif; color: #F4C542;">
         {{ userName() }}
@@ -110,7 +113,7 @@
     <!-- Rodapé: Botão Sair -->
     <div class="px-5 pb-8 pt-6 mt-auto">
       <button (click)="fazerLogout()" type="button"
-        class="flex items-center justify-start px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/5 hover:border-white/20 transition-all duration-300 group cursor-pointer shadow-lg backdrop-blur-sm w-[90%] mx-auto">
+        class="flex items-center justify-start px-5 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all duration-300 group cursor-pointer shadow-lg backdrop-blur-sm w-[90%] mx-auto">
         <svg class="w-5 h-5 shrink-0 text-white/80 group-hover:text-white transition-colors duration-300" fill="none"
           viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

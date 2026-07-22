@@ -40,16 +40,18 @@ export interface EspecificidadePayload {
   observacao?: string;
 }
 
+export interface EspecificidadeSaude {
+  especificidadeId: number;
+  descricao: string;
+  categoria: string;
+  tipo: string;
+  observacao: string;
+}
+
 export interface EstudanteSaude {
   estudanteId: string;
   nomeCompleto: string;
-  especificidades: Array<{
-    especificidadeId: number;
-    descricao: string;
-    categoria: string;
-    tipo: string;
-    observacao: string;
-  }>;
+  especificidades: EspecificidadeSaude[];
   laudos: Array<{
     id: string;
     diagnostico: string;

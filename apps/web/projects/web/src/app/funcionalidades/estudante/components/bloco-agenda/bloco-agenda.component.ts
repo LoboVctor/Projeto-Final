@@ -1,9 +1,8 @@
 import {
   Component,
-  Input,
-  Output,
-  EventEmitter,
   inject,
+  input,
+  output,
   signal,
   computed,
   OnInit,
@@ -12,7 +11,6 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RegistrosDiariosService } from '../../../../compartilhado/services/registros-diarios.service';
@@ -48,15 +46,14 @@ function getDiaUtilValido(date: Date): Date {
 
 @Component({
   selector: 'app-bloco-agenda',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ObservacoesDiaComponent, ScoreDiarioComponent, AgendaSemanalComponent],
+  imports: [FormsModule, ObservacoesDiaComponent, ScoreDiarioComponent, AgendaSemanalComponent],
   templateUrl: './bloco-agenda.component.html',
   styleUrls: ['./bloco-agenda.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BlocoAgendaComponent implements OnInit, OnChanges {
-  @Input({ required: true }) estudanteId!: string;
-  @Output() recolher = new EventEmitter<void>();
+  readonly estudanteId = input.required<string>();
+  readonly recolher = output<void>();
 
   private readonly registrosService = inject(RegistrosDiariosService);
   private readonly authService = inject(AuthService);
@@ -110,7 +107,7 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
     this.erroValidacao.set(null);
     const dataIso = this.formatDateLocal(data);
 
-    this.registrosService.getSemana(this.estudanteId, dataIso).subscribe({
+    this.registrosService.getSemana(this.estudanteId(), dataIso).subscribe({
       next: (semana) => {
         this.semanaAtual.set(semana);
         this.atualizarRegistroDoDia();
@@ -204,7 +201,7 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
     const atual = this.registroDoDia();
     
     const payload: RegistroDiarioPayload = {
-      estudanteId: this.estudanteId,
+      estudanteId: this.estudanteId(),
       educadorId: this.authService.getLoggedUserId()!,
       data: dataFormatada,
       preenchido: true,
@@ -246,11 +243,11 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
 
     const dataFormatada = this.formatDateLocal(this.dataSelecionada());
     const atual = this.registroDoDia();
-    const { id, ...scoresSemId } = novosScores as any;
+    const { id, ...scoresSemId } = novosScores;
 
     const payload: RegistroDiarioPayload = {
       ...scoresSemId,
-      estudanteId: this.estudanteId,
+      estudanteId: this.estudanteId(),
       educadorId: this.authService.getLoggedUserId()!,
       data: dataFormatada,
       preenchido: true,
@@ -287,7 +284,7 @@ export class BlocoAgendaComponent implements OnInit, OnChanges {
   }
 
   private validarIdentificadores(): boolean {
-    if (!isValidUUID(this.estudanteId)) {
+    if (!isValidUUID(this.estudanteId())) {
       this.erroValidacao.set('O identificador do estudante é inválido. Ação bloqueada.');
       this.cdr.markForCheck();
       return false;

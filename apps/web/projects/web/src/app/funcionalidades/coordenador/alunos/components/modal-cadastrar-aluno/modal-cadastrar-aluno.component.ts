@@ -1,24 +1,23 @@
 import {
   Component,
-  EventEmitter,
-  Input,
-  Output,
   OnInit,
   inject,
   ChangeDetectionStrategy,
   HostListener,
   ElementRef,
+  input,
+  output,
+  signal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { EstudantesService } from '../../../../../compartilhado/services/estudantes.service';
 import { TurmasService, TurmaResumo } from '../../../../../nucleo/services/turmas.service';
 import { CustomValidators } from '../../../../../compartilhado/validators/custom-validators';
 
 @Component({
   selector: 'app-modal-cadastrar-aluno',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './modal-cadastrar-aluno.component.html',
   styleUrls: [],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -32,24 +31,24 @@ export class ModalCadastrarAlunoComponent implements OnInit {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     if (!this.el.nativeElement.contains(event.target)) {
-      this.mostrarDropdownTurmas = false;
+      this.mostrarDropdownTurmas.set(false);
     }
   }
 
-  @Input() isOpen = false;
-  @Output() fechar = new EventEmitter<void>();
-  @Output() salvo = new EventEmitter<void>();
+  readonly isOpen = input(false);
+  readonly fechar = output<void>();
+  readonly salvo = output<void>();
 
   form!: FormGroup;
-  loading = false;
-  erro = '';
-  turmas: TurmaResumo[] = [];
-  turmasFiltradas: TurmaResumo[] = [];
-  termoBuscaTurma = '';
-  mostrarDropdownTurmas = false;
-  turmaSelecionada: TurmaResumo | null = null;
+  loading = signal(false);
+  erro = signal('');
+  turmas = signal<TurmaResumo[]>([]);
+  turmasFiltradas = signal<TurmaResumo[]>([]);
+  termoBuscaTurma = signal('');
+  mostrarDropdownTurmas = signal(false);
+  turmaSelecionada = signal<TurmaResumo | null>(null);
   arquivoFoto: File | null = null;
-  previewFoto: string | ArrayBuffer | null = null;
+  previewFoto = signal<string | ArrayBuffer | null>(null);
 
   ngOnInit() {
     this.initForm();
@@ -67,57 +66,57 @@ export class ModalCadastrarAlunoComponent implements OnInit {
     });
   }
 
-  apenasNumeros(event: any, campo: string) {
-    const inputValue = event.target.value;
-    const numeros = inputValue.replace(/\D/g, '');
+  apenasNumeros(event: Event, campo: string) {
+    const input = event.target as HTMLInputElement;
+    const numeros = input.value.replace(/\D/g, '');
     this.form.get(campo)?.setValue(numeros, { emitEvent: false });
-    event.target.value = numeros;
+    input.value = numeros;
   }
 
   carregarTurmas() {
     this.turmasService.getTurmas().subscribe({
       next: (data: TurmaResumo[]) => {
-        this.turmas = data;
-        this.turmasFiltradas = data;
+        this.turmas.set(data);
+        this.turmasFiltradas.set(data);
       },
       error: () => {
-        this.erro = 'Não foi possível carregar as turmas.';
+        this.erro.set('Não foi possível carregar as turmas.');
       }
     });
   }
 
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
+  onFileSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
       this.arquivoFoto = file;
       const reader = new FileReader();
-      reader.onload = e => this.previewFoto = reader.result;
+      reader.onload = e => this.previewFoto.set(reader.result);
       reader.readAsDataURL(file);
     }
   }
 
-  filtrarTurmas(event: any) {
-    const termo = event.target.value.toLowerCase();
-    this.termoBuscaTurma = termo;
+  filtrarTurmas(event: Event) {
+    const termo = (event.target as HTMLInputElement).value.toLowerCase();
+    this.termoBuscaTurma.set(termo);
     if (!termo) {
-      this.turmasFiltradas = this.turmas;
+      this.turmasFiltradas.set(this.turmas());
     } else {
-      this.turmasFiltradas = this.turmas.filter(t => 
+      this.turmasFiltradas.set(this.turmas().filter(t =>
         t.nome.toLowerCase().includes(termo)
-      );
+      ));
     }
   }
 
   selecionarTurma(turma: TurmaResumo) {
-    this.turmaSelecionada = turma;
-    this.mostrarDropdownTurmas = false;
-    this.termoBuscaTurma = turma.nome;
+    this.turmaSelecionada.set(turma);
+    this.mostrarDropdownTurmas.set(false);
+    this.termoBuscaTurma.set(turma.nome);
   }
 
   limparTurma() {
-    this.turmaSelecionada = null;
-    this.termoBuscaTurma = '';
-    this.turmasFiltradas = this.turmas;
+    this.turmaSelecionada.set(null);
+    this.termoBuscaTurma.set('');
+    this.turmasFiltradas.set(this.turmas());
   }
 
   emitirFechar() {
@@ -125,13 +124,13 @@ export class ModalCadastrarAlunoComponent implements OnInit {
   }
 
   salvar() {
-    if (this.form.invalid || this.loading) {
+    if (this.form.invalid || this.loading()) {
       this.form.markAllAsTouched();
       return;
     }
 
-    this.loading = true;
-    this.erro = '';
+    this.loading.set(true);
+    this.erro.set('');
 
     // Aplica trim() nos campos de texto antes do envio (padrão da aba Saúde)
     const valores = { ...this.form.value };
@@ -142,23 +141,24 @@ export class ModalCadastrarAlunoComponent implements OnInit {
       formData.append(key, valores[key]);
     });
 
-    if (this.turmaSelecionada) {
-      formData.append('turmaId', this.turmaSelecionada.id);
+    const turmaSelecionada = this.turmaSelecionada();
+    if (turmaSelecionada) {
+      formData.append('turmaId', turmaSelecionada.id);
     }
-    
+
     if (this.arquivoFoto) {
       formData.append('arquivo', this.arquivoFoto);
     }
 
     this.estudantesService.criar(formData).subscribe({
       next: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.salvo.emit();
         this.emitirFechar();
       },
-      error: (err: any) => {
-        this.loading = false;
-        this.erro = err?.error?.message || 'Erro ao cadastrar o aluno.';
+      error: (err: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.erro.set(err.error?.message || 'Erro ao cadastrar o aluno.');
       }
     });
   }

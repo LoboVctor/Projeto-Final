@@ -1,6 +1,7 @@
-import { Component, input, output, ChangeDetectionStrategy, computed } from '@angular/core';
+import { Component, input, output, inject, ChangeDetectionStrategy, computed } from '@angular/core';
 import { calcularIdade } from '../../utils/date.utils';
 import { DiagLabelPipe } from '../../pipes/student.pipes';
+import { DiagnosticoVisibilidadeService } from '../../services/diagnostico-visibilidade.service';
 
 /** Contrato mínimo de dados do estudante necessário para renderizar o card. */
 export interface EstudanteCardInput {
@@ -37,6 +38,8 @@ function corParaDiag(tipo: string): string {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CardAlunoComponent {
+  protected readonly diagVis = inject(DiagnosticoVisibilidadeService);
+
   nome = input.required<string>();
   foto = input<string | null>();
   diagnostico = input.required<string>();

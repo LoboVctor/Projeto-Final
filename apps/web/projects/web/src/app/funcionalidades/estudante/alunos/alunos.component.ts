@@ -7,12 +7,12 @@ import {
   ChangeDetectionStrategy,
   DestroyRef,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, debounceTime, switchMap } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EstudantesService } from '../../../compartilhado/services/estudantes.service';
+import { firstValueFrom } from 'rxjs';
 import { AlunoModalComponent } from '../../../compartilhado/components/aluno-modal/aluno-modal.component';
 import { LoadingFlorComponent } from '../../../compartilhado/components/loading-flor/loading-flor.component';
 import { calcularIdade } from '../../../compartilhado/utils/date.utils';
@@ -22,15 +22,16 @@ import { AuthService } from '../../../nucleo/services/auth';
 import type {
   EstudanteListagemItem,
   PaginacaoResponse,
+  BuscaEstudantesParams,
 } from '../../../compartilhado/models/gerenciamento-alunos.model';
 import type { AlunoModalData } from '../../../compartilhado/models/aluno-modal.model';
 import { DiagLabelPipe } from '../../../compartilhado/pipes/student.pipes';
 import { AuditoriaService } from '../../../nucleo/services/auditoria.service';
+import { DiagnosticoVisibilidadeService } from '../../../compartilhado/services/diagnostico-visibilidade.service';
 
 @Component({
   selector: 'app-alunos',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AlunoModalComponent, DiagLabelPipe, LoadingFlorComponent],
+  imports: [FormsModule, AlunoModalComponent, DiagLabelPipe, LoadingFlorComponent],
   templateUrl: './alunos.component.html',
   styleUrls: ['./alunos.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,6 +42,7 @@ export class AlunosComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly auditoriaService = inject(AuditoriaService);
   private readonly authService = inject(AuthService);
+  protected readonly diagVis = inject(DiagnosticoVisibilidadeService);
 
   userRole = this.authService.getRole() || 'EDUCADOR';
 
@@ -281,9 +283,47 @@ export class AlunosComponent implements OnInit {
 
   // ─── Exportação CSV ───────────────────────────────────────────
 
-  exportarCSV(): void {
-    const alunos = this.estudantes();
-    if (alunos.length === 0) return;
+  exportandoCSV = signal(false);
+
+  /** Busca TODOS os estudantes que casam com os filtros ativos, paginando em loop (ignora a página exibida em tela). */
+  private async buscarTodosOsEstudantesFiltrados(): Promise<EstudanteListagemItem[]> {
+    const termo = this.termoBusca().trim();
+    const isMatricula = termo.length > 0 && /^\d+$/.test(termo);
+    const paramsBase: Omit<BuscaEstudantesParams, 'page' | 'limit'> = {
+      nome: !isMatricula && termo ? termo : undefined,
+      matricula: isMatricula ? termo : undefined,
+      diagnosticoTipo: this.filtroDiagnostico() || undefined,
+      status: this.filtroStatus() || undefined,
+      sexo: this.filtroSexo() || undefined,
+      turmaId: this.filtroTurmaId() || undefined,
+      formaComunicacao: this.filtroFormaComunicacao() || undefined,
+      categoriaEspecificidade: this.filtroCategoria() || undefined,
+      idadeMin: this.filtroIdadeMin(),
+      idadeMax: this.filtroIdadeMax(),
+    };
+
+    const LIMITE_POR_REQUISICAO = 100;
+    const todos: EstudanteListagemItem[] = [];
+    let pagina = 1;
+    let totalPaginas = 1;
+
+    do {
+      const resposta = await firstValueFrom(
+        this.estudantesService.buscarTodos({ ...paramsBase, page: pagina, limit: LIMITE_POR_REQUISICAO }),
+      );
+      todos.push(...resposta.data);
+      totalPaginas = resposta.totalPaginas;
+      pagina++;
+    } while (pagina <= totalPaginas);
+
+    return todos;
+  }
+
+  async exportarCSV(): Promise<void> {
+    if (this.exportandoCSV()) return;
+    this.exportandoCSV.set(true);
+    const alunos = await this.buscarTodosOsEstudantesFiltrados();
+    if (alunos.length === 0) { this.exportandoCSV.set(false); return; }
 
     const cabecalho = ['Nome', 'Matrícula', 'Turma', 'Diagnóstico', 'Status'];
     const linhas = alunos.map((a) => [
@@ -306,6 +346,7 @@ export class AlunosComponent implements OnInit {
     link.click();
     URL.revokeObjectURL(url);
     this.auditoriaService.registrarDownload('ALUNOS_PROFESSOR', 'CSV', this.buildDetalhes()).subscribe();
+    this.exportandoCSV.set(false);
   }
 
   private buildDetalhes(): string {

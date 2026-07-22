@@ -31,6 +31,7 @@ import { AlunoModalData } from '../../../compartilhado/models/aluno-modal.model'
 import { CalendarioService, EventoCalendario } from '../../../compartilhado/services/calendario.service';
 import { buildAlunoModalData, getDiagnosticosArrayForCard, buildFotoUrl } from '../../../compartilhado/utils/aluno-modal.utils';
 import { API_BASE_URL } from '../../../nucleo/config/api.config';
+import { DiagnosticoVisibilidadeService } from '../../../compartilhado/services/diagnostico-visibilidade.service';
 
 export type ChartOptions = {
   series: ApexNonAxisChartSeries;
@@ -64,6 +65,7 @@ export class HomeComponent implements OnInit {
   private readonly turmasService = inject(TurmasService);
   private readonly authService = inject(AuthService);
   private readonly platformId = inject(PLATFORM_ID);
+  protected readonly diagVis = inject(DiagnosticoVisibilidadeService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly calendarioService = inject(CalendarioService);
   private readonly baseUrl = inject(API_BASE_URL);
@@ -93,7 +95,6 @@ export class HomeComponent implements OnInit {
   registrosPendentesAnimado = signal(0);
 
   private animacoesAtivas: Record<string, number> = {};
-  private mockPendentesConstruido = false;
 
   acaoRapidaSelecionada = signal<AcaoRapida | null>(null);
   modalSelecaoAluno = signal(false);
@@ -163,7 +164,7 @@ export class HomeComponent implements OnInit {
         entry.datas.push(pendenciaObj);
       } else {
         const alunoReal = this.estudantes().find(
-          (aluno) => String(aluno.matricula) === reg.estudanteId || aluno.nomeCompleto === reg.estudante.nomeCompleto
+          (aluno) => aluno.id === reg.estudanteId || aluno.nomeCompleto === reg.estudante.nomeCompleto
         );
         mapa.set(reg.estudanteId, {
           estudanteId: reg.estudanteId,
@@ -194,48 +195,7 @@ export class HomeComponent implements OnInit {
       fill: { colors: ['#4CAF50'], type: 'solid', opacity: 1 }
     };
 
-    effect(() => {
-      const alunosReais = this.estudantes();
-      if (this.mockPendentesConstruido || alunosReais.length === 0) return;
 
-      const educadorIdAtual = this.authService.getLoggedUserId();
-      if (!educadorIdAtual) return;
-
-      const alunoUm = alunosReais[0];
-      if (!alunoUm) return;
-      const alunoDois = alunosReais[1] ?? alunoUm;
-
-      const mockPendentes: RegistroDiarioPendente[] = [
-        {
-          id: 'mock-1',
-          data: '2026-07-20T12:00:00Z',
-          preenchido: false,
-          estudanteId: alunoUm.id,
-          educadorId: educadorIdAtual,
-          estudante: { id: alunoUm.id, nomeCompleto: alunoUm.nomeCompleto, foto: alunoUm.foto }
-        },
-        {
-          id: 'mock-2',
-          data: '2026-07-21T12:00:00Z',
-          preenchido: false,
-          estudanteId: alunoUm.id,
-          educadorId: educadorIdAtual,
-          estudante: { id: alunoUm.id, nomeCompleto: alunoUm.nomeCompleto, foto: alunoUm.foto }
-        },
-        {
-          id: 'mock-3',
-          data: '2026-07-20T12:00:00Z',
-          preenchido: false,
-          estudanteId: alunoDois.id,
-          educadorId: educadorIdAtual,
-          estudante: { id: alunoDois.id, nomeCompleto: alunoDois.nomeCompleto, foto: alunoDois.foto }
-        }
-      ];
-
-      this.registrosPendentes.set(mockPendentes);
-      this.animarNumero(mockPendentes.length, (val) => this.registrosPendentesAnimado.set(val), 'registrosPendentes', { duracao: 800, casasDecimais: 0 });
-      this.mockPendentesConstruido = true;
-    }, { allowSignalWrites: true });
 
     effect(() => {
       const preenchidos = this.totalPreenchidos();
@@ -295,7 +255,10 @@ export class HomeComponent implements OnInit {
       .getAlertasPendentes(educadorIdAtual)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => { },
+        next: (pendentes) => {
+          this.registrosPendentes.set(pendentes);
+          this.animarNumero(pendentes.length, (val) => this.registrosPendentesAnimado.set(val), 'registrosPendentes', { duracao: 800, casasDecimais: 0 });
+        },
         error: () => { }
       });
 

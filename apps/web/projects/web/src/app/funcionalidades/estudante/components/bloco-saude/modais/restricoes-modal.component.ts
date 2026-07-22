@@ -1,15 +1,14 @@
 import {
   Component,
-  Input,
-  Output,
-  EventEmitter,
   OnInit,
   inject,
   ChangeDetectionStrategy,
-  input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+  input,
+  output,
+  signal } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { EstudantesService } from '../../../../../compartilhado/services/estudantes.service';
+import { EstudantesService, EspecificidadeSaude } from '../../../../../compartilhado/services/estudantes.service';
 import { ConfirmacaoService } from '../../../../../compartilhado/services/confirmacao.service';
 
 export function textoInvalidoValidator(): ValidatorFn {
@@ -28,18 +27,18 @@ export function textoInvalidoValidator(): ValidatorFn {
 
 @Component({
   selector: 'app-modal-especificidades',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [NgClass, ReactiveFormsModule],
   templateUrl: './restricoes-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush })
 export class ModalEspecificidadesComponent implements OnInit {
   readonly estudanteId = input.required<string>();
-  @Input() especificidades: any[] = [];
+  readonly especificidades = input<EspecificidadeSaude[]>([]);
 
-  @Output() fechar = new EventEmitter<void>();
-  @Output() salvo = new EventEmitter<void>();
+  readonly fechar = output<void>();
+  readonly salvo = output<void>();
 
   especificidadeForm: FormGroup;
-  editingEspecificidadeId: number | null = null;
+  editingEspecificidadeId = signal<number | null>(null);
 
   private fb = inject(FormBuilder);
   private estudantesService = inject(EstudantesService);
@@ -55,13 +54,13 @@ export class ModalEspecificidadesComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  selecionarParaEdicao(especificidade: any): void {
-    this.editingEspecificidadeId = especificidade.especificidadeId;
+  selecionarParaEdicao(especificidade: EspecificidadeSaude): void {
+    this.editingEspecificidadeId.set(especificidade.especificidadeId);
     this.especificidadeForm.patchValue(especificidade);
   }
 
   cancelarEdicao(): void {
-    this.editingEspecificidadeId = null;
+    this.editingEspecificidadeId.set(null);
     this.especificidadeForm.reset({ tipo: 'RESTRICAO', categoria: 'ALIMENTAR' });
   }
 
@@ -71,13 +70,14 @@ export class ModalEspecificidadesComponent implements OnInit {
     const dados = this.especificidadeForm.getRawValue();
     dados.descricao = dados.descricao?.trim();
     dados.observacao = dados.observacao?.trim();
-    
+
     if (!dados.descricao || !dados.observacao) return;
 
-    const acao = this.editingEspecificidadeId
+    const idEmEdicao = this.editingEspecificidadeId();
+    const acao = idEmEdicao
       ? this.estudantesService.updateEspecificidade(
           this.estudanteId(),
-          this.editingEspecificidadeId,
+          idEmEdicao,
           dados,
         )
       : this.estudantesService.saveEspecificidade(this.estudanteId(), dados);

@@ -91,7 +91,7 @@
           <span class="big-number-label">Idade Predominante</span>
           <span class="big-number-value">
             @if (metricas()?.idadePredominante !== null && metricas()?.idadePredominante !== undefined) {
-            {{ idadePredominanteAnimado() }}<span class="text-xl font-black uppercase tracking-wider ml-1">ANOS</span>
+            {{ idadePredominanteAnimado() }}<span class="big-number-value--sm uppercase tracking-wider ml-1">ANOS</span>
             } @else { — }
           </span>
         </div>
@@ -107,7 +107,7 @@
         </div>
         <div class="big-number-info">
           <span class="big-number-label">Diagnóstico Principal</span>
-          <span class="big-number-value big-number-value--sm">{{ diagnosticoAnimado() }}</span>
+          <span class="big-number-value big-number-value--sm" [class.diagnostico-blur]="!diagVis.visivel()">{{ diagnosticoAnimado() }}</span>
         </div>
       </div>
 
@@ -238,7 +238,7 @@
                       <div class="flex flex-wrap justify-center gap-1">
                         @for (d of aluno.diagnosticos; track $index) {
                         <span class="px-2 py-0.5 rounded text-[10px] font-nunito font-bold border shadow-sm"
-                          [ngClass]="d.diagnostico.tipo | diagColor">
+                          [ngClass]="d.diagnostico.tipo | diagColor" [class.diagnostico-blur]="!diagVis.visivel()">
                           {{ d.diagnostico.tipo | diagLabel }}
                         </span>
                         }

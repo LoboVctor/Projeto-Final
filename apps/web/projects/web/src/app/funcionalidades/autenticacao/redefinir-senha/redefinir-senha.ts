@@ -29,7 +29,6 @@ function senhaForteValidator(control: AbstractControl): ValidationErrors | null 
 
 @Component({
   selector: 'app-redefinir-senha',
-  standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './redefinir-senha.html',
   changeDetection: ChangeDetectionStrategy.OnPush

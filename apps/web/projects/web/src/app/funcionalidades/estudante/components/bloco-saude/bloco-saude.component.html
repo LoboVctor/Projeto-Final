@@ -27,13 +27,13 @@
     </div>
   </div>
 
-  @if (isLoading) {
+  @if (isLoading()) {
   <div class="text-center py-10 text-blue-600 font-medium opacity-70">
     <p>⏳ Buscando informações médicas...</p>
   </div>
   }
 
-  @if (!isLoading && !dadosSaude) {
+  @if (!isLoading() && !dadosSaude()) {
   <div class="bg-red-50 border border-red-100 rounded-xl p-6 text-center">
     <p class="text-red-700 font-medium mb-3">
       Não foi possível carregar os dados de saúde. Tente novamente.
@@ -45,7 +45,7 @@
   </div>
   }
 
-  @if (!isLoading && dadosSaude) {
+  @if (!isLoading() && dadosSaude(); as dados) {
   <div class="space-y-8">
     <section>
       <div class="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-gray-100">
@@ -59,16 +59,17 @@
           Editar
         </button>
       </div>
-      @if (dadosSaude.especificidades && dadosSaude.especificidades.length > 0) {
+      @if (dados.especificidades && dados.especificidades.length > 0) {
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-yellow-50/40 border border-yellow-200 rounded-xl p-4 flex flex-col h-full">
           <h5
             class="text-yellow-800 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-yellow-200 m-0">
             Restrições Alimentares
           </h5>
-          @if (especificidadesAlimentares && especificidadesAlimentares.length > 0) {
+          @if (especificidadesAlimentares(); as especs) {
+          @if (especs.length > 0) {
           <div class="space-y-3 flex-1">
-            @for (espec of especificidadesAlimentares; track espec) {
+            @for (espec of especs; track espec) {
             <div class="bg-white border-l-4 border-yellow-500 p-3 rounded shadow-sm">
               <strong class="text-yellow-700 block mb-1 text-xs uppercase">{{
                 espec.descricao
@@ -84,14 +85,16 @@
             Nenhuma restrição alimentar cadastrada.
           </p>
           }
+          }
         </div>
         <div class="bg-red-50/40 border border-red-200 rounded-xl p-4 flex flex-col h-full">
           <h5 class="text-red-800 font-bold text-xs uppercase tracking-wider mb-4 pb-2 border-b border-red-200 m-0">
             Alergias
           </h5>
-          @if (outrasEspecificidades && outrasEspecificidades.length > 0) {
+          @if (outrasEspecificidades(); as outras) {
+          @if (outras.length > 0) {
           <div class="space-y-3 flex-1">
-            @for (espec of outrasEspecificidades; track espec) {
+            @for (espec of outras; track espec) {
             <div class="bg-white border-l-4 border-red-500 p-3 rounded shadow-sm">
               <strong class="text-red-700 block mb-1 text-xs uppercase">{{
                 espec.descricao
@@ -104,6 +107,7 @@
           <p class="text-red-600/70 italic text-sm m-0 flex-1 flex items-center justify-center">
             Nenhuma alergia ou gatilho cadastrado.
           </p>
+          }
           }
         </div>
       </div>
@@ -125,9 +129,9 @@
           Editar
         </button>
       </div>
-      @if (dadosSaude.laudos && dadosSaude.laudos.length > 0) {
+      @if (dados.laudos && dados.laudos.length > 0) {
       <div class="space-y-3">
-        @for (laudo of dadosSaude.laudos; track laudo) {
+        @for (laudo of dados.laudos; track laudo) {
         <div
           class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-sm transition-all group gap-4">
           <div class="flex items-center gap-4">
@@ -140,8 +144,9 @@
             </div>
             <div>
               <p
-                class="text-sm font-semibold text-slate-700 m-0 group-hover:text-blue-600 transition-colors duration-150">
-                {{ laudo.diagnostico }}
+                class="text-sm font-semibold text-slate-700 m-0 group-hover:text-blue-600 transition-colors duration-150"
+                [class.diagnostico-blur]="!diagVis.visivel()">
+                {{ laudo.diagnostico | diagFullName }}
               </p>
 
               <div class="flex items-center gap-3 mt-1">
@@ -198,9 +203,9 @@
           Editar
         </button>
       </div>
-      @if (dadosSaude.medicamentos && dadosSaude.medicamentos.length > 0) {
+      @if (dados.medicamentos && dados.medicamentos.length > 0) {
       <ul class="space-y-2 p-0 m-0 list-none">
-        @for (med of dadosSaude.medicamentos; track med) {
+        @for (med of dados.medicamentos; track med) {
         <li class="bg-slate-50/60 p-3 rounded-lg border border-gray-100 flex items-center justify-between">
           <div class="text-sm">
              <span class="font-semibold text-slate-700">{{ med.nome }}</span>
@@ -217,20 +222,20 @@
   }
 </div>
 
-@if (isModalEspecificidadesOpen) {
-<app-modal-especificidades [estudanteId]="estudanteId()" [especificidades]="restricoes"
+@if (isModalEspecificidadesOpen()) {
+<app-modal-especificidades [estudanteId]="estudanteId()" [especificidades]="restricoes()"
   (fechar)="fecharModalEspecificidades()" (salvo)="onEspecificidadeSalva()">
 </app-modal-especificidades>
 }
 
-@if (isModalLaudosOpen) {
-<app-modal-laudos [estudanteId]="estudanteId()" [laudos]="dadosSaude?.laudos || []" (fechar)="fecharModalLaudos()"
+@if (isModalLaudosOpen()) {
+<app-modal-laudos [estudanteId]="estudanteId()" [laudos]="dadosSaude()?.laudos || []" (fechar)="fecharModalLaudos()"
   (salvo)="onLaudoSalvo()">
 </app-modal-laudos>
 }
 
-@if (isModalMedicamentosOpen) {
-<app-modal-medicamentos [estudanteId]="estudanteId()" [medicamentos]="dadosSaude?.medicamentos || []"
+@if (isModalMedicamentosOpen()) {
+<app-modal-medicamentos [estudanteId]="estudanteId()" [medicamentos]="dadosSaude()?.medicamentos || []"
   (fechar)="fecharModalMedicamento()" (salvo)="onMedicamentoSalvo()">
 </app-modal-medicamentos>
 }

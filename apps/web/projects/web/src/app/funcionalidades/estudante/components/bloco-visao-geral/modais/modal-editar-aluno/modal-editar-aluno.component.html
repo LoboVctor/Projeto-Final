@@ -11,7 +11,7 @@
         </p>
       </div>
       <button (click)="emitirFechar()" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-        [disabled]="loading">
+        [disabled]="loading()">
         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -20,14 +20,14 @@
 
     <div class="overflow-y-auto p-6">
       <form [formGroup]="form" (ngSubmit)="salvar()" class="space-y-5 m-0">
-        @if (erro) {
+        @if (erro()) {
         <div
           class="p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200 font-medium flex items-start gap-2">
           <svg class="w-4 h-4 mt-0.5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
           </svg>
-          <span>{{ erro }}</span>
+          <span>{{ erro() }}</span>
         </div>
         }
 
@@ -35,8 +35,8 @@
           <div class="relative group cursor-pointer" (click)="fileInput.click()">
             <div
               class="w-24 h-24 rounded-full bg-slate-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden transition-all group-hover:border-purple-500 group-hover:bg-purple-50">
-              @if (previewFoto) {
-              <img [src]="previewFoto" class="w-full h-full object-cover" />
+              @if (previewFoto()) {
+              <img [src]="previewFoto()" class="w-full h-full object-cover" />
               } @else {
               <svg class="w-8 h-8 text-gray-400 group-hover:text-purple-500" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
@@ -185,16 +185,16 @@
           <div class="flex flex-col gap-1.5 md:col-span-2">
             <label class="text-xs font-bold text-slate-600 font-['Sora']">Turma (Opcional)</label>
 
-            @if (!turmaSelecionada) {
+            @if (!turmaSelecionada()) {
             <div class="relative z-10">
-              <input type="text" [value]="termoBuscaTurma" (input)="filtrarTurmas($event)"
-                (focus)="mostrarDropdownTurmas = true" placeholder="Buscar turma"
+              <input type="text" [value]="termoBuscaTurma()" (input)="filtrarTurmas($event)"
+                (focus)="mostrarDropdownTurmas.set(true)" placeholder="Buscar turma"
                 class="w-full p-2.5 rounded-lg border border-gray-200 bg-slate-50 focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 outline-none transition-all text-sm" />
 
-              @if (mostrarDropdownTurmas) {
+              @if (mostrarDropdownTurmas()) {
               <div
                 class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                @for (turma of turmasFiltradas; track turma.id) {
+                @for (turma of turmasFiltradas(); track turma.id) {
                 <div
                   class="px-4 py-2 hover:bg-purple-50 cursor-pointer text-sm text-slate-700 flex justify-between items-center"
                   (click)="selecionarTurma(turma)">
@@ -202,13 +202,14 @@
                   <span class="text-xs text-slate-400">{{ turma.etapa || 'Sem Etapa' }}</span>
                 </div>
                 }
-                @if (turmasFiltradas.length === 0) {
+                @if (turmasFiltradas().length === 0) {
                 <div class="px-4 py-2 text-sm text-slate-500 text-center">Nenhuma turma encontrada.</div>
                 }
               </div>
               }
             </div>
             } @else {
+            @if (turmaSelecionada(); as turmaSelecionada) {
             <div class="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg">
               <div class="flex items-center gap-2">
                 <div
@@ -228,6 +229,7 @@
                 </svg>
               </button>
             </div>
+            }
             }
           </div>
         </div>
@@ -362,13 +364,13 @@
     </div>
 
     <div class="flex items-center justify-end gap-3 p-5 border-t border-gray-100 bg-slate-50 shrink-0">
-      <button type="button" (click)="emitirFechar()" [disabled]="loading"
+      <button type="button" (click)="emitirFechar()" [disabled]="loading()"
         class="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
         Cancelar
       </button>
-      <button type="button" (click)="salvar()" [disabled]="form.invalid || loading"
+      <button type="button" (click)="salvar()" [disabled]="form.invalid || loading()"
         class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm flex items-center justify-center min-w-[120px] cursor-pointer">
-        @if (loading) {
+        @if (loading()) {
         <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
           viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

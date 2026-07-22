@@ -1,43 +1,46 @@
 import {
   Component,
-  Output,
-  EventEmitter,
   OnInit,
   inject,
-  ChangeDetectorRef,
   ChangeDetectionStrategy,
-  input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+  input,
+  output,
+  signal } from '@angular/core';
+import { DatePipe, LowerCasePipe } from '@angular/common';
 import {
   EstudantesService,
-  EstudanteSaude } from '../../../../compartilhado/services/estudantes.service';
+  EstudanteSaude,
+  EspecificidadeSaude } from '../../../../compartilhado/services/estudantes.service';
 import { ModalEspecificidadesComponent } from './modais/restricoes-modal.component';
 import { ModalMedicamentosComponent } from './modais/medicamentos-modal.component';
 import { ModalLaudosComponent } from './modais/laudos-modal.component';
+import { DiagFullNamePipe } from '../../../../compartilhado/pipes/student.pipes';
+import { DiagnosticoVisibilidadeService } from '../../../../compartilhado/services/diagnostico-visibilidade.service';
 
 @Component({
   selector: 'app-bloco-saude',
-  imports: [CommonModule, ModalEspecificidadesComponent, ModalMedicamentosComponent, ModalLaudosComponent],
+  imports: [DatePipe, LowerCasePipe, DiagFullNamePipe, ModalEspecificidadesComponent, ModalMedicamentosComponent, ModalLaudosComponent],
   templateUrl: './bloco-saude.component.html',
   styleUrls: ['./bloco-saude.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush })
 export class BlocoSaudeComponent implements OnInit {
+  protected readonly diagVis = inject(DiagnosticoVisibilidadeService);
+
   readonly estudanteId = input.required<string>();
-  @Output() recolher = new EventEmitter<void>();
-  @Output() dadosAtualizados = new EventEmitter<void>();
+  readonly recolher = output<void>();
+  readonly dadosAtualizados = output<void>();
 
-  dadosSaude: EstudanteSaude | null = null;
-  restricoes: any[] = [];
-  especificidadesAlimentares: any[] = [];
-  outrasEspecificidades: any[] = [];
+  dadosSaude = signal<EstudanteSaude | null>(null);
+  restricoes = signal<EspecificidadeSaude[]>([]);
+  especificidadesAlimentares = signal<EspecificidadeSaude[]>([]);
+  outrasEspecificidades = signal<EspecificidadeSaude[]>([]);
 
-  isLoading = false;
-  isModalEspecificidadesOpen = false;
-  isModalMedicamentosOpen = false;
-  isModalLaudosOpen = false;
+  isLoading = signal(false);
+  isModalEspecificidadesOpen = signal(false);
+  isModalMedicamentosOpen = signal(false);
+  isModalLaudosOpen = signal(false);
 
   private estudantesService = inject(EstudantesService);
-  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     if (this.estudanteId()) {
@@ -46,27 +49,25 @@ export class BlocoSaudeComponent implements OnInit {
   }
 
   carregarDadosSaude(): void {
-    this.isLoading = true;
+    this.isLoading.set(true);
     this.estudantesService.getSaude(this.estudanteId()).subscribe({
       next: (dados) => {
-        this.dadosSaude = dados;
+        this.dadosSaude.set(dados);
 
-        this.restricoes = dados.especificidades.filter((e: any) => e.tipo === 'RESTRICAO');
+        const restricoes = dados.especificidades.filter((e) => e.tipo === 'RESTRICAO');
+        this.restricoes.set(restricoes);
 
-        this.especificidadesAlimentares = this.restricoes.filter(
-          (e: any) => e.categoria === 'ALIMENTAR',
+        this.especificidadesAlimentares.set(
+          restricoes.filter((e) => e.categoria === 'ALIMENTAR'),
         );
-        this.outrasEspecificidades = this.restricoes.filter(
-          (e: any) => e.categoria !== 'ALIMENTAR',
+        this.outrasEspecificidades.set(
+          restricoes.filter((e) => e.categoria !== 'ALIMENTAR'),
         );
 
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        this.isLoading.set(false);
       },
-      error: (err) => {
-
-        this.isLoading = false;
-        this.cdr.detectChanges();
+      error: () => {
+        this.isLoading.set(false);
       } });
   }
 
@@ -76,11 +77,11 @@ export class BlocoSaudeComponent implements OnInit {
 
 
   abrirModalEspecificidades(): void {
-    this.isModalEspecificidadesOpen = true;
+    this.isModalEspecificidadesOpen.set(true);
   }
 
   fecharModalEspecificidades(): void {
-    this.isModalEspecificidadesOpen = false;
+    this.isModalEspecificidadesOpen.set(false);
   }
 
   onEspecificidadeSalva(): void {
@@ -90,11 +91,11 @@ export class BlocoSaudeComponent implements OnInit {
   }
 
   abrirModalLaudos(): void {
-    this.isModalLaudosOpen = true;
+    this.isModalLaudosOpen.set(true);
   }
 
   fecharModalLaudos(): void {
-    this.isModalLaudosOpen = false;
+    this.isModalLaudosOpen.set(false);
   }
 
   onLaudoSalvo(): void {
@@ -104,11 +105,11 @@ export class BlocoSaudeComponent implements OnInit {
   }
 
   abrirModalMedicamento(): void {
-    this.isModalMedicamentosOpen = true;
+    this.isModalMedicamentosOpen.set(true);
   }
 
   fecharModalMedicamento(): void {
-    this.isModalMedicamentosOpen = false;
+    this.isModalMedicamentosOpen.set(false);
   }
 
   onMedicamentoSalvo(): void {
