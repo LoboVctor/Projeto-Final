@@ -12,7 +12,7 @@ import {
   IsArray
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { DiaSemana, StatusAula } from '../../../../../../infra/generated/prisma'; 
+import { DiaSemana, StatusAula } from '@prisma-client';
 import { Type } from 'class-transformer';
 
 export class CreateRegistroAulaDto {
@@ -21,10 +21,6 @@ export class CreateRegistroAulaDto {
   @IsUUID('4', { message: 'O ID da aula deve ser um UUID válido' })
   aulaId!: string;
 
-  @ApiProperty({
-    description: 'Data da aula no formato ISO 8601',
-    example: '2026-06-23',
-  })
   @ApiProperty({ description: 'ID do estudante', format: 'uuid' })
   @IsNotEmpty({ message: 'O ID do estudante é obrigatório' })
   @IsUUID('4', { message: 'O ID do estudante deve ser um UUID válido' })
@@ -48,11 +44,6 @@ export class CreateRegistroAulaDto {
   @IsBoolean({ message: 'Presença deve ser um valor booleano' })
   presente!: boolean;
 
-  @ApiPropertyOptional({
-    description: 'Score de participação (de 1 a 5)',
-    minimum: 1,
-    maximum: 5,
-  })
   @ApiProperty({ description: 'Status de ocorrência da aula', enum: StatusAula, default: StatusAula.REALIZADA })
   @IsOptional()
   @IsEnum(StatusAula, { message: 'Status da aula inválido' })

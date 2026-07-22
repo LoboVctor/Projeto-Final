@@ -56,4 +56,9 @@ export interface IRegistroDiarioRepositorio {
     dataInicio: Date,
     dataFim: Date,
   ): Promise<RegistroDiario[]>;
+  buscarPresencasPorIntervalo(
+    estudanteId: string,
+    dataInicio: Date,
+    dataFim: Date,
+  ): Promise<{ presenca: boolean }[]>;
 }

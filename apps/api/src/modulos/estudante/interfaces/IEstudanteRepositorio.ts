@@ -1,5 +1,6 @@
 import {
   Prisma,
+  Escola,
   EstudanteEspecificidade,
   Especificidade,
   TipoEspecificidade,
@@ -7,7 +8,9 @@ import {
   Medicamento,
   EstudanteMedicamento,
   UnidadeM,
-  RegistroAula
+  RegistroAula,
+  TipoDiagnostico,
+  TipoDocumento,
 } from '@prisma-client';
 import { BuscarEstudantesQueryDto } from '../dtos/buscar-estudantes-query.dto.js';
 import { CreateRegistroAulaBatchDto } from '../dtos/create-registro-aula.dto.js';
@@ -154,11 +157,18 @@ export type AulaAgenda = Prisma.AulaGetPayload<{
 }>;
 
 export interface IEstudanteRepositorio {
+  buscarEscolaPadrao(): Promise<Escola | null>;
   buscarVisaoGeral(estudanteId: string): Promise<EstudanteVisaoGeral | null>;
   buscarSaude(estudanteId: string): Promise<EstudanteSaude | null>;
   buscarPedagogico(estudanteId: string): Promise<EstudantePedagogico | null>;
-  criarEstudante(dados: any): Promise<any>;
-  atualizarEstudante(id: string, payload: { estudante: any, responsavel: any }): Promise<any>;
+  criarEstudante(dados: Prisma.EstudanteCreateInput): Promise<Prisma.EstudanteGetPayload<object>>;
+  atualizarEstudante(
+    id: string,
+    payload: {
+      estudante: Prisma.EstudanteUpdateInput;
+      responsavel: Partial<Prisma.ResponsavelCreateInput> | null;
+    },
+  ): Promise<Prisma.EstudanteGetPayload<object>>;
   buscarComFiltros(
     query: BuscarEstudantesQueryDto,
   ): Promise<EstudanteListagemPaginado>;
@@ -231,37 +241,37 @@ export interface IEstudanteRepositorio {
   criarLaudoEDocumento(
     estudanteId: string,
     dados: {
-      tipoDiagnostico: string;
-      tipoDocumento: string;
+      tipoDiagnostico: TipoDiagnostico;
+      tipoDocumento: TipoDocumento;
       dataEmissao: string;
       linkArquivo: string;
     },
-  ): Promise<any>;
-  deletarDocumento(documentoId: string): Promise<any>;
+  ): Promise<unknown>;
+  deletarDocumento(documentoId: string): Promise<unknown>;
   atualizarLaudo(
     documentoId: string,
-    dados: any,
+    dados: { tipoDocumento?: TipoDocumento; dataEmissao: string },
     urlArquivo?: string,
-  ): Promise<any>;
-  criarAula(estudanteId: string, dto: CreateAulaEstudanteDto): Promise<any>;
+  ): Promise<unknown>;
+  criarAula(estudanteId: string, dto: CreateAulaEstudanteDto): Promise<unknown>;
   atualizarDocumento(
     documentoId: string,
     dados: {
-      tipoDocumento: string;
+      tipoDocumento: TipoDocumento;
       dataEmissao: string;
       linkArquivo?: string;
     },
-  ): Promise<any>;
+  ): Promise<unknown>;
   atualizarLaudoCompleto(
     estudanteId: string,
     documentoId: string,
     dados: {
-      tipoDiagnostico: string;
-      tipoDocumento: string;
+      tipoDiagnostico: TipoDiagnostico;
+      tipoDocumento: TipoDocumento;
       dataEmissao: string;
       linkArquivo?: string;
     },
-  ): Promise<any>;
+  ): Promise<unknown>;
   registrarChamadaEmLote(dto: CreateRegistroAulaBatchDto): Promise<RegistroAula[]>;
-  desativarEstudante(id: string): Promise<any>;
+  desativarEstudante(id: string): Promise<Prisma.EstudanteGetPayload<object>>;
 }

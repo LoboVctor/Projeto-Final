@@ -8,7 +8,7 @@ import {
   Matches
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { DiaSemana } from '../../../../../../infra/generated/prisma';
+import { DiaSemana } from '@prisma-client';
 
 export class CreateAulaEstudanteDto {
   @ApiProperty({ description: 'ID do educador (professor/terapeuta)' })

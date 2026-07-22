@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
-import { PrismaClient } from '../../../../infra/generated/prisma/index.js';
+import { PrismaClient } from '@prisma-client';
 
 @Injectable()
 export class PrismaService implements OnModuleInit {

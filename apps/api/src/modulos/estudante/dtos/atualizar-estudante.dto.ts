@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, IsEnum, IsDateString, IsOptional, IsEmail } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Sexo, Fcom } from '@prisma/client';
+import { Sexo, Fcom } from '@prisma-client';
 
 export class AtualizarEstudanteDto {
   @ApiPropertyOptional()

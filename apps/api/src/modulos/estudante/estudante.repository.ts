@@ -8,29 +8,41 @@ import type {
   EstudanteListagemPaginado,
   AulaAgenda,
 } from './interfaces/IEstudanteRepositorio.js';
+import { DIAGNOSTICO_NOME_LABEL } from './constants/diagnostico-nome.constant.js';
 import {
+  Escola,
   Especificidade,
   EstudanteEspecificidade,
   TipoEspecificidade,
   CategoriaEspecificidade,
   TipoDiagnostico,
+  TipoDocumento,
   UnidadeM,
-  RegistroAula
+  RegistroAula,
+  Prisma,
 } from '@prisma-client';
 import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
 import type { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
+import type { CreateAulaEstudanteDto } from './dtos/create-aula.dto.js';
 
 @Injectable()
 export class EstudanteRepository implements IEstudanteRepositorio {
   constructor(private prisma: PrismaService) {}
 
-  async criarEstudante(dados: any): Promise<any> {
+  async buscarEscolaPadrao(): Promise<Escola | null> {
+    return this.prisma.client.escola.findFirst();
+  }
+
+  async criarEstudante(dados: Prisma.EstudanteCreateInput) {
     return this.prisma.client.estudante.create({
       data: dados,
     });
   }
 
-  async atualizarEstudante(id: string, payload: { estudante: any, responsavel: any }): Promise<any> {
+  async atualizarEstudante(
+    id: string,
+    payload: { estudante: Prisma.EstudanteUpdateInput; responsavel: Partial<Prisma.ResponsavelCreateInput> | null },
+  ) {
     return this.prisma.client.$transaction(async (tx) => {
       // 1. Atualiza os dados do estudante
       const estudanteAtualizado = await tx.estudante.update({
@@ -64,7 +76,11 @@ export class EstudanteRepository implements IEstudanteRepositorio {
               ...payload.responsavel,
               cpf: payload.responsavel.cpf || (Date.now().toString() + Math.floor(Math.random() * 1000)),
               sexo: payload.responsavel.sexo || 'PREFIRO_NAO_INFORMAR',
-              bairro: payload.responsavel.bairro || 'Não informado'
+              bairro: payload.responsavel.bairro || 'Não informado',
+              nomeCompleto: payload.responsavel.nomeCompleto || 'Não informado',
+              email: payload.responsavel.email || `responsavel-${Date.now()}@nao-informado.local`,
+              endereco: payload.responsavel.endereco || 'Não informado',
+              telefone: payload.responsavel.telefone || 'Não informado',
             },
           });
 
@@ -440,23 +456,23 @@ export class EstudanteRepository implements IEstudanteRepositorio {
   async criarLaudoEDocumento(
     estudanteId: string,
     dados: {
-      tipoDiagnostico: string;
-      tipoDocumento: string;
+      tipoDiagnostico: TipoDiagnostico;
+      tipoDocumento: TipoDocumento;
       dataEmissao: string;
       linkArquivo: string;
     },
   ) {
     // 1. Busca ou cria o Diagnóstico Base
     let diagnosticoBase = await this.prisma.client.diagnostico.findFirst({
-      where: { tipo: dados.tipoDiagnostico as any },
+      where: { tipo: dados.tipoDiagnostico },
     });
 
     if (!diagnosticoBase) {
       diagnosticoBase = await this.prisma.client.diagnostico.create({
         data: {
-          nome: dados.tipoDiagnostico,
+          nome: DIAGNOSTICO_NOME_LABEL[dados.tipoDiagnostico],
           descricao: '',
-          tipo: dados.tipoDiagnostico as any,
+          tipo: dados.tipoDiagnostico,
         },
       });
     }
@@ -474,7 +490,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
         // Se o aluno já tem o diagnóstico, apenas joga o arquivo novo lá dentro!
         documentos: {
           create: {
-            tipo: dados.tipoDocumento as any,
+            tipo: dados.tipoDocumento,
             arquivo: dados.linkArquivo,
             dataEmissao: new Date(dados.dataEmissao),
           },
@@ -486,7 +502,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
         diagnosticoId: diagnosticoBase.id,
         documentos: {
           create: {
-            tipo: dados.tipoDocumento as any,
+            tipo: dados.tipoDocumento,
             arquivo: dados.linkArquivo,
             dataEmissao: new Date(dados.dataEmissao),
           },
@@ -503,7 +519,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
 
   async atualizarLaudo(
     documentoId: string,
-    dados: any,
+    dados: { tipoDocumento?: TipoDocumento; dataEmissao: string },
     urlArquivo?: string,
   ) {
     return this.atualizarDocumento(documentoId, {
@@ -516,7 +532,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
   async atualizarDocumento(
     documentoId: string,
     dados: {
-      tipoDocumento: string;
+      tipoDocumento: TipoDocumento;
       dataEmissao: string;
       linkArquivo?: string;
     },
@@ -524,7 +540,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     return this.prisma.client.documentoDiagnostico.update({
       where: { id: documentoId },
       data: {
-        tipo: dados.tipoDocumento as any,
+        tipo: dados.tipoDocumento,
         dataEmissao: new Date(dados.dataEmissao),
         ...(dados.linkArquivo && { arquivo: dados.linkArquivo }),
       },
@@ -535,23 +551,23 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     estudanteId: string,
     documentoId: string,
     dados: {
-      tipoDiagnostico: string;
-      tipoDocumento: string;
+      tipoDiagnostico: TipoDiagnostico;
+      tipoDocumento: TipoDocumento;
       dataEmissao: string;
       linkArquivo?: string;
     },
   ) {
     // 1. Find or create the DiagnosticoBase for the NEW tipoDiagnostico
     let diagnosticoBase = await this.prisma.client.diagnostico.findFirst({
-      where: { tipo: dados.tipoDiagnostico as any },
+      where: { tipo: dados.tipoDiagnostico },
     });
 
     if (!diagnosticoBase) {
       diagnosticoBase = await this.prisma.client.diagnostico.create({
         data: {
-          nome: dados.tipoDiagnostico,
+          nome: DIAGNOSTICO_NOME_LABEL[dados.tipoDiagnostico],
           descricao: '',
-          tipo: dados.tipoDiagnostico as any,
+          tipo: dados.tipoDiagnostico,
         },
       });
     }
@@ -575,7 +591,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     const updated = await this.prisma.client.documentoDiagnostico.update({
       where: { id: documentoId },
       data: {
-        tipo: dados.tipoDocumento as any,
+        tipo: dados.tipoDocumento,
         dataEmissao: new Date(dados.dataEmissao),
         diagnosticoId: diagnosticoBase.id,
         ...(dados.linkArquivo && { arquivo: dados.linkArquivo }),
@@ -593,7 +609,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     return updated;
   }
 
-  async criarAula(estudanteId: string, dto: any) {
+  async criarAula(estudanteId: string, dto: CreateAulaEstudanteDto) {
     const [inicioHora, inicioMinuto] = dto.horarioInicio.split(':').map(Number);
     const horarioInicio = new Date(Date.UTC(1970, 0, 1, inicioHora, inicioMinuto));
 
@@ -709,7 +725,7 @@ export class EstudanteRepository implements IEstudanteRepositorio {
     );
   }
 
-  async desativarEstudante(id: string): Promise<any> {
+  async desativarEstudante(id: string) {
     return this.prisma.client.estudante.update({
       where: { id },
       data: { statusMatricula: false },

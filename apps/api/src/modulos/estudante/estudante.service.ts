@@ -7,25 +7,25 @@ import type {
   EstudantePedagogico,
 } from './interfaces/IEstudanteRepositorio.js';
 import { EspecificidadeDto } from './dtos/create.especifidades.dto.js';
-import { DiaSemana, StatusAula, Sexo, Fcom, UnidadeM } from '../../../../../infra/generated/prisma/index.js';
+import { DiaSemana, StatusAula, Sexo, Fcom, Prisma } from '@prisma-client';
 import { ObterAgendaSemanaDto } from './dtos/obter-agenda-semana.dto.js';
 import type { BuscarEstudantesQueryDto } from './dtos/buscar-estudantes-query.dto.js';
 import { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
 import { CreateAulaEstudanteDto } from './dtos/create-aula.dto.js';
 import { CriarEstudanteDto } from './dtos/criar-estudante.dto.js';
 import { AtualizarEstudanteDto } from './dtos/atualizar-estudante.dto.js';
-import { PrismaService } from '../../prisma/prisma.service.js';
+import { MedicamentoDto } from './dtos/medicamento.dto.js';
+import { LaudoDto } from './dtos/laudo.dto.js';
 
 @Injectable()
 export class EstudanteService {
   constructor(
     @Inject('IEstudanteRepositorio')
     private readonly estudanteRepositorio: IEstudanteRepositorio,
-    private readonly prisma: PrismaService,
   ) {}
 
   async buscarEscolaPadrao() {
-    return this.prisma.client.escola.findFirst();
+    return this.estudanteRepositorio.buscarEscolaPadrao();
   }
 
   async adicionarAula(estudanteId: string, dto: CreateAulaEstudanteDto): Promise<unknown> {
@@ -33,7 +33,7 @@ export class EstudanteService {
   }
 
   async criar(dto: CriarEstudanteDto, arquivoFoto: Express.Multer.File | undefined, escolaId: string) {
-    const criarDados: any = {
+    const criarDados: Prisma.EstudanteCreateInput = {
       nomeCompleto: dto.nomeCompleto,
       matricula: dto.matricula,
       cpf: dto.cpf,
@@ -53,8 +53,8 @@ export class EstudanteService {
 
     try {
       return await this.estudanteRepositorio.criarEstudante(criarDados);
-    } catch (err: any) {
-      if (err?.code === 'P2002') {
+    } catch (err) {
+      if (this.isPrismaUniqueConstraintError(err)) {
          throw new ConflictException('Matrícula ou CPF já cadastrados.');
       }
       throw err;
@@ -62,7 +62,7 @@ export class EstudanteService {
   }
 
   async atualizar(id: string, dto: AtualizarEstudanteDto, arquivoFoto?: Express.Multer.File) {
-    const dados: any = {
+    const dados: Prisma.EstudanteUpdateInput = {
       ...(dto.nomeCompleto && { nomeCompleto: dto.nomeCompleto }),
       ...(dto.matricula && { matricula: dto.matricula }),
       ...(dto.cpf !== undefined && { cpf: dto.cpf }),
@@ -84,7 +84,7 @@ export class EstudanteService {
     }
 
     // Preparando dados do responsável se foram enviados
-    let responsavelDados = null;
+    let responsavelDados: Partial<Prisma.ResponsavelCreateInput> | null = null;
     if (dto.nomeResponsavel || dto.telefoneResponsavel || dto.emailResponsavel || dto.enderecoResponsavel || dto.cpfResponsavel) {
       responsavelDados = {
         ...(dto.nomeResponsavel && { nomeCompleto: dto.nomeResponsavel }),
@@ -97,12 +97,16 @@ export class EstudanteService {
 
     try {
       return await this.estudanteRepositorio.atualizarEstudante(id, { estudante: dados, responsavel: responsavelDados });
-    } catch (err: any) {
-      if (err?.code === 'P2002') {
+    } catch (err) {
+      if (this.isPrismaUniqueConstraintError(err)) {
          throw new ConflictException('Matrícula, CPF ou E-mail já cadastrados.');
       }
       throw err;
     }
+  }
+
+  private isPrismaUniqueConstraintError(err: unknown): boolean {
+    return typeof err === 'object' && err !== null && 'code' in err && err.code === 'P2002';
   }
 
   async getVisaoGeral(estudanteId: string) {
@@ -148,7 +152,7 @@ export class EstudanteService {
 
         // Note: IEstudanteRepositorio.criarEstudante doesn't do Prisma error handling out of the box (P2002 for unique)
         // Let's rely on try-catch
-        const criarDados = {
+        const criarDados: Prisma.EstudanteCreateInput = {
           nomeCompleto: rowData['nome'],
           matricula: rowData['matricula'],
           cpf: rowData['cpf'],
@@ -157,6 +161,7 @@ export class EstudanteService {
           formaComunicacao: rowData['forma_comunicacao'] as Fcom,
           escola: { connect: { id: escolaId } },
           statusMatricula: true,
+          foto: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(rowData['nome']),
         };
 
         await this.estudanteRepositorio.criarEstudante(criarDados);
@@ -532,7 +537,7 @@ export class EstudanteService {
 
   async adicionarLaudo(
     estudanteId: string,
-    dados: { tipoDiagnostico: string; tipoDocumento: string; dataEmissao: string },
+    dados: LaudoDto,
     arquivo: Express.Multer.File,
   ) {
     if (!arquivo) {
@@ -555,8 +560,8 @@ export class EstudanteService {
 
   async atualizarLaudo(
     estudanteId: string,
-    documentoId: string, 
-    dados: { tipoDiagnostico: string; tipoDocumento: string; dataEmissao: string }, 
+    documentoId: string,
+    dados: LaudoDto,
     arquivo?: Express.Multer.File
   ) {
     let linkArquivo: string | undefined;
@@ -591,7 +596,7 @@ export class EstudanteService {
    * Registra um novo medicamento.
    * Ajustado: Passa apenas as propriedades limpas aceitas pelo novo contrato do repositório.
    */
-  async addMedicamento(estudanteId: string, dados: { nomeMedicamento: string; dosagem: string; unidadeMedida: UnidadeM }) {
+  async addMedicamento(estudanteId: string, dados: MedicamentoDto) {
     let medicamento = await this.estudanteRepositorio.buscarMedicamentoPorNome(
       dados.nomeMedicamento,
     );
@@ -617,7 +622,7 @@ export class EstudanteService {
   async updateMedicamento(
     estudanteId: string,
     medicamentoId: number,
-    dados: { nomeMedicamento: string; dosagem: string; unidadeMedida: UnidadeM },
+    dados: MedicamentoDto,
   ) {
     const medicamentoAtual =
       await this.estudanteRepositorio.buscarMedicamentoPorId(medicamentoId);

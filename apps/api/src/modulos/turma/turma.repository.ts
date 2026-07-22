@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma-client';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type {
   ITurmaRepositorio,
@@ -8,14 +8,17 @@ import type {
   TurmaParaGrafico,
   TurmaParaMetricas,
   AgregacaoKpisDiarios,
-  FiltroKpisDiarios
+  FiltroKpisDiarios,
+  AgregacaoDiariaPeriodo,
+  FrequenciaAgrupada,
+  RegistroDiarioHistorico,
 } from './interfaces/ITurmaRepositorio.js';
 
 @Injectable()
 export class TurmaRepository implements ITurmaRepositorio {
   constructor(private readonly prisma: PrismaService) {}
 
-  async criarTurma(dados: any): Promise<any> {
+  async criarTurma(dados: Prisma.TurmaCreateInput) {
     return this.prisma.client.turma.create({
       data: dados
     });
@@ -145,7 +148,7 @@ export class TurmaRepository implements ITurmaRepositorio {
     return { diariosAgregados };
   }
 
-  async buscarAgregacoesDiariasPorPeriodo(turmaId: string, inicio: Date, fim: Date) {
+  async buscarAgregacoesDiariasPorPeriodo(turmaId: string, inicio: Date, fim: Date): Promise<AgregacaoDiariaPeriodo> {
     return this.prisma.client.registroDiario.aggregate({
       where: {
         estudante: { turmas: { some: { id: turmaId } } },
@@ -163,18 +166,18 @@ export class TurmaRepository implements ITurmaRepositorio {
     });
   }
 
-  async buscarFrequenciaPorPeriodo(turmaId: string, inicio: Date, fim: Date) {
-    return this.prisma.client.registroAula.groupBy({
+  async buscarFrequenciaPorPeriodo(turmaId: string, inicio: Date, fim: Date): Promise<FrequenciaAgrupada[]> {
+    const resultado = await this.prisma.client.registroAula.groupBy({
       by: ['presenca'],
       where: {
         data: { gte: inicio, lte: fim },
-        
         aula: {
           turmaId: turmaId,
         },
       },
       _count: { presenca: true },
     });
+    return resultado;
   }
 
   async buscarAulasRealizadas(turmaId: string, inicio: Date, fim: Date) {
@@ -188,7 +191,7 @@ export class TurmaRepository implements ITurmaRepositorio {
     });
   }
 
-  async buscarAgregacoesDiariasEscolaPorPeriodo(inicio: Date, fim: Date) {
+  async buscarAgregacoesDiariasEscolaPorPeriodo(inicio: Date, fim: Date): Promise<AgregacaoDiariaPeriodo> {
     return this.prisma.client.registroDiario.aggregate({
       where: {
         data: { gte: inicio, lte: fim },
@@ -215,7 +218,7 @@ export class TurmaRepository implements ITurmaRepositorio {
     });
   }
 
-  async buscarRegistrosDaTurmaPorIntervalo(turmaId: string, inicio: Date, fim: Date): Promise<any[]> {
+  async buscarRegistrosDaTurmaPorIntervalo(turmaId: string, inicio: Date, fim: Date): Promise<RegistroDiarioHistorico[]> {
     return this.prisma.client.registroDiario.findMany({
       where: {
         estudante: { turmas: { some: { id: turmaId } } },
@@ -234,7 +237,7 @@ export class TurmaRepository implements ITurmaRepositorio {
     });
   }
 
-  async buscarRegistrosDaEscolaPorIntervalo(inicio: Date, fim: Date): Promise<any[]> {
+  async buscarRegistrosDaEscolaPorIntervalo(inicio: Date, fim: Date): Promise<RegistroDiarioHistorico[]> {
     return this.prisma.client.registroDiario.findMany({
       where: {
         data: { gte: inicio, lte: fim },

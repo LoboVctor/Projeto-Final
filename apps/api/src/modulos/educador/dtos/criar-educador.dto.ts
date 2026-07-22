@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, IsEmail, IsArray, IsDateString, IsEnum, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { TipoEducador } from '@prisma/client';
+import { TipoEducador } from '@prisma-client';
 
 export class CriarEducadorDto {
   @ApiProperty()

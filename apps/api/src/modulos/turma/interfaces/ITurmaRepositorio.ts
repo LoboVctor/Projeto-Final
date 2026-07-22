@@ -96,6 +96,35 @@ export interface AgregacaoKpisDiarios {
   };
 }
 
+/** Médias agregadas de um período (dashboard de turma/escola) */
+export interface AgregacaoDiariaPeriodo {
+  _avg: {
+    scoreComportamento: number | null;
+    scoreInteracao: number | null;
+    scoreFoco: number | null;
+    scoreAutonomia: number | null;
+    statusAlimentacao: number | null;
+    usoBanheiro: number | null;
+  };
+}
+
+/** Contagem de presença/ausência agrupada (groupBy) */
+export interface FrequenciaAgrupada {
+  presenca: boolean | null;
+  _count: { presenca: number };
+}
+
+/** Registro diário projetado para o histórico de evolução */
+export interface RegistroDiarioHistorico {
+  data: Date;
+  scoreComportamento: number;
+  scoreInteracao: number;
+  scoreFoco: number;
+  scoreAutonomia: number;
+  statusAlimentacao: number;
+  usoBanheiro: number;
+}
+
 export interface ITurmaRepositorio {
   buscarTodas(educadorId?: string): Promise<TurmaLista[]>;
   buscarEstudantesPorTurma(turmaId: string): Promise<TurmaComEstudantes | null>;
@@ -116,22 +145,21 @@ export interface ITurmaRepositorio {
     totalTurmas: number;
   }>;
   
-  criarTurma(dados: any): Promise<any>;
+  criarTurma(dados: Prisma.TurmaCreateInput): Promise<Prisma.TurmaGetPayload<object>>;
 
-  // NOVO MÉTODO
   buscarAgregacoesKpis(filtro?: FiltroKpisDiarios): Promise<AgregacaoKpisDiarios>;
 
-  buscarAgregacoesDiariasPorPeriodo(turmaId: string, inicio: Date, fim: Date): Promise<any>;
-  buscarFrequenciaPorPeriodo(turmaId: string, inicio: Date, fim: Date): Promise<any>;
+  buscarAgregacoesDiariasPorPeriodo(turmaId: string, inicio: Date, fim: Date): Promise<AgregacaoDiariaPeriodo>;
+  buscarFrequenciaPorPeriodo(turmaId: string, inicio: Date, fim: Date): Promise<FrequenciaAgrupada[]>;
   buscarAulasRealizadas(turmaId: string, inicio: Date, fim: Date): Promise<{ presenca: boolean }[]>;
-  
+
   // Métodos Globais da Escola
-  buscarAgregacoesDiariasEscolaPorPeriodo(inicio: Date, fim: Date): Promise<any>;
+  buscarAgregacoesDiariasEscolaPorPeriodo(inicio: Date, fim: Date): Promise<AgregacaoDiariaPeriodo>;
   buscarAulasRealizadasEscola(inicio: Date, fim: Date): Promise<{ presenca: boolean }[]>;
 
   // Métodos para o Histórico (Evolução)
-  buscarRegistrosDaTurmaPorIntervalo(turmaId: string, inicio: Date, fim: Date): Promise<any[]>;
-  buscarRegistrosDaEscolaPorIntervalo(inicio: Date, fim: Date): Promise<any[]>;
+  buscarRegistrosDaTurmaPorIntervalo(turmaId: string, inicio: Date, fim: Date): Promise<RegistroDiarioHistorico[]>;
+  buscarRegistrosDaEscolaPorIntervalo(inicio: Date, fim: Date): Promise<RegistroDiarioHistorico[]>;
   contarEstudantesDoEducador(educadorId: string): Promise<number>;
   buscarRegistrosDiariosDoEducador(
     educadorId: string, 

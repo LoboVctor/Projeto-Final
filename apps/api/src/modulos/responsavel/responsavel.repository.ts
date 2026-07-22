@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { CriarResponsavelDto } from './dtos/criar-responsavel.dto.js';
+import type { IResponsavelRepositorio } from './interfaces/IResponsavelRepositorio.js';
 
 @Injectable()
-export class ResponsavelRepository {
+export class ResponsavelRepository implements IResponsavelRepositorio {
   constructor(private readonly prisma: PrismaService) {}
 
   async criar(dados: CriarResponsavelDto, hashSenha: string) {

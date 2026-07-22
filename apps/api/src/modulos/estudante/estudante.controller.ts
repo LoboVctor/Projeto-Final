@@ -15,6 +15,9 @@ import { CreateRegistroAulaBatchDto } from './dtos/create-registro-aula.dto.js';
 import { CreateAulaEstudanteDto } from './dtos/create-aula.dto.js';
 import { CriarEstudanteDto } from './dtos/criar-estudante.dto.js';
 import { AtualizarEstudanteDto } from './dtos/atualizar-estudante.dto.js';
+import { MedicamentoDto } from './dtos/medicamento.dto.js';
+import { LaudoDto } from './dtos/laudo.dto.js';
+import type { RequestComUsuario } from '../../common/interfaces/usuario-autenticado.interface.js';
 
 /**
  * Validador customizado de tipo de arquivo baseado em mimetype.
@@ -71,13 +74,11 @@ export class EstudantesController {
   )
   async criar(
     @Body() dto: CriarEstudanteDto,
-    @Request() req: any,
+    @Request() req: RequestComUsuario,
     @UploadedFile() arquivo?: Express.Multer.File,
   ) {
-    const logadoId = req.user.educadorId || req.user.responsavelId || req.user.id;
-    console.log('[DEBUG] req.user in POST /estudantes:', req.user);
-    let escolaId = req.user.escolaId; 
-    
+    let escolaId = req.user.escolaId;
+
     if (!escolaId) {
       if (req.user.role === 'COORDENADOR') {
         // Como o seed não vincula o admin a um educador, pegamos a escola padrão
@@ -127,7 +128,7 @@ export class EstudantesController {
   @Post('importar-csv')
   @ApiOperation({ summary: 'Importa estudantes via arquivo CSV' })
   @UseInterceptors(FileInterceptor('arquivo'))
-  async importarCSV(@UploadedFile() arquivo: Express.Multer.File, @Request() req: any) {
+  async importarCSV(@UploadedFile() arquivo: Express.Multer.File, @Request() req: RequestComUsuario) {
     if (!arquivo) {
       throw new BadRequestException('Arquivo não enviado');
     }
@@ -268,7 +269,7 @@ export class EstudantesController {
   )
   async adicionarLaudo(
     @Param('estudanteId') estudanteId: string,
-    @Body() body: { tipoDiagnostico: string; tipoDocumento: string; dataEmissao: string },
+    @Body() body: LaudoDto,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -301,10 +302,10 @@ export class EstudantesController {
   async atualizarLaudo(
     @Param('estudanteId') estudanteId: string,
     @Param('documentoId') documentoId: string,
-    @Body() body: { tipoDiagnostico: string; tipoDocumento: string; dataEmissao: string },
+    @Body() body: LaudoDto,
     @UploadedFile(
       new ParseFilePipe({
-        fileIsRequired: false, 
+        fileIsRequired: false,
         validators: [
           new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
           new MimeTypeValidator({ allowedTypes: TIPOS_ARQUIVO_PERMITIDOS }),
@@ -334,19 +335,19 @@ export class EstudantesController {
   })
   async addMedicamento(
     @Param('estudanteId') estudanteId: string,
-    @Body() dados: any,
+    @Body() dados: MedicamentoDto,
   ) {
     return this.estudanteService.addMedicamento(estudanteId, dados);
   }
 
-  @Put(':estudanteId/medicamentos/:medicamentoId') 
+  @Put(':estudanteId/medicamentos/:medicamentoId')
   @ApiOperation({
     summary: 'Atualiza os dados de um medicamento registrado para o estudante',
   })
   async updateMedicamento(
     @Param('estudanteId') estudanteId: string,
     @Param('medicamentoId') medicamentoId: string,
-    @Body() dados: any,
+    @Body() dados: MedicamentoDto,
   ) {
     return this.estudanteService.updateMedicamento(
       estudanteId,

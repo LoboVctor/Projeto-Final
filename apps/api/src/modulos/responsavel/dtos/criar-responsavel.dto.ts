@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, IsEmail, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Sexo } from '@prisma/client';
+import { Sexo } from '@prisma-client';
 
 export class CriarResponsavelDto {
   @ApiProperty()

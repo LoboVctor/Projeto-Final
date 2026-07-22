@@ -1,10 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service.js';
-import { FormatoExportacao } from '../../../../../infra/generated/prisma/index.js';
+import { Injectable, Inject } from '@nestjs/common';
+import { FormatoExportacao } from '@prisma-client';
+import type { IAuditoriaRepositorio } from './interfaces/IAuditoriaRepositorio.js';
 
 @Injectable()
 export class AuditoriaService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject('IAuditoriaRepositorio')
+    private readonly auditoriaRepositorio: IAuditoriaRepositorio,
+  ) {}
 
   /**
    * Registra uma ação de exportação de dados no banco de dados.
@@ -19,13 +22,6 @@ export class AuditoriaService {
     formato: FormatoExportacao = FormatoExportacao.CSV,
     detalhes?: string,
   ) {
-    return this.prisma.client.auditoriaExportacao.create({
-      data: {
-        usuarioId,
-        entidade,
-        formato,
-        detalhes,
-      },
-    });
+    return this.auditoriaRepositorio.registrarExportacao(usuarioId, entidade, formato, detalhes);
   }
 }

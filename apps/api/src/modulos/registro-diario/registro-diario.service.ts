@@ -3,8 +3,7 @@ import type { IRegistroDiarioRepositorio } from './interfaces/IRegistroDiarioRep
 import { CreateRegistrosDiarioDto } from './dtos/create-registros-diario.dto.js';
 import { UpdateRegistrosDiarioDto } from './dtos/update-registros-diario.dto.js';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PrismaService } from '../../prisma/prisma.service.js';
-import { StatusAula } from '../../../../../infra/generated/prisma/index.js';
+import type { RegistroDiario } from '@prisma-client';
 
 @Injectable()
 export class RegistroDiarioService {
@@ -13,7 +12,6 @@ export class RegistroDiarioService {
   constructor(
     @Inject('IRegistroDiarioRepositorio')
     private readonly registroDiarioRepositorio: IRegistroDiarioRepositorio,
-    private readonly prisma: PrismaService
   ) {}
 
   async create(dto: CreateRegistrosDiarioDto) {
@@ -393,22 +391,8 @@ export class RegistroDiarioService {
     ] = await Promise.all([
       this.registroDiarioRepositorio.buscarRegistrosPorIntervalo(studentId, atualInicio, atualFim),
       this.registroDiarioRepositorio.buscarRegistrosPorIntervalo(studentId, anteriorInicio, anteriorFim),
-      this.prisma.client.registroAula.findMany({
-        where: {
-          estudanteId: studentId,
-          data: { gte: atualInicio, lte: atualFim },
-          status_aula: StatusAula.REALIZADA 
-        },
-        select: { presenca: true }
-      }),
-      this.prisma.client.registroAula.findMany({
-        where: {
-          estudanteId: studentId,
-          data: { gte: anteriorInicio, lte: anteriorFim },
-          status_aula: StatusAula.REALIZADA
-        },
-        select: { presenca: true }
-      })
+      this.registroDiarioRepositorio.buscarPresencasPorIntervalo(studentId, atualInicio, atualFim),
+      this.registroDiarioRepositorio.buscarPresencasPorIntervalo(studentId, anteriorInicio, anteriorFim),
     ]);
 
     const mediasAtuais = this.calcularMedias(registrosAtuais);
@@ -481,7 +465,7 @@ export class RegistroDiarioService {
     };
   }
 
-  private calcularMedias(registros: any[]) {
+  private calcularMedias(registros: RegistroDiario[]) {
     if (registros.length === 0) {
       return {
         scoreComportamento: 0,
